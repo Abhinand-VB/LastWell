@@ -35,10 +35,12 @@ Only the integration session edits this file.
 -
 
 ## wired-to-fake (replace when the named task lands)
+- `pnpm e2e` reports PENDING (exit 0) for every route that is not on the gateway yet: today `/api/ws-token` (V-04) and the dev routes (X-01b); `E2E_STRICT=1 pnpm e2e` turns PENDING into failure and is what X-05 runs.
 - `pnpm dev:fake` replays A01 through `POST /api/calls/replay`; it logs a 404 until V-11 lands, and the gateway runs without fakes until X-01b lands (it ignores `LASTWELL_FAKES` today).
 
 ## Requests to other lanes
--
+- [ ] to voice: `pnpm e2e` (apps/e2e, X-02) drives exactly docs/10 §4.1: `POST /api/dev/calls` → 200/201 `{callId}`; `POST /api/dev/calls/:callId/utterances {speaker,text}`; `POST /api/dev/calls/:callId/end` → `call.ended` on /ws/ui; `GET /healthz` includes `fakes: [...]`. It spawns `pnpm --filter @lastwell/gateway dev` with PORT, LASTWELL_FAKES=all, DEMO_MODE=false, INTERNAL_API_KEY, PUBLIC_BASE_URL=http://127.0.0.1:{port}, ALERT_ALLOWED_NUMBERS=+14155550100, ALERT_DEFAULT_TARGET_PHONE, DISPATCHER_PHONE, TWILIO_PHONE_NUMBER, FEATURE_QA_ENABLED=false — please make sure the gateway boots with only these (no other secrets) when fakes are on. A route that is missing must stay Fastify's default 404 ("Route … not found"): e2e reports it as PENDING, while 404 `{error:{code}}` for an unknown id is treated as a real answer. (X-02)
+- [ ] to voice: `alert.updated` must reach a socket subscribed to the alert's call **and** to `board` (e2e waits for status `briefed` there, then `GET /api/alerts?sinceHours=24`). (X-02)
 
 ## Blockers for humans
 - [ ] C-02 · Clinical glance at the 20 eval scripts (apps/eval/scripts/*.json), especially the truth choices B08 (possible despite face+speech), C02/C03 (signs on look-alikes), A05 (aspirin counted as the blood thinner) · Scripts landed and validated; numbers are scripted either way. Answer by editing the script JSON or ticking here.

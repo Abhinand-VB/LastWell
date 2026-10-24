@@ -9,10 +9,12 @@
   },
   "dependencies": {
     "@lastwell/core": "workspace:*",
+    "luxon": "^3.5.0",
     "ws": "^8.18.0",
     "zod": "^3.25.0"
   },
   "devDependencies": {
+    "@types/luxon": "^3.4.2",
     "@types/node": "^22.0.0",
     "@types/ws": "^8.5.12",
     "tsx": "^4.19.0",

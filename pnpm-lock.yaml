@@ -13,6 +13,9 @@ importers:
       '@lastwell/core':
         specifier: workspace:*
         version: link:../../packages/core
+      luxon:
+        specifier: ^3.5.0
+        version: 3.7.2
       ws:
         specifier: ^8.18.0
         version: 8.22.0
@@ -20,6 +23,9 @@ importers:
         specifier: ^3.25.0
         version: 3.25.76
     devDependencies:
+      '@types/luxon':
+        specifier: ^3.4.2
+        version: 3.7.6
       '@types/node':
         specifier: ^22.0.0
         version: 22.20.5
