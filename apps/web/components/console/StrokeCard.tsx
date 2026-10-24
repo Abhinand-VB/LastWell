@@ -8,10 +8,11 @@ import { QuoteButton } from "./QuoteButton";
 
 export const NO_SIGNS_HEADLINE = "No stroke signs heard yet.";
 
-const LEVEL_STYLE: Record<Level, { label: string; cls: string }> = {
-  none: { label: "None", cls: "bg-slate-700 text-slate-200" },
-  possible: { label: "Possible stroke", cls: "bg-amber-400 text-slate-950" },
-  likely: { label: "Likely stroke", cls: "bg-red-500 text-white" },
+// The level word sits in its own element (the X-03 smoke test looks for exactly "Likely").
+const LEVEL_STYLE: Record<Level, { word: string; suffix: string; cls: string }> = {
+  none: { word: "None", suffix: "", cls: "bg-slate-700 text-slate-200" },
+  possible: { word: "Possible", suffix: "stroke", cls: "bg-amber-400 text-slate-950" },
+  likely: { word: "Likely", suffix: "stroke", cls: "bg-red-500 text-white" },
 };
 
 export function LevelPill({ level, title }: { level: Level; title?: string }) {
@@ -21,9 +22,10 @@ export function LevelPill({ level, title }: { level: Level; title?: string }) {
       data-testid="level-pill"
       data-level={level}
       title={title}
-      className={`inline-flex items-center rounded-full px-4 py-1.5 text-lg font-bold tracking-wide ${s.cls}`}
+      className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-lg font-bold tracking-wide ${s.cls}`}
     >
-      {s.label}
+      <span>{s.word}</span>
+      {s.suffix && <span>{s.suffix}</span>}
     </span>
   );
 }

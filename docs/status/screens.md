@@ -10,6 +10,9 @@ Only the screens session edits this file.
 
 ## Acceptance evidence (pasted command output per task)
 
+### X-03 selector check — 2026-10-24 ~16:50 PT
+- Level pill now renders the level word in its own element ("Likely" + "stroke") so X-03's `getByText(/^likely$/i)` finds it. With the scratch config (no webServer, Edge channel, mock gateway): `home lists calls` ✓, `console renders the A01 replay` ✓, board test ✗ for the X-03 reasons filed under Requests.
+
 ### W-07 Home + W-10 Replay buttons — done 2026-10-24 ~16:35 PT
 - `app/page.tsx` → `app/HomeView.tsx` (one file holds both tasks): recent calls from `GET /api/calls` every 3 s (time in the call's timezone, label chip, level pill, live/ended), "Stroke team board" link, "Start browser-mic call" → `/mic` (rendered only when `featureBrowserMic`), "Replay B01" / "Replay C01" → `POST /api/gateway/calls/replay` → `router.push(/console/{callId})`.
 - Browser: list showed 5 replays (A01 ×3 likely, B01/C01 possible, all ended). Clicked "Replay B01" → navigated to `/console/735bc10e-…`; level pill `possible` within 20 s.
@@ -52,6 +55,8 @@ Only the screens session edits this file.
 ## Requests to other lanes
 - [x] to reasoning (done 0c53f6b, D-39): add `alertDefaultTargetPhone: E164.nullable()` to `ConfigResponse` in `packages/core/src/contracts/rest.ts` (+ D-log line) (D-30: the Send modal prefills `ALERT_DEFAULT_TARGET_PHONE`, but the browser cannot read gateway env and `/api/config` has no field for it)
 - [ ] to voice: return `alertDefaultTargetPhone` (= `ALERT_DEFAULT_TARGET_PHONE` or null) from `GET /api/config` (contract field landed in 0c53f6b, D-39) (same reason)
+- [ ] to integration: X-03 `board shows the approved A01 alert` approves as soon as "Likely" shows; at speed 4 the approval snapshot (`AlertSummary.caseSnapshot`) predates "fine at about 2 PM" and "takes Eliquis", so the board correctly shows "LKW unknown" / no blood thinner and `getByText(/Eliquis/)` fails. Suggest waiting for `call.ended` (or `getByText("Eliquis")` on the console) before approving. Observed by running `apps/e2e/ui` against the screens mock gateway (`E2E_GATEWAY_PORT=18787`, Edge channel): home + console tests pass, board test fails on this. (X-03)
+- [ ] to integration: the board renders "The treating team makes every treatment decision." under every card's countdown (docs/06 §9), so with ≥ 2 alerts `getByText(...)` hits strict mode; add `.first()`. (X-03)
 
 ## Blockers for humans
 -
