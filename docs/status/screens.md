@@ -3,12 +3,22 @@
 Only the screens session edits this file.
 
 ## Current task
-- W-06 Board page
+- W-08 Mic page (AudioWorklet)
 
 ## Last green commit on version1
-- W-05 (see below)
+- W-06, W-07, W-10 (see below)
 
 ## Acceptance evidence (pasted command output per task)
+
+### W-07 Home + W-10 Replay buttons — done 2026-10-24 ~16:35 PT
+- `app/page.tsx` → `app/HomeView.tsx` (one file holds both tasks): recent calls from `GET /api/calls` every 3 s (time in the call's timezone, label chip, level pill, live/ended), "Stroke team board" link, "Start browser-mic call" → `/mic` (rendered only when `featureBrowserMic`), "Replay B01" / "Replay C01" → `POST /api/gateway/calls/replay` → `router.push(/console/{callId})`.
+- Browser: list showed 5 replays (A01 ×3 likely, B01/C01 possible, all ended). Clicked "Replay B01" → navigated to `/console/735bc10e-…`; level pill `possible` within 20 s.
+
+### W-06 Board — done 2026-10-24 ~16:30 PT
+- `app/board/{page,BoardView}.tsx`, `hooks/useBoard.ts` (board scope + polling `GET /api/alerts?sinceHours=24`). Labels (TEST / script id) come from `GET /api/calls` because `AlertSummary` has no label.
+- Browser (1440×900): two cards. A01: "Likely stroke 78 y · male A01", "2 h 37 m left · 4.5 h window from LKW 2:00 PM “He was fine at about 2 PM” 00:30", footnote "The treating team makes every treatment decision.", blood thinner Eliquis with quote, three sign rows with quotes, "Briefing call: Completed". TEST card: "LKW unknown", "Briefing call: Briefed".
+- "Mark paramedic-confirmed" → label flipped to "Paramedic-confirmed" (API answer applied + `alert.updated`). `DELETE /api/alerts/test` → `{deleted:1}`, the TEST card left the board within 1 s with no reload (`alert.removed`).
+- Legibility: countdown 36 px bold, body 20 px; checked on the 1440 px screenshot. Presenter's 2 m check is part of W-11.
 
 ### W-05 Console: Send pre-alert modal + alert status — done 2026-10-24 ~16:20 PT
 - `components/console/SendAlert.tsx`, `lib/alerts.ts` (+ `alerts.test.ts`, 3 tests), `hooks/useConfig.ts`; `lib/config.ts` reads `alertDefaultTargetPhone` (D-39, kept optional so a pre-D-39 gateway still loads).
@@ -49,3 +59,4 @@ Only the screens session edits this file.
 ## Notes and small decisions
 - Lockfile: adding `ws`, `@types/ws`, `tsx` as web devDependencies (mock gateway) changes `pnpm-lock.yaml` (+9 lines, web importer only).
 - Snapshots (WS or poll) clear partial lines and keep any finals/newer state already held, so a poll racing the socket never moves the console backwards.
+- Reasoning's request "drop the `.extend` in `apps/web/lib/config.ts`": deliberately kept (field optional) until voice serves `alertDefaultTargetPhone`; a strict parse would fail against today's gateway and hide every config flag. Will drop it when voice ticks its request.
