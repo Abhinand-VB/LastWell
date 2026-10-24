@@ -64,6 +64,7 @@ export {
   parseJson,
   warmup,
   type ClaudeConfig,
+  type ResponseInfo,
   type Effort,
 } from "./claude/client.js";
 export { FAST_PASS_PROMPT_VERSION } from "./prompts/fastPass.js";

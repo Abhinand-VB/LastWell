@@ -3,12 +3,24 @@
 Only the reasoning session edits this file.
 
 ## Current task
-- R-10 Prompt caching + latency tuning
+- E-03 Full text run → slide
 
 ## Last green commit on version1
-- E-01 eval runner (see below)
+- R-10 latency bench (see below)
 
 ## Acceptance evidence (pasted command output per task)
+
+### R-10 Prompt caching + latency tuning — done 2026-10-25
+- `ClaudeConfig.onResponse` reports pass, ms, stop reason, input/output and cache read/write tokens (the gateway can log it per call). Bench: `apps/eval/src/latency.ts` (sequential live calls, A01/B01/C01 inputs; reasoner inputs are the transcripts cut after 4, 6, 8 … turns with the fake pipeline's state).
+- `cd apps/eval && npx tsx src/latency.ts --n 20` → 2 m 32 s, 60 calls, 0 errors:
+  ```
+  | Pass | n | p50 | p95 | max | errors | stop≠end_turn | input tok p50 | cache read tok (total) |
+  | fast pass claude-haiku-5-5 @low | 20 | 1335 ms | 2480 ms | 4460 ms | 0 | 0 | 85.5 | 38340 |
+  | reasoner claude-sonnet-5-5 @medium | 20 | 2798 ms | 3242 ms | 3261 ms | 0 | 0 | 397 | 57540 |
+  | reasoner claude-sonnet-5-5 @low | 20 | 2914 ms | 3754 ms | 6495 ms | 0 | 0 | 397 | 57540 |
+  ```
+- Caching works as shipped (`cache_control` on the system block): every call reads the system prompt from cache (≈1.9k tokens fast pass, ≈2.9k reasoner); only the user message is uncached.
+- Chosen defaults: unchanged — `CLAUDE_FAST_EFFORT=low`, `CLAUDE_REASONER_EFFORT=medium` (already in `.env.example`); `low` is not faster for the reasoner here, so medium keeps the better reasoning. `CLAUDE_TIMEOUT_MS=8000` covers the reasoner's p95 (3.2 s) with margin; the one 12.4 s reasoner call seen in E-01 ran under eval concurrency 2.
 
 ### E-01 Runner: text mode + scoring + table — done 2026-10-25
 - Files: `apps/eval/src/{run,score,report,env}.ts`; the scripted runner is `runScript` in `@lastwell/core` (X-01a). `--model live|fake` (default live), `--ids`, `--out`; `--mode audio` refused (D-33); hard_audio scripts skipped with a log line; 429 → 10 s back-off once (G-28); `EVAL_CONCURRENCY` bounds parallel scripts; results JSON in `apps/eval/results/` (gitignored); the runner throws if any shown quote is not in the script (invented must be 0).

@@ -20,6 +20,19 @@ export interface ClaudeConfig {
   reasonerEffort: Effort; // CLAUDE_REASONER_EFFORT, medium
   /** Injected for tests (stubbed transport); defaults to createAnthropic(). */
   anthropic?: Anthropic;
+  /** Called after every response (logging, R-10 latency and cache measurements). */
+  onResponse?: (info: ResponseInfo) => void;
+}
+
+export interface ResponseInfo {
+  pass: "fast" | "reasoner" | "qa";
+  model: string;
+  ms: number;
+  stopReason: string | null;
+  inputTokens: number;
+  outputTokens: number;
+  cacheReadTokens: number;
+  cacheWriteTokens: number;
 }
 
 export const DEFAULT_CLAUDE_CONFIG: Omit<ClaudeConfig, "anthropic"> = {
@@ -43,6 +56,7 @@ export function createAnthropic(opts: { fetch?: typeof fetch; apiKey?: string } 
 }
 
 export interface ParseArgs<T extends z.ZodType> {
+  pass: ResponseInfo["pass"];
   model: string;
   system: string;
   user: string;
@@ -51,6 +65,7 @@ export interface ParseArgs<T extends z.ZodType> {
   effort: Effort;
   /** Only honoured for Haiku models (G-25: Sonnet 5.5 rejects `disabled`; it keeps adaptive thinking). */
   disableThinking: boolean;
+  onResponse?: ClaudeConfig["onResponse"];
 }
 
 /** Haiku 5.5 allows thinking disabled at effort ≤ high; every other model omits `thinking` (adaptive). */
@@ -74,6 +89,16 @@ export async function parseJson<T extends z.ZodType>(anthropic: Anthropic, args:
     ...thinkingParam(args.model, args.disableThinking),
   });
   const ms = Math.round(performance.now() - t0);
+  args.onResponse?.({
+    pass: args.pass,
+    model: args.model,
+    ms,
+    stopReason: res.stop_reason,
+    inputTokens: res.usage.input_tokens,
+    outputTokens: res.usage.output_tokens,
+    cacheReadTokens: res.usage.cache_read_input_tokens ?? 0,
+    cacheWriteTokens: res.usage.cache_creation_input_tokens ?? 0,
+  });
   if (res.stop_reason === "refusal") return { output: null, ms, refused: true };
   if (res.stop_reason === "max_tokens") return { output: null, ms, truncated: true };
   const text = res.content.flatMap((b) => (b.type === "text" ? [b.text] : [])).join("");
@@ -87,9 +112,12 @@ export async function parseJson<T extends z.ZodType>(anthropic: Anthropic, args:
 /** docs/10 §4.1: the real ModelClient. */
 export function createClaudeClient(config: ClaudeConfig): ModelClient {
   const anthropic = config.anthropic ?? createAnthropic();
+  const onResponse = config.onResponse;
   return {
     fastPass: (input) =>
       parseJson(anthropic, {
+        pass: "fast",
+        onResponse,
         model: config.fastModel,
         system: FAST_PASS_SYSTEM,
         user: buildFastPassUser(input.utteranceText, input.prevDispatcherText),
@@ -100,6 +128,8 @@ export function createClaudeClient(config: ClaudeConfig): ModelClient {
       }),
     reason: (input) =>
       parseJson(anthropic, {
+        pass: "reasoner",
+        onResponse,
         model: config.reasonerModel,
         system: REASONER_SYSTEM,
         user: buildReasonerUser(input),
@@ -110,6 +140,8 @@ export function createClaudeClient(config: ClaudeConfig): ModelClient {
       }),
     answer: (input) =>
       parseJson(anthropic, {
+        pass: "qa",
+        onResponse,
         model: config.qaModel,
         system: QA_SYSTEM,
         user: buildQaUser(input),

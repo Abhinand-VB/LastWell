@@ -89,6 +89,16 @@ describe("fast pass request shape (R-03)", () => {
     ]);
   });
 
+  it("onResponse reports pass, latency and token usage", async () => {
+    const s = stub({ text: FAST_OK });
+    const seen: unknown[] = [];
+    const model = createClaudeClient({ ...DEFAULT_CLAUDE_CONFIG, anthropic: createAnthropic({ fetch: s.fetch, apiKey: "k" }), onResponse: (i) => seen.push(i) });
+    await model.fastPass({ utteranceText: "x", prevDispatcherText: null });
+    expect(seen).toEqual([
+      expect.objectContaining({ pass: "fast", model: "claude-haiku-5-5", stopReason: "end_turn", inputTokens: 10, outputTokens: 10, cacheReadTokens: 0 }),
+    ]);
+  });
+
   it('prev dispatcher text defaults to "(none)"', async () => {
     const { model, calls } = client({ text: FAST_OK });
     await model.fastPass({ utteranceText: "Yes.", prevDispatcherText: null });
