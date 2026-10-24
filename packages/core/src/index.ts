@@ -35,4 +35,6 @@ export {
   type ReduceResult,
   type ReducerConfig,
 } from "./state/reducer.js";
+export { parseLkw } from "./lkw/parser.js";
+export { formatLkw, formatRange, UNKNOWN_DISPLAY } from "./lkw/format.js";
 export { loadScripts, type RawScript, type ScriptError, type LoadedScripts } from "./eval/loadScripts.js";
