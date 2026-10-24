@@ -1,0 +1,33 @@
+{
+  "name": "@lastwell/gateway",
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/server.ts | pino-pretty",
+    "start": "tsx src/server.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@fastify/formbody": "^8.0.0",
+    "@fastify/websocket": "^11.0.0",
+    "@lastwell/core": "workspace:*",
+    "@lastwell/stt": "workspace:*",
+    "@supabase/supabase-js": "^2.45.0",
+    "fastify": "^5.0.0",
+    "luxon": "^3.5.0",
+    "pino": "^9.0.0",
+    "twilio": "^5.3.0",
+    "ws": "^8.18.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@types/luxon": "^3.4.2",
+    "@types/node": "^22.0.0",
+    "@types/ws": "^8.5.12",
+    "pino-pretty": "^11.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0",
+    "vitest": "^3.0.0"
+  }
+}
