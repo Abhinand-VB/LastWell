@@ -3,7 +3,7 @@
 Only the integration session edits this file.
 
 ## Current task
-- 2026-10-24 15:55 PT (from `date`): waiting on Voice for X-02/X-03 (no voice commits yet); C-04 live check waits on E-03.
+- 2026-10-24 16:20 PT: waiting on Voice (X-01b, V-04…V-07, V-11) for X-02/X-03; running the 20-minute version1 check.
 
 ## Last green commit on version1
 - (X-04, see below)
@@ -31,7 +31,10 @@ Only the integration session edits this file.
 - Keyword baseline flags 6 of 20: A02, A05, B08, C03, C04, C05 (it misses A03, A04, A06, A07 and all of B01–B06; it fires on the look-alikes C03–C05).
 - `pnpm verify` → exit 0 (core 191, eval 43, gateway 5, web 1, stt 1 tests).
 
-### C-04 Cards — deck built, check pending
+### C-04 Cards — deck built, live-checked
+- Live check (E-03 run 1 records): all 16 card scripts match truth on final **and** peak level. Deck swap: A03 → C04 (A03 ended Possible live).
+
+#### earlier
 - `pnpm cards` → "cards: wrote docs/cards/cards.html (12 full-deck + 4 stroke-pile cards, 32 pages)". The generator refuses a stroke-pile card that is not a stroke and a stroke card without the LKW blank.
 - Stroke pile: A01, A02, A05, A06 (all truth `likely` with LKW + blood thinner). Full deck: A03, A04, A07, B01, B02, B04, B06 (strokes), C01, C02, C05 (look-alikes), D01, D04 (no-stroke traps).
 - Reading: the deck uses D01/D04 instead of C03/C04 because those two carry two sign kinds incl. a focal one, so only the model's judgment keeps them at Possible; D-31's "strokes, chameleons, look-alikes" read as "cases that may or may not be strokes".
@@ -51,6 +54,15 @@ Only the integration session edits this file.
 ## wired-to-fake (replace when the named task lands)
 - `pnpm e2e` reports PENDING (exit 0) for every route that is not on the gateway yet: today `/api/ws-token` (V-04) and the dev routes (X-01b); `E2E_STRICT=1 pnpm e2e` turns PENDING into failure and is what X-05 runs.
 - `pnpm dev:fake` replays A01 through `POST /api/calls/replay`; it logs a 404 until V-11 lands, and the gateway runs without fakes until X-01b lands (it ignores `LASTWELL_FAKES` today).
+
+## Periodic version1 checks (newest first)
+- 2026-10-24 16:18 PT · version1 74acdd4..4cafd7c + mine · `pnpm verify` exit 0 (core 216 + 2 skipped, web 37, stt 13, eval 51, gateway 5; 20 scripts valid) · `pnpm e2e` 0 passed, 0 failed, 2 pending (X-01b, V-04).
+- 2026-10-24 15:58 PT · df3e7a7 · verify exit 0 · e2e 2 pending.
+
+## Handled requests from other lanes
+- [x] from screens: X-03 board test approves before "fine at about 2 PM"/"Eliquis" are in the snapshot → the test now waits until `GET /api/calls/:id` reports `ended` before approving.
+- [x] from screens: board footnote repeats per card → `.first()`.
+- [x] from reasoning: E-03 run 1 numbers carried into README "Results" and docs/08 §3 "Slide numbers", with the footnote.
 
 ## Requests to other lanes
 - [ ] to reasoning: extend the fake fast-pass phrase table and LKW regexes so the demo-card scripts reach their truth with `--model fake`: speech "garbled", "can't say any words"/"nothing comes out", "words won't come out", "not talking"; eyes "can't see anything on her left"; LKW "fine around 12:30", "talked at 11", "fine yesterday morning". Today 12/16 card scripts agree on level (A04, A06, B04, C02 miss). The C-04 deck must come from scripts that pass X-02-style checks, and `pnpm dev:fake` replays them. (C-04)

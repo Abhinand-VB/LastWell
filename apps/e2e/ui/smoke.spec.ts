@@ -23,6 +23,16 @@ async function replay(request: APIRequestContext, scriptId: string, speed: numbe
   return ((await res.json()) as { callId: string }).callId;
 }
 
+// Approve only once the replay has ended, so the alert's snapshot holds the LKW time and Eliquis.
+async function waitEnded(request: APIRequestContext, id: string): Promise<void> {
+  await expect
+    .poll(async () => {
+      const res = await request.get(`${GATEWAY}/api/calls/${id}`, { headers: { "x-internal-key": KEY } });
+      return res.ok() ? ((await res.json()) as { call: { status: string } }).call.status : `http ${res.status()}`;
+    }, { timeout: 90_000, intervals: [1000] })
+    .toBe("ended");
+}
+
 test.describe.configure({ mode: "serial" });
 
 let callId: string | null = null;
@@ -49,6 +59,7 @@ test("console renders the A01 replay: transcript, Likely, quoted chips", async (
 
 test("board shows the approved A01 alert", async ({ page, request }) => {
   pending(callId === null, "no A01 replay call (V-11 not landed)");
+  await waitEnded(request, callId!);
   const alert = await request.post(`${GATEWAY}/api/calls/${callId}/alert`, {
     headers: { "x-internal-key": KEY },
     data: { targetPhone: ALLOWED, confirm: true },
@@ -58,7 +69,7 @@ test("board shows the approved A01 alert", async ({ page, request }) => {
 
   const res = await page.goto("/board");
   pending(res?.status() === 404, "/board → 404 (W-06 not landed)");
-  await expect(page.getByText("The treating team makes every treatment decision.")).toBeVisible();
+  await expect(page.getByText("The treating team makes every treatment decision.").first()).toBeVisible();
   await expect(page.getByText(/Eliquis/).first()).toBeVisible();
   await expect(page.getByText(/dispatcher pre-alert/i).first()).toBeVisible();
   await page.screenshot({ path: `${SHOTS}/board-A01.png`, fullPage: true });

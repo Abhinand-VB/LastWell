@@ -85,7 +85,21 @@ pnpm --filter @lastwell/eval eval --mode text # scripted eval: LastWell vs keywo
 
 ## Results
 
-The scripted eval (20 calls written by the team: 12 strokes including chameleons, 5 stroke look-alikes, 3 other emergencies) compares LastWell with a keyword alert of the kind general 911 tools ship ("stroke", "droop", "slur", "numb", …). The table is filled by the eval run (`docs/07-EVAL.md` §5) and is never typed by hand.
+The scripted eval (20 calls written by the team: 12 strokes including chameleons, 5 stroke look-alikes, 3 other emergencies) compares LastWell with a keyword alert of the kind general 911 tools ship ("stroke", "droop", "slur", "numb", …). Numbers below are copied from the eval run's own output (E-03 run 1, `apps/eval/results/E-03-run1-table.md`), not typed by hand:
+
+| Metric | LastWell (Haiku 5.5 + Sonnet 5.5) | Keyword baseline |
+| --- | --- | --- |
+| Sensitivity @possible (n=12 strokes) | 12/12 (100%) | 3/12 (25%) |
+| Sensitivity @likely | 6/12 (50%) | — |
+| Precision @possible (flags=17) | 12/17 (71%) | 3/6 (50%) |
+| Precision @likely | 6/7 (86%) | — |
+| Median seconds to first flag | 12 s | 12 s |
+| Last-known-well correct (n=16) | 16/16 | — |
+| Blood thinner correct (n=8) | 8/8 | — |
+| Invented facts shown | 0 | — |
+| Dropped by the quote validator | 1 item | — |
+
+20 scripted calls (text mode), written by the team; real-world precision will be lower. The 5 non-stroke flags at Possible are the 5 look-alike scripts, each shown with its look-alike panel (e.g. "low blood sugar"); the 3 other emergencies stayed at None. The keyword baseline caught only 3 of 12 strokes, which is why its time to first flag ties ours. Median model latency in the run: fast pass 1.2 s, reasoner 2.9 s.
 
 ## Honest limits
 

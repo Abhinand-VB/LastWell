@@ -40,12 +40,8 @@ const CARDS = [
     "If asked about blood thinners: “Yes, she’s on Xarelto.”",
     "Address: Sunset Care Home, 2650 Great Highway, room 12." ] },
 
-  { id: "A03", pile: "deck", who: "You are calling about your mom, 82.", lines: [
-    "She suddenly can’t move her left arm or her left leg, and she slid off her chair onto the floor.",
-    "She is awake and talking to you. If asked whether she can stand: “No, she can’t stand up at all.”",
-    `If asked when she was last normal: “She was fine at about ${BLANK}.”`,
-    "If asked about blood thinners: “Yes, she takes warfarin.”",
-    "Address: 1200 Fell Street, apartment 5." ] },
+  // Every card's script matched its truth level (final and peak) in the live E-03 run 1. A03 ended
+  // Possible live (expected Likely) and C03 touched Likely mid-call, so both stay out; C04 passed.
   { id: "A04", pile: "deck", who: "You are a neighbor. You just found the man downstairs, about 69, on his kitchen floor.", lines: [
     "He is awake, but his speech is all garbled — you can’t understand a word.",
     "The right side of his mouth is hanging down.",
@@ -91,7 +87,11 @@ const CARDS = [
     "If asked whether this happened before: “Yes, he has epilepsy.”",
     "If asked when he was last normal: “Ten minutes ago, right before the shaking started.”",
     "Address: 250 Ocean Avenue." ] },
-  // C03 and C04 stay out of the deck: two sign kinds incl. a focal one, so only the model's judgment keeps them at Possible.
+  { id: "C04", pile: "deck", who: "You are calling about your wife, 45.", lines: [
+    "She started seeing flashing lights, then her right hand went numb, and now she has a bad headache.",
+    "She gets migraines: “She says it’s her usual migraine, but worse.” It came on slowly. No fever.",
+    "If asked when she was last normal: “About an hour ago, before the lights started.”",
+    "Address: 915 Clayton Street." ] },
   { id: "D01", pile: "deck", answer: "NOT A STROKE — a heart attack picture (other emergency)", who: "You are calling about your husband, 58.", lines: [
     "He has crushing pain in his chest, he’s sweating a lot, and the pain is going down both arms.",
     "He is awake and talking normally, breathing fast, scared and pale.",
