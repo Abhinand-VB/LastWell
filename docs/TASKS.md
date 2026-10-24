@@ -8,7 +8,7 @@ Lanes: **S** setup (shared) · **R** reasoning · **V** voice · **W** screens �
 
 | ID | Task | Lane | Owner | Status | Depends | Est | Gate | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| S-01 | Repo and workspace scaffold | S | | todo | — | 0.5 | 0 | |
+| S-01 | Repo and workspace scaffold | S | AVB | doing | — | 0.5 | 0 | |
 | S-02 | Package skeletons + scripts (5 packages) | S | | todo | S-01 | 0.5 | 0 | |
 | S-03 | Vendor accounts and `.env` | S | | todo | — | 1 | 0 | |
 | S-04 | Twilio: upgrade, number, webhook | S | | todo | S-03 | 0.5 | 0 | |
