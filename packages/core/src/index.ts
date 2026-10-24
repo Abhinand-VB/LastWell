@@ -43,6 +43,7 @@ export {
   type Briefing,
   type BriefingOptions,
 } from "./briefing/compose.js";
+export { BASELINE_PATTERNS, keywordBaseline, type BaselineResult, type BaselineTurn } from "./baseline/keywordBaseline.js";
 export { parseLkw } from "./lkw/parser.js";
 export { formatLkw, formatRange, UNKNOWN_DISPLAY } from "./lkw/format.js";
 export { loadScripts, type RawScript, type ScriptError, type LoadedScripts } from "./eval/loadScripts.js";
