@@ -3,12 +3,18 @@
 Only the integration session edits this file.
 
 ## Current task
-- 2026-10-24 ~16:40 PT: human update applied (keys, D-40, D-41); waiting on Voice (X-01b, V-01, V-03…V-07, V-11) for X-02/X-03; 20-minute version1 checks.
+- 2026-10-24 ~16:55 PT: X-05 (draft PR at the P0 milestone, RELEASE.md); then 20-minute version1 checks, copy re-scored E-03 numbers when reasoning posts them.
 
 ## Last green commit on version1
 - (X-04, see below)
 
 ## Acceptance evidence (pasted command output per task)
+
+### X-02 Offline end-to-end test — done (version1 bfa43ca+)
+- `pnpm e2e` → "e2e: 23 passed, 0 failed, 0 pending in 27 s"; `E2E_STRICT=1 pnpm e2e` → "23 passed, 0 failed, 0 pending (strict)". Checks listed in docs/TASKS.md X-02.
+
+### X-03 Playwright smoke — done
+- `E2E_STRICT=1 pnpm e2e:ui` → "4 passed (27.3s)": home lists calls; console renders the A01 replay (transcript, Likely, quoted chips); board shows the approved A01 alert; empty console shows "No stroke signs heard yet."; "no orphans" after teardown. Screenshots: docs/status/screens/{home,console-A01,board-A01}.png.
 
 ### X-04 Repo guardrails — done 2026-10-24
 - Root scripts: `verify` = `pnpm scan:secrets && pnpm -r typecheck && pnpm -r test && pnpm --filter @lastwell/eval validate`; `scan:secrets` = `node scripts/scan-secrets.mjs`; `e2e` = `pnpm --filter @lastwell/e2e e2e`; `dev:fake` = `node scripts/dev-fake.mjs`. `.claude/settings.json` was already on version1 (commit f4e9c28) and is unchanged.
@@ -56,6 +62,7 @@ Only the integration session edits this file.
 - `pnpm dev:fake` replays A01 through `POST /api/calls/replay`; it logs a 404 until V-11 lands, and the gateway runs without fakes until X-01b lands (it ignores `LASTWELL_FAKES` today).
 
 ## Periodic version1 checks (newest first)
+- 2026-10-24 ~16:50 PT · version1 90936d4 + mine · verify exit 0 (core 216 + 2 skipped, gateway 39, eval 51, web 37, stt 13; 20 valid) · e2e 23 passed, 0 failed, 0 pending (strict too) · e2e:ui 4 passed (strict).
 - 2026-10-24 16:18 PT · version1 74acdd4..4cafd7c + mine · `pnpm verify` exit 0 (core 216 + 2 skipped, web 37, stt 13, eval 51, gateway 5; 20 scripts valid) · `pnpm e2e` 0 passed, 0 failed, 2 pending (X-01b, V-04).
 - 2026-10-24 15:58 PT · df3e7a7 · verify exit 0 · e2e 2 pending.
 
@@ -65,6 +72,7 @@ Only the integration session edits this file.
 - [x] from reasoning: E-03 run 1 numbers carried into README "Results" and docs/08 §3 "Slide numbers", with the footnote.
 
 ## Requests to other lanes
+- [ ] to screens: hide the Next.js dev indicator (the "N" badge, bottom left in docs/status/screens/*.png) for the demo, e.g. `devIndicators: false` in next.config.ts; the projector shows it otherwise. (X-03 finding)
 - [ ] to voice: **live tests are unblocked** (human, 2026-10-24 ~16:40 PT). `~/lw-voice/.env` has ANTHROPIC_API_KEY, CARTESIA_API_KEY, the Twilio credentials, DISPATCHER_PHONE / ALERT_DEFAULT_TARGET_PHONE / ALERT_ALLOWED_NUMBERS, and CONVEX_URL (project healthy-chipmunk-255; INTERNAL_API_KEY is set in the deployment); LASTWELL_FAKES is empty on the gateway Mac. Stay inside docs/10 §7.4: Cartesia live only for the gate tasks (V-02 spike, M-01, M-02, M-04), ≤ 10 min of audio per hour; real Twilio calls only to ALERT_ALLOWED_NUMBERS, never from a loop or from anything `pnpm verify` runs. The Twilio webhook and ngrok are set up by a human **after V-01 lands**: note in your status file when it has. (keys)
 - [ ] to voice: D-41(c): an antiplatelet (aspirin, clopidogrel/Plavix, ticagrelor/Brilinta) is never called a blood thinner; the briefing names the drug ("Takes daily aspirin, per the caller."). The text comes from core's composer (reasoning request below); if anything in the gateway builds spoken or logged text about blood thinners itself, follow the same rule. (D-41)
 - [ ] to reasoning: **live tests are unblocked** within docs/10 §7.4: `test:live` ≤ 3 runs per hour, full eval (E-03) ≤ 2 before freeze (run 1 is used). The keys are in `~/lw-voice/.env`; copy ANTHROPIC_API_KEY into your worktree's `.env` if it is not there. (keys)
