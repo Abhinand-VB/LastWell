@@ -3,7 +3,7 @@
 Only the integration session edits this file.
 
 ## Current task
-- 2026-10-24 ~16:55 PT: X-05 (draft PR at the P0 milestone, RELEASE.md); then 20-minute version1 checks, copy re-scored E-03 numbers when reasoning posts them.
+- 2026-10-24 ~16:35 PT: X-05 (draft PR at the P0 milestone, RELEASE.md); then 20-minute version1 checks, copy re-scored E-03 numbers when reasoning posts them.
 
 ## Last green commit on version1
 - (X-04, see below)
@@ -62,7 +62,8 @@ Only the integration session edits this file.
 - `pnpm dev:fake` replays A01 through `POST /api/calls/replay`; it logs a 404 until V-11 lands, and the gateway runs without fakes until X-01b lands (it ignores `LASTWELL_FAKES` today).
 
 ## Periodic version1 checks (newest first)
-- 2026-10-24 ~16:50 PT · version1 90936d4 + mine · verify exit 0 (core 216 + 2 skipped, gateway 39, eval 51, web 37, stt 13; 20 valid) · e2e 23 passed, 0 failed, 0 pending (strict too) · e2e:ui 4 passed (strict).
+- 2026-10-24 16:42 PT · version1 63555e3 (V-06 timing, V-09/V-10, V-08 Q&A behind FEATURE_QA_ENABLED, default false confirmed in apps/gateway/src/env.ts) · verify exit 0 (core 216 + 2 skipped, gateway 50, eval 51, web 37, stt 13; 20 valid) · e2e 23 passed, 0 failed, 0 pending (strict).
+- 2026-10-24 ~16:33 PT · version1 90936d4 + mine · verify exit 0 (core 216 + 2 skipped, gateway 39, eval 51, web 37, stt 13; 20 valid) · e2e 23 passed, 0 failed, 0 pending (strict too) · e2e:ui 4 passed (strict).
 - 2026-10-24 16:18 PT · version1 74acdd4..4cafd7c + mine · `pnpm verify` exit 0 (core 216 + 2 skipped, web 37, stt 13, eval 51, gateway 5; 20 scripts valid) · `pnpm e2e` 0 passed, 0 failed, 2 pending (X-01b, V-04).
 - 2026-10-24 15:58 PT · df3e7a7 · verify exit 0 · e2e 2 pending.
 
@@ -90,6 +91,7 @@ Only the integration session edits this file.
 
 ## Notes and small decisions
 - 2026-10-24 ~15:50 PT: I pushed af710dc while my local `pnpm verify` was red. The cause was my stale node_modules (screens added `ws` to apps/web); after `pnpm install`, verify on that exact tree → exit 0, so version1 was green. Fix in my loop: `pnpm install` after every rebase, and the push is chained with `&&` behind verify and e2e.
+- 16:40 PT: I again wrote estimated times (~16:50/16:55) for checks that ran ~16:33; corrected. Times now only from `date`.
 - Timestamps in earlier evidence were estimates; they are now commit hashes. From here on, times come from `date`.
 - Secret scan is a Node script, not the docs/08 §9 grep: the literal grep matches the `.env.example` placeholders, and grep is not available the same way on Windows. It scans tracked files plus the `git log -p` history of HEAD, and fails on any tracked `.env*` other than `.env.example`.
 - `dev:fake` and the e2e runner spawn pnpm through `npm_execpath` (no shell string), per docs/10 §10; ports are overridable so four worktrees on one machine do not collide.

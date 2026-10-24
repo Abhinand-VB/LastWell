@@ -17,9 +17,9 @@ The whole demo path, built during Cal Hacks 13.0 by four parallel lanes landing 
 - The dispatcher console approves the alert, the code composes the briefing, Sonic 3.6 voices it, and the outbound call goes to the allowlisted medical professional's phone.
 - A stroke-team board, a browser-mic fallback, the replay endpoint, and a scripted eval against a keyword baseline.
 
-### State at the P0 milestone (2026-10-24 ~16:55 PT)
+### State at the P0 milestone (2026-10-24 ~16:35 PT; re-checked 16:42 PT on 63555e3)
 
-- `pnpm verify` green: scan:secrets clean, typecheck all packages, tests core 216 (+2 live-only skipped), gateway 39, eval 51, web 37, stt 13; 20 eval scripts valid.
+- `pnpm verify` green: scan:secrets clean, typecheck all packages, tests core 216 (+2 live-only skipped), gateway 50, eval 51, web 37, stt 13; 20 eval scripts valid.
 - `pnpm e2e`: **23 passed, 0 failed, 0 pending** (also with `E2E_STRICT=1`). Offline black-box run of the gateway with every vendor faked: Card A reaches Likely with quoted chips, the LKW is the card time ±15 min, the banner order is right, the allowlist refuses other numbers (409), and the alert reaches `briefed` and is listed on the board. Card B stays Possible with a face/arm banner; Card C shows "low blood sugar — answered".
 - `pnpm e2e:ui`: **4 passed** (Playwright against `pnpm dev:fake`): home, console, board and the empty "No stroke signs heard yet." state. Screenshots: `docs/status/screens/`.
 - Scripted eval, live Claude (E-03 run 1, 20 calls): sensitivity @possible 12/12 vs keyword baseline 3/12; precision @likely 6/7; LKW correct 16/16; blood thinner correct 8/8; invented facts 0.
@@ -36,7 +36,7 @@ The whole demo path, built during Cal Hacks 13.0 by four parallel lanes landing 
 
 ### Deliberately not in v1
 
-- Spoken Q&A on the briefing call. It is built last (D-32) and stays behind `FEATURE_QA_ENABLED=false`.
+- Spoken Q&A on the briefing call is built (V-08, 63555e3) but ships off: `FEATURE_QA_ENABLED=false` by default until two clean rehearsals with it on (D-32).
 - Audio-mode eval (D-33).
 - SMS (D-03).
 
