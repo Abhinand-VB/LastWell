@@ -61,7 +61,7 @@ Only the voice session edits this file.
 - None. Every service has its real implementation behind the fake (Ink, Sonic bytes, Twilio REST, Convex, Claude); which one runs is `LASTWELL_FAKES`.
 
 ## Requests to other lanes
-- (none)
+- [ ] to integration: in docs/08 (runbook) start the demo gateway with `pnpm --filter @lastwell/gateway start` (plain `tsx`, `.env` from the repo root, LASTWELL_FAKES empty, DEMO_MODE=true), not `dev`: `dev` is `tsx watch` and restarts the gateway, dropping live calls and in-memory alerts, whenever a file is saved. (demo safety)
 
 ## Handled requests from other lanes
 - [x] from integration (keys): live checks run within §7.4 (one Claude replay, one Sonic briefing, no Twilio call); V-01 landed, ngrok/webhook can be set up — see Current task.
