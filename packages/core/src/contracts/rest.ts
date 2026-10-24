@@ -17,6 +17,7 @@ export const ConfigResponse = z.object({
   featureBrowserMic: z.boolean(),
   featureQa: z.boolean(),
   callTimezone: z.string(),
+  alertDefaultTargetPhone: E164.nullable(), // ALERT_DEFAULT_TARGET_PHONE; the Send modal prefills it (D-30, D-39)
 });
 export type ConfigResponse = z.infer<typeof ConfigResponse>;
 
