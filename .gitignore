@@ -9,20 +9,17 @@ out/
 build/
 dist/
 
-# env
+# env (secrets never in git; .env.example lists every variable)
 .env
-.env*.local
+.env.*
+!.env.example
 
-# Python
-__pycache__/
-*.pyc
-.venv/
-venv/
+# eval artifacts
+apps/eval/audio/*.wav
+apps/eval/results
 
 # logs
-npm-debug.log*
-yarn-debug.log*
-pnpm-debug.log*
+*.log
 
 # OS / editor
 .DS_Store
