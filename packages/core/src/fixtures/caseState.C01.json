@@ -1,0 +1,131 @@
+{
+  "callId": "c0100000-0000-4000-8000-000000000000",
+  "version": 6,
+  "level": "possible",
+  "modelLevel": "possible",
+  "signs": [
+    {
+      "kind": "speech",
+      "ref": {
+        "quote": "He's mumbling, he's not making much sense",
+        "utteranceId": "c0100000-0000-4000-8000-000000000006",
+        "tMs": 17000,
+        "speaker": "caller"
+      },
+      "source": "fast"
+    }
+  ],
+  "facts": [
+    {
+      "kind": "address",
+      "value": "2210 Taraval Street",
+      "ref": {
+        "quote": "2210 Taraval Street",
+        "utteranceId": "c0100000-0000-4000-8000-000000000002",
+        "tMs": 3000,
+        "speaker": "caller"
+      },
+      "source": "fast"
+    },
+    {
+      "kind": "sex",
+      "value": "male",
+      "ref": {
+        "quote": "my husband",
+        "utteranceId": "c0100000-0000-4000-8000-000000000002",
+        "tMs": 3000,
+        "speaker": "caller"
+      },
+      "source": "fast"
+    },
+    {
+      "kind": "diabetes",
+      "value": "diabetic, skipped dinner",
+      "ref": {
+        "quote": "he's diabetic, he skipped dinner",
+        "utteranceId": "c0100000-0000-4000-8000-000000000002",
+        "tMs": 3000,
+        "speaker": "caller"
+      },
+      "source": "fast"
+    },
+    {
+      "kind": "age",
+      "value": "68",
+      "ref": {
+        "quote": "He's 68",
+        "utteranceId": "c0100000-0000-4000-8000-000000000004",
+        "tMs": 13000,
+        "speaker": "caller"
+      },
+      "source": "fast"
+    },
+    {
+      "kind": "medication",
+      "value": "insulin",
+      "ref": {
+        "quote": "he took his insulin at five",
+        "utteranceId": "c0100000-0000-4000-8000-000000000008",
+        "tMs": 25000,
+        "speaker": "caller"
+      },
+      "source": "fast"
+    },
+    {
+      "kind": "last_known_well",
+      "value": "About an hour ago",
+      "ref": {
+        "quote": "About an hour ago, he was fine",
+        "utteranceId": "c0100000-0000-4000-8000-000000000010",
+        "tMs": 33000,
+        "speaker": "caller"
+      },
+      "source": "fast"
+    }
+  ],
+  "lkw": {
+    "phrase": "About an hour ago",
+    "ref": {
+      "quote": "About an hour ago, he was fine",
+      "utteranceId": "c0100000-0000-4000-8000-000000000010",
+      "tMs": 33000,
+      "speaker": "caller"
+    },
+    "lkwAt": "2026-10-25T19:05:33-07:00",
+    "rangeStart": "2026-10-25T18:50:33-07:00",
+    "rangeEnd": "2026-10-25T19:20:33-07:00",
+    "confidence": "approx",
+    "note": null,
+    "display": "7:05 PM (6:50–7:20 PM)",
+    "minutesAgo": null
+  },
+  "lookalikes": [
+    {
+      "name": "low blood sugar",
+      "ask": "Is he diabetic, and when did he last eat?",
+      "ref": {
+        "quote": "he's diabetic, he skipped dinner",
+        "utteranceId": "c0100000-0000-4000-8000-000000000002",
+        "tMs": 3000,
+        "speaker": "caller"
+      }
+    }
+  ],
+  "nextQuestion": {
+    "kind": "blood_thinner",
+    "text": "Ask: does he take any blood thinners, like Eliquis, Xarelto or warfarin?"
+  },
+  "summary": "Diabetic man who skipped dinner after insulin, now sweaty, shaky and mumbling.",
+  "reasonerQuestion": {
+    "kind": "blood_thinner",
+    "text": "Ask: does he take any blood thinners, like Eliquis, Xarelto or warfarin?"
+  },
+  "droppedCount": 0,
+  "warnings": [],
+  "latency": {
+    "fastPassMs": 800,
+    "reasonerMs": 3100,
+    "sttMs": null
+  },
+  "updatedAt": "2026-10-25T20:05:38-07:00"
+}
