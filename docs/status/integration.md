@@ -40,6 +40,11 @@ Only the integration session edits this file.
 ### C-06 README for judges — done 2026-10-24 16:10 PT
 - README.md: setup in 7 commands (clone, install, .env, convex, ngrok, gateway, web), `pnpm dev:fake` path without keys, Cartesia features, model table, results placeholder, honest limits. `pnpm scan:secrets` ok. Feature claims describe the spec; X-05 re-checks them against landed code before the PR.
 
+### X-03 Playwright harness — landed, waiting on W-03/W-06/V-11 (2026-10-24 16:40 PT)
+- `pnpm e2e:ui` → "1 passed (home lists calls), 3 skipped" with "PENDING: POST /api/calls/replay → 404 (V-11 not landed)"; exit 0; `pgrep` finds no leftover gateway/next processes (webServer gracefulShutdown SIGTERM → dev-fake kills both trees).
+- Not in `pnpm verify` (needs Chromium and ~1 min); run before landing UI work. `E2E_STRICT=1` makes PENDING fail. One-time setup per machine: `pnpm --filter @lastwell/e2e exec playwright install chromium`.
+- C-04 layout checked with the same Chromium: docs/cards/cards.html prints to 32 Letter pages (one face per page); front and back screenshots read correctly at 20 pt.
+
 ## blocked-keys (exact command to run once keys exist)
 -
 
@@ -48,6 +53,7 @@ Only the integration session edits this file.
 - `pnpm dev:fake` replays A01 through `POST /api/calls/replay`; it logs a 404 until V-11 lands, and the gateway runs without fakes until X-01b lands (it ignores `LASTWELL_FAKES` today).
 
 ## Requests to other lanes
+- [ ] to screens: X-03 smoke tests match on visible text from the docs: transcript shows "coffee cup"; level pill text "Likely" (any case); the caller's quote appears on the stroke card as well as in the transcript; "No stroke signs heard yet." for an empty card; board shows "The treating team makes every treatment decision.", the blood thinner value and "Dispatcher pre-alert". Run `pnpm e2e:ui` before landing W-02…W-06. (X-03)
 - [ ] to voice: `pnpm e2e` (apps/e2e, X-02) drives exactly docs/10 §4.1: `POST /api/dev/calls` → 200/201 `{callId}`; `POST /api/dev/calls/:callId/utterances {speaker,text}`; `POST /api/dev/calls/:callId/end` → `call.ended` on /ws/ui; `GET /healthz` includes `fakes: [...]`. It spawns `pnpm --filter @lastwell/gateway dev` with PORT, LASTWELL_FAKES=all, DEMO_MODE=false, INTERNAL_API_KEY, PUBLIC_BASE_URL=http://127.0.0.1:{port}, ALERT_ALLOWED_NUMBERS=+14155550100, ALERT_DEFAULT_TARGET_PHONE, DISPATCHER_PHONE, TWILIO_PHONE_NUMBER, FEATURE_QA_ENABLED=false — please make sure the gateway boots with only these (no other secrets) when fakes are on. A route that is missing must stay Fastify's default 404 ("Route … not found"): e2e reports it as PENDING, while 404 `{error:{code}}` for an unknown id is treated as a real answer. (X-02)
 - [ ] to voice: `alert.updated` must reach a socket subscribed to the alert's call **and** to `board` (e2e waits for status `briefed` there, then `GET /api/alerts?sinceHours=24`). (X-02)
 

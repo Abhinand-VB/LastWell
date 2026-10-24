@@ -18,6 +18,10 @@ dist/
 apps/eval/audio/*.wav
 apps/eval/results
 
+# playwright (X-03)
+apps/e2e/test-results
+apps/e2e/playwright-report
+
 # logs
 *.log
 

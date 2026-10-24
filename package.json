@@ -11,6 +11,7 @@
     "verify": "pnpm scan:secrets && pnpm -r typecheck && pnpm -r test && pnpm --filter @lastwell/eval validate",
     "scan:secrets": "node scripts/scan-secrets.mjs",
     "e2e": "pnpm --filter @lastwell/e2e e2e",
+    "e2e:ui": "pnpm --filter @lastwell/e2e ui",
     "dev:fake": "node scripts/dev-fake.mjs",
     "dev:gateway": "pnpm --filter @lastwell/gateway dev",
     "dev:web": "pnpm --filter @lastwell/web dev",
