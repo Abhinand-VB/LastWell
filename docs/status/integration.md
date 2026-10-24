@@ -3,27 +3,27 @@
 Only the integration session edits this file.
 
 ## Current task
-- waiting: X-02 (needs X-01b, V-04…V-07, V-11), C-04 check (needs X-01a createFakeModel), X-03 (needs W-03, W-06, V-11); re-running checks on version1 meanwhile
+- 2026-10-24 15:55 PT (from `date`): waiting on Voice for X-02/X-03 (no voice commits yet); C-04 live check waits on E-03.
 
 ## Last green commit on version1
 - (X-04, see below)
 
 ## Acceptance evidence (pasted command output per task)
 
-### X-04 Repo guardrails — done 2026-10-24 15:16 PT
+### X-04 Repo guardrails — done 2026-10-24
 - Root scripts: `verify` = `pnpm scan:secrets && pnpm -r typecheck && pnpm -r test && pnpm --filter @lastwell/eval validate`; `scan:secrets` = `node scripts/scan-secrets.mjs`; `e2e` = `pnpm --filter @lastwell/e2e e2e`; `dev:fake` = `node scripts/dev-fake.mjs`. `.claude/settings.json` was already on version1 (commit f4e9c28) and is unchanged.
 - `pnpm verify` → exit 0 (11.6 s): "scan:secrets ok: 110 tracked files and HEAD history clean (7 patterns, self-test passed)"; typecheck all packages Done; tests core/stt/web/eval/gateway passed (gateway 5); validate "3 valid, 0 invalid (3 files)".
 - Secret scan negative check: a file with a fake `sk_car_…` (34 chars) added with `git add -N` → "scan:secrets FAILED: 1 finding(s) · leak-probe.txt: Cartesia API key sk_car_Z…(34 chars)", exit 1. Placeholders in `.env.example` (`sk_car_...`, `sk-ant-...`, `ACxxxx…`) do not trigger; a self-test asserts both directions on every run.
 - `GATEWAY_PORT=18787 WEB_PORT=13000 pnpm dev:fake` → gateway "listening on 18787", "[dev:fake] gateway up: {"ok":true,…}", web `curl /` → 200, "POST /api/calls/replay → 404 (V-11 not landed yet); will keep trying". SIGINT → both children and their ports gone (`lsof` empty).
 - `pnpm e2e` → "e2e: no scenarios yet (task X-02 not landed) — nothing was tested" (placeholder package `apps/e2e`; X-02 fills it).
 
-### X-00 Docs alignment — done 2026-10-24 15:40 PT
+### X-00 Docs alignment — done 2026-10-24
 - D-30…D-38 added to docs/09; docs/00, 01, 05, 07, 08, .env.example, CLAUDE.md, TASKS.md edited per the docs/10 §2 Consequence column.
 - `grep -n -i judge docs/*.md CLAUDE.md README.md .env.example` (excluding docs/10, SESSION-PROMPTS) → every remaining mention has the judge drawing/flipping cards or watching; none says the judge calls in or that the judge's phone rings.
 - `pnpm verify` → exit 0.
 - Reading taken: docs/08 §3 — the stroke-pile draw happens only when the first (full-deck) card was not a stroke, so a briefing call always happens; otherwise the replays fill the slot.
 
-### C-02 Write the 20 scripts (D-33) — done 2026-10-24 15:25 PT
+### C-02 Write the 20 scripts (D-33) — done 2026-10-24
 - 17 new files in apps/eval/scripts (A02–A07, B02, B04, B06, B08, C02–C05, D01, D02, D04); A01/B01/C01 unchanged.
 - `pnpm --filter @lastwell/eval validate` → "20 valid, 0 invalid (20 files)".
 - `apps/eval/scripts/scripts.test.ts` → "Tests 42 passed". Parsed LKW per script at the moment spoken (all within tolerance):
@@ -31,16 +31,16 @@ Only the integration session edits this file.
 - Keyword baseline flags 6 of 20: A02, A05, B08, C03, C04, C05 (it misses A03, A04, A06, A07 and all of B01–B06; it fires on the look-alikes C03–C05).
 - `pnpm verify` → exit 0 (core 191, eval 43, gateway 5, web 1, stt 1 tests).
 
-### C-04 Cards — deck built, check pending (2026-10-24 16:00 PT)
+### C-04 Cards — deck built, check pending
 - `pnpm cards` → "cards: wrote docs/cards/cards.html (12 full-deck + 4 stroke-pile cards, 32 pages)". The generator refuses a stroke-pile card that is not a stroke and a stroke card without the LKW blank.
 - Stroke pile: A01, A02, A05, A06 (all truth `likely` with LKW + blood thinner). Full deck: A03, A04, A07, B01, B02, B04, B06 (strokes), C01, C02, C05 (look-alikes), D01, D04 (no-stroke traps).
 - Reading: the deck uses D01/D04 instead of C03/C04 because those two carry two sign kinds incl. a focal one, so only the model's judgment keeps them at Possible; D-31's "strokes, chameleons, look-alikes" read as "cases that may or may not be strokes".
 - Not yet: X-02-style check of the 16 scripts through `createFakeModel` (X-01a); visual check of the print layout (no Chrome here; X-03 brings Playwright).
 
-### C-06 README for judges — done 2026-10-24 16:10 PT
+### C-06 README for judges — done 2026-10-24
 - README.md: setup in 7 commands (clone, install, .env, convex, ngrok, gateway, web), `pnpm dev:fake` path without keys, Cartesia features, model table, results placeholder, honest limits. `pnpm scan:secrets` ok. Feature claims describe the spec; X-05 re-checks them against landed code before the PR.
 
-### X-03 Playwright harness — landed, waiting on W-03/W-06/V-11 (2026-10-24 16:40 PT)
+### X-03 Playwright harness — landed, waiting on W-03/W-06/V-11
 - `pnpm e2e:ui` → "1 passed (home lists calls), 3 skipped" with "PENDING: POST /api/calls/replay → 404 (V-11 not landed)"; exit 0; `pgrep` finds no leftover gateway/next processes (webServer gracefulShutdown SIGTERM → dev-fake kills both trees).
 - Not in `pnpm verify` (needs Chromium and ~1 min); run before landing UI work. `E2E_STRICT=1` makes PENDING fail. One-time setup per machine: `pnpm --filter @lastwell/e2e exec playwright install chromium`.
 - C-04 layout checked with the same Chromium: docs/cards/cards.html prints to 32 Letter pages (one face per page); front and back screenshots read correctly at 20 pt.
@@ -53,6 +53,7 @@ Only the integration session edits this file.
 - `pnpm dev:fake` replays A01 through `POST /api/calls/replay`; it logs a 404 until V-11 lands, and the gateway runs without fakes until X-01b lands (it ignores `LASTWELL_FAKES` today).
 
 ## Requests to other lanes
+- [ ] to reasoning: extend the fake fast-pass phrase table and LKW regexes so the demo-card scripts reach their truth with `--model fake`: speech "garbled", "can't say any words"/"nothing comes out", "words won't come out", "not talking"; eyes "can't see anything on her left"; LKW "fine around 12:30", "talked at 11", "fine yesterday morning". Today 12/16 card scripts agree on level (A04, A06, B04, C02 miss). The C-04 deck must come from scripts that pass X-02-style checks, and `pnpm dev:fake` replays them. (C-04)
 - [ ] to screens: X-03 smoke tests match on visible text from the docs: transcript shows "coffee cup"; level pill text "Likely" (any case); the caller's quote appears on the stroke card as well as in the transcript; "No stroke signs heard yet." for an empty card; board shows "The treating team makes every treatment decision.", the blood thinner value and "Dispatcher pre-alert". Run `pnpm e2e:ui` before landing W-02…W-06. (X-03)
 - [ ] to voice: `pnpm e2e` (apps/e2e, X-02) drives exactly docs/10 §4.1: `POST /api/dev/calls` → 200/201 `{callId}`; `POST /api/dev/calls/:callId/utterances {speaker,text}`; `POST /api/dev/calls/:callId/end` → `call.ended` on /ws/ui; `GET /healthz` includes `fakes: [...]`. It spawns `pnpm --filter @lastwell/gateway dev` with PORT, LASTWELL_FAKES=all, DEMO_MODE=false, INTERNAL_API_KEY, PUBLIC_BASE_URL=http://127.0.0.1:{port}, ALERT_ALLOWED_NUMBERS=+14155550100, ALERT_DEFAULT_TARGET_PHONE, DISPATCHER_PHONE, TWILIO_PHONE_NUMBER, FEATURE_QA_ENABLED=false — please make sure the gateway boots with only these (no other secrets) when fakes are on. A route that is missing must stay Fastify's default 404 ("Route … not found"): e2e reports it as PENDING, while 404 `{error:{code}}` for an unknown id is treated as a real answer. (X-02)
 - [ ] to voice: `alert.updated` must reach a socket subscribed to the alert's call **and** to `board` (e2e waits for status `briefed` there, then `GET /api/alerts?sinceHours=24`). (X-02)
@@ -62,6 +63,8 @@ Only the integration session edits this file.
 - [ ] C-02 · Clinical glance at the 20 eval scripts (apps/eval/scripts/*.json), especially the truth choices B08 (possible despite face+speech), C02/C03 (signs on look-alikes), A05 (aspirin counted as the blood thinner) · Scripts landed and validated; numbers are scripted either way. Answer by editing the script JSON or ticking here.
 
 ## Notes and small decisions
+- 2026-10-24 ~15:50 PT: I pushed af710dc while my local `pnpm verify` was red. The cause was my stale node_modules (screens added `ws` to apps/web); after `pnpm install`, verify on that exact tree → exit 0, so version1 was green. Fix in my loop: `pnpm install` after every rebase, and the push is chained with `&&` behind verify and e2e.
+- Timestamps in earlier evidence were estimates; they are now commit hashes. From here on, times come from `date`.
 - Secret scan is a Node script, not the docs/08 §9 grep: the literal grep matches the `.env.example` placeholders, and grep is not available the same way on Windows. It scans tracked files plus the `git log -p` history of HEAD, and fails on any tracked `.env*` other than `.env.example`.
 - `dev:fake` and the e2e runner spawn pnpm through `npm_execpath` (no shell string), per docs/10 §10; ports are overridable so four worktrees on one machine do not collide.
 - The e2e package lives at `apps/e2e` (X-02 text: "a new workspace package `apps/e2e`"), so the integration lane owns `apps/e2e/**` in addition to the `e2e/**` named in docs/10 §6. It has no `test` script, so `pnpm -r test` never spawns a gateway.
