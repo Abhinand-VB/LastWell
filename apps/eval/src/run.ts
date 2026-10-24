@@ -114,7 +114,7 @@ export interface EvalRun {
   outFile: string | null;
 }
 
-export async function runEval(args: RunArgs, env: EvalEnv, model: ModelClient, write = true): Promise<EvalRun> {
+export async function runEval(args: RunArgs, env: EvalEnv, model: ModelClient, write = true, log: (line: string) => void = console.log): Promise<EvalRun> {
   let scripts = readScripts(args.scriptsDir);
   if (args.ids !== null) {
     const want = new Set(args.ids);
@@ -122,14 +122,14 @@ export async function runEval(args: RunArgs, env: EvalEnv, model: ModelClient, w
     if (missing.length > 0) throw new Error(`unknown script id(s): ${missing.join(", ")}`);
     scripts = scripts.filter((s) => want.has(s.id));
   }
-  for (const s of scripts.filter((x) => x.type === "hard_audio")) console.log(`skip ${s.id}: hard_audio scripts run in audio mode only`);
+  for (const s of scripts.filter((x) => x.type === "hard_audio")) log(`skip ${s.id}: hard_audio scripts run in audio mode only`);
   scripts = scripts.filter((s) => s.type !== "hard_audio");
 
   const t0 = Date.now();
   const opts = { timezone: env.CALL_TIMEZONE, likelyMinDistinctSigns: env.LIKELY_MIN_DISTINCT_SIGNS };
   const results = await pool(scripts, args.model === "fake" ? 8 : env.EVAL_CONCURRENCY, async (s) => {
     const r = await runScript(s, model, opts);
-    console.log(`  ${s.id}  ${r.state.level.padEnd(8)}  ${r.calls.length} model calls  ${r.errors} errors`);
+    log(`  ${s.id}  ${r.state.level.padEnd(8)}  ${r.calls.length} model calls  ${r.errors} errors`);
     return r;
   });
   const records = scripts.map((s, i) => scoreScript(s, results[i] as ScriptedRunResult, env.CALL_TIMEZONE));

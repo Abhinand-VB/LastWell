@@ -15,7 +15,7 @@ describe("eval runner (text mode, fake model)", () => {
   });
 
   it("--ids A01,B01,C01 prints the summary table with no NaN", async () => {
-    const run = await runEval(parseArgs(["--mode", "text", "--ids", "A01,B01,C01", "--model", "fake"]), env, createFakeModel(), false);
+    const run = await runEval(parseArgs(["--mode", "text", "--ids", "A01,B01,C01", "--model", "fake"]), env, createFakeModel(), false, () => {});
     expect(run.records.map((r) => r.id)).toEqual(["A01", "B01", "C01"]);
     expect(run.markdown).not.toContain("NaN");
     expect(run.markdown).toContain("| Sensitivity @possible (n=2) | 2/2 (100%) |");
@@ -30,8 +30,8 @@ describe("eval runner (text mode, fake model)", () => {
 
   it("all 20 scripts run, and the baseline numbers reproduce exactly across two runs", async () => {
     const args = parseArgs(["--mode", "text", "--model", "fake"]);
-    const a = await runEval(args, env, createFakeModel(), false);
-    const b = await runEval(args, env, createFakeModel(), false);
+    const a = await runEval(args, env, createFakeModel(), false, () => {});
+    const b = await runEval(args, env, createFakeModel(), false, () => {});
     expect(a.records).toHaveLength(20);
     expect(a.records.map((r) => r.baseline)).toEqual(b.records.map((r) => r.baseline));
     expect(a.markdown).not.toContain("NaN");
