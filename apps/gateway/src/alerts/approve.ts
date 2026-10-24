@@ -237,9 +237,43 @@ export class AlertService {
     }
   }
 
+  /**
+   * An alert from memory, or rehydrated from the store after a gateway restart (V-10): no audio, so a
+   * retry re-synthesizes from the stored briefingText.
+   */
+  private async load(alertId: string): Promise<AlertRecord | undefined> {
+    const mem = this.deps.alerts.get(alertId);
+    if (mem) return mem;
+    const row = (await this.deps.repo.listAlerts(0)).find((r) => r.alertId === alertId);
+    if (!row) return undefined;
+    const call = await this.deps.repo.getCall(row.callId);
+    const a: AlertRecord = {
+      id: row.alertId,
+      callId: row.callId,
+      callLabel: call?.call.label ?? null,
+      targetPhone: row.targetPhone,
+      status: row.status,
+      briefingText: row.briefingText,
+      caseSnapshot: row.caseSnapshot,
+      transcriptSnapshot: row.transcriptSnapshot,
+      twilioCallSid: row.twilioCallSid,
+      emsConfirmedAt: row.emsConfirmedAt,
+      lastError: row.lastError,
+      createdAt: row.createdAt,
+      updatedAt: row.updatedAt,
+      qaTurns: row.qaTurns,
+      audio: null,
+      audioPending: null,
+      answeredAtMs: null,
+    };
+    this.deps.alerts.add(a);
+    this.deps.log.info({ event: "alert.rehydrated", alertId, status: a.status }, "alert loaded from the store");
+    return a;
+  }
+
   /** POST /api/alerts/:id/hangup */
   async hangup(alertId: string): Promise<ActionResult<true>> {
-    const a = this.deps.alerts.get(alertId);
+    const a = await this.load(alertId);
     if (!a) return fail(404, "unknown_alert", `unknown alert ${alertId}`);
     await this.hangupSid(a);
     return { ok: true, value: true };
@@ -247,7 +281,7 @@ export class AlertService {
 
   /** POST /api/alerts/:id/retry ("Call again"): from calling, ringing or failed; same alert row. */
   async retry(alertId: string): Promise<ActionResult<AlertSummary>> {
-    const a = this.deps.alerts.get(alertId);
+    const a = await this.load(alertId);
     if (!a) return fail(404, "unknown_alert", `unknown alert ${alertId}`);
     if (!["calling", "ringing", "failed"].includes(a.status)) return fail(409, "bad_state", `cannot retry from ${a.status}`);
     if (!this.allowed(a.targetPhone)) return this.notAllowed(a.targetPhone);
@@ -260,8 +294,8 @@ export class AlertService {
   }
 
   /** POST /api/alerts/:id/ems-confirm */
-  emsConfirm(alertId: string, confirmed: boolean): ActionResult<AlertSummary> {
-    const a = this.deps.alerts.get(alertId);
+  async emsConfirm(alertId: string, confirmed: boolean): Promise<ActionResult<AlertSummary>> {
+    const a = await this.load(alertId);
     if (!a) return fail(404, "unknown_alert", `unknown alert ${alertId}`);
     a.emsConfirmedAt = confirmed ? this.now().toISOString() : null;
     a.updatedAt = this.now().toISOString();

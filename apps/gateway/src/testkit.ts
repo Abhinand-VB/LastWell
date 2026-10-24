@@ -35,11 +35,11 @@ export interface TestGateway extends Gateway {
   store: MemoryStore;
 }
 
-export function testGateway(opts: { env?: Record<string, string>; model?: ModelClient; telephonySpeed?: number } = {}): TestGateway {
+export function testGateway(opts: { env?: Record<string, string>; model?: ModelClient; telephonySpeed?: number; store?: MemoryStore } = {}): TestGateway {
   const env = testEnv(opts.env);
   const telephony = new FakeTelephony(env.ALERT_ALLOWED_NUMBERS, opts.telephonySpeed ?? 50);
   const tts = new FakeTts();
-  const store = new MemoryStore();
+  const store = opts.store ?? new MemoryStore();
   const services: Services = {
     model: opts.model ?? createFakeModel(),
     stt: fakeSttFactory,

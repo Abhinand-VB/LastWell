@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it } from "vitest";
-import type { AlertStatus } from "@lastwell/core";
 import { ALLOWED, NOT_ALLOWED, auth, testGateway, until, type TestGateway } from "../testkit.js";
 import { canTransition } from "./alertRegistry.js";
 import type { TtsClient } from "../tts/sonic.js";
@@ -18,9 +17,6 @@ async function likelyCall(g: TestGateway) {
   await until(() => g.calls.registry.get(call.id)?.runner?.state.level === "likely");
   return call;
 }
-
-const statuses = (g: TestGateway, id: string): AlertStatus[] => [];
-void statuses;
 
 describe("status machine", () => {
   it("moves forward only; terminal states stay", () => {
@@ -146,5 +142,20 @@ describe("approve (V-06)", () => {
     const media = gw.telephony.sent.filter((x) => x.msg.event === "media");
     expect(media.length).toBeGreaterThan(1);
     expect(gw.telephony.sent.at(-1)?.msg).toMatchObject({ event: "mark", mark: { name: "briefing" } });
+  });
+
+  it("retry after a gateway restart re-synthesizes from the stored briefingText (V-10)", async () => {
+    gw = testGateway({ telephonySpeed: 0.0001 }); // never rings: stays `calling`
+    const call = await likelyCall(gw);
+    const a = (await gw.app.inject({ method: "POST", url: `/api/calls/${call.id}/alert`, headers: auth, payload: { targetPhone: ALLOWED, confirm: true } })).json().alert;
+    const store = gw.store;
+    await new Promise((r) => setTimeout(r, 20)); // write-through settles
+    await gw.app.close();
+    gw = testGateway({ store, telephonySpeed: 0.0001 });
+    const retry = await gw.app.inject({ method: "POST", url: `/api/alerts/${a.id}/retry`, headers: auth, payload: {} });
+    expect(retry.statusCode).toBe(200);
+    expect(retry.json().alert.status).toBe("calling");
+    expect(gw.tts.calls).toEqual([a.briefingText]);
+    expect(gw.telephony.placed).toEqual([{ to: ALLOWED, alertId: a.id }]);
   });
 });

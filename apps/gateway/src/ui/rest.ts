@@ -145,7 +145,7 @@ export function registerRest(app: FastifyInstance, deps: RestDeps): void {
     const { alertId } = AlertParams.parse(req.params);
     const body = parse(EmsConfirmBody, req.body, reply);
     if (!body) return reply;
-    return sendResult(reply, deps.alerts.emsConfirm(alertId, body.confirmed), (alert) => ({ alert }));
+    return sendResult(reply, await deps.alerts.emsConfirm(alertId, body.confirmed), (alert) => ({ alert }));
   });
 
   app.post("/api/alerts/:alertId/hangup", async (req, reply) => {

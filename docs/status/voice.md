@@ -3,13 +3,21 @@
 Only the voice session edits this file.
 
 ## Current task
-- 2026-10-24 16:45 PT: V-10 (degrade/reconnect plumbing, retry after restart), then V-09 tests.
+- 2026-10-24 16:55 PT: P0/P1 offline complete. Next: live gates as soon as ngrok + the Twilio webhook are up (human); meanwhile robustness review of the demo path. V-08 (Q&A) only per D-32.
 - **V-01 has landed (bfa43ca):** the human can now start ngrok and point the Twilio number's voice webhook at `{PUBLIC_BASE_URL}/twilio/voice` (integration's keys request).
 
 ## Last green commit on version1
 - bfa43ca (gateway X-01b … V-11), `pnpm e2e` 23 passed / 0 failed / 0 pending. Unit tests for it follow in the next commit.
 
 ## Acceptance evidence (pasted command output per task)
+
+### V-10 Degrade/reconnect, test-briefing, call-again — offline done (live parts need a real call)
+- Ink reconnect once → `degraded` on the second failure / 401 (stt tests); a degraded session publishes `stt_degraded` in `state.warnings` (streams test); `healthz.cartesia` = degraded after an Ink 401/403.
+- `alerts.test.ts`: test briefing → TEST alert with "was not established on the call" / "Blood thinners were not mentioned", listed with label TEST; `DELETE /api/alerts/test` → `{deleted:1}` + `alert.removed`, gone from the registries; retry from ringing ends the first call and re-dials with cached audio (1 synthesis, 2 dials); **retry after a restart** (new gateway, same store) rehydrates the alert and re-synthesizes from `briefingText` → `calling`.
+- Live (blocked on a real call): block the Ink host for 2 s mid-call → `stt.reconnected`, a second block → `stt.degraded` + console banner.
+
+### V-09 Browser-mic fallback (gateway) — offline done
+- `browser/browser.test.ts`: `POST /api/calls/browser` → `{callId, micWsUrl: ws://localhost:<port>/browser/media/<id>?token=<64 hex>}`; a wrong token → close 1008; first binary frame sets `streamStartedAt`; finals are `mixed` and reach the runner; `{"type":"end"}` ends the call; `FEATURE_BROWSER_MIC=false` → 409. Live with W-08 needs a browser + Cartesia.
 
 ### Live checks with the keys (2026-10-24 ~16:35 PT, gateway on :18999, no phone dialled)
 - Real boot (`LASTWELL_FAKES=twilio`, everything else from `.env`): `/healthz` → `{"ok":true,…,"cartesia":"ok","fakes":["twilio"]}`; log `server.listening` `store:"convex"`; **`claude.warmup` ms 2569** (fast 2350, reasoner 2550).
@@ -65,5 +73,5 @@ Only the voice session edits this file.
 - Status machine: alert statuses only move forward; a `busy/no-answer/failed/canceled` callback after the stream answered counts as `completed`, not `failed` (found by a test: our own hang-up could race the fake's answer).
 - Status callbacks are matched by `CallSid`; retry forgets the old sid before hanging it up, so the old call's callbacks are ignored.
 - Approve returns 502 (alert broadcast as `failed` with `lastError`) when Sonic or Twilio fails; the UI can retry with `POST /api/alerts/:id/retry`.
-- Browser mic (V-09 gateway side) is in: `POST /api/calls/browser` → `{callId, micWsUrl}` (ws://localhost when reached locally, else wss PUBLIC_BASE_URL), `WS /browser/media/:callId?token=`, `POST /api/calls/:id/end`. Tests pending (V-09).
+- Browser mic: `micWsUrl` is `ws://<host>` when the request reached the gateway on localhost/127.0.0.1 (the Next proxy on laptop 1), else `wss://` from PUBLIC_BASE_URL.
 - `FAKE_ACCOUNT_SID` is `AC-fake-telephony` (a 34-char `AC…` placeholder trips scan:secrets).
