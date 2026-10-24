@@ -3,12 +3,36 @@
 Only the reasoning session edits this file.
 
 ## Current task
-- E-01 Runner: text mode + scoring + table
+- R-10 Prompt caching + latency tuning
 
 ## Last green commit on version1
-- R-03 + R-06 Claude client (see below)
+- E-01 eval runner (see below)
 
 ## Acceptance evidence (pasted command output per task)
+
+### E-01 Runner: text mode + scoring + table — done 2026-10-25
+- Files: `apps/eval/src/{run,score,report,env}.ts`; the scripted runner is `runScript` in `@lastwell/core` (X-01a). `--model live|fake` (default live), `--ids`, `--out`; `--mode audio` refused (D-33); hard_audio scripts skipped with a log line; 429 → 10 s back-off once (G-28); `EVAL_CONCURRENCY` bounds parallel scripts; results JSON in `apps/eval/results/` (gitignored); the runner throws if any shown quote is not in the script (invented must be 0).
+- Item 5: `requireApiKey` refuses with "ANTHROPIC_API_KEY is not set: put it in the repo-root .env …, or run offline with --model fake." (unit test).
+- Item 4: baseline records identical across two runs over all 20 scripts (unit test).
+- Item 1, live: `pnpm --filter @lastwell/eval eval --mode text --ids A01,B01,C01` → **1 m 12 s**, no NaN, 0 model errors:
+  ```
+  | Sensitivity @possible (n=2) | 2/2 (100%) | 0/2 (0%) |
+  | Sensitivity @likely | 1/2 (50%) | — |
+  | Precision @possible (flags=3) | 2/3 (67%) | 0/0 (—) |
+  | Precision @likely | 1/1 (100%) | — |
+  | Median seconds to first flag | 7 s | — |
+  | LKW correct (n=3 with truth) | 3/3 | — |
+  | Blood thinner correct (n=2) | 2/2 | — |
+  | Invented facts shown | 0 | — |
+  | Dropped by validator | 2 items | — |
+  | Wrong facts | 0 | — |
+  | Level agreement (n=3) | 3/3 (100%) | — |
+  Median latency: fast pass 1937 ms, reasoner 3708 ms.
+  A01 likely (speech, arms; first flag 11 s; LKW 2:00 PM; Eliquis) · B01 possible (balance, eyes; 3 s; 6:50 PM; none) · C01 possible (speech; low blood sugar)
+  ```
+  The 2 drops are B01 reasoner LKW items whose phrase was not inside its quote (the fast pass had already set the LKW). One A01 reasoner call took 12.4 s (likely an 8 s timeout + retry) → R-10.
+- Item 2 (all 20, live) is E-03.
+- Fake model over all 20 (offline): sens@possible 11/12, precision@possible 11/15, level agreement 16/20, invented 0.
 
 ### R-03 Claude client + fast pass / R-06 Reasoner wrapper — code landed; live mostly green, one prompt blocker
 - `createClaudeClient(config)` in `packages/core/src/claude/client.ts` implements `ModelClient` (fast pass, reasoner, Q&A call). Prompts verbatim in `src/prompts/{fastPass,reasoner,qa}.ts` with the docs/04 user-message builders; `warmup(model)` for G-21.
