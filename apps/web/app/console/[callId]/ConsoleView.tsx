@@ -9,7 +9,8 @@ import { StrokeCard } from "@/components/console/StrokeCard";
 import { FactsPanel, LatencyReadout, LookalikePanel, NextQuestionBanner, WarningBanners } from "@/components/console/Panels";
 import { SendAlert } from "@/components/console/SendAlert";
 import { useConfig } from "@/hooks/useConfig";
-import { stateRefs } from "@/lib/format";
+import { mmss, stateRefs } from "@/lib/format";
+import { useNow } from "@/hooks/useNow";
 
 export function ConsoleView({ callId }: { callId: string }) {
   const view = useCall(callId);
@@ -33,6 +34,7 @@ export function ConsoleView({ callId }: { callId: string }) {
           )}
         </div>
         <div className="flex items-center gap-3">
+          {call && <CallTimer startedAt={call.startedAt} endedAt={call.endedAt} />}
           {call && (
             <span
               data-testid="call-status"
@@ -63,6 +65,7 @@ export function ConsoleView({ callId }: { callId: string }) {
           <div className="flex min-h-0 flex-col gap-4 overflow-y-auto pr-1">
             <WarningBanners state={view.state} />
             <StrokeCard state={view.state} />
+            <NextQuestionBanner state={view.state} />
             <SendAlert
               callId={callId}
               call={call}
@@ -71,7 +74,6 @@ export function ConsoleView({ callId }: { callId: string }) {
               config={config}
               onAlert={view.upsertAlert}
             />
-            <NextQuestionBanner state={view.state} />
             <LookalikePanel state={view.state} />
             <FactsPanel state={view.state} />
             <LatencyReadout state={view.state} />
@@ -79,5 +81,15 @@ export function ConsoleView({ callId }: { callId: string }) {
         </div>
       )}
     </main>
+  );
+}
+
+function CallTimer({ startedAt, endedAt }: { startedAt: string; endedAt: string | null }) {
+  const now = useNow(1000);
+  const ms = (endedAt ? Date.parse(endedAt) : now.getTime()) - Date.parse(startedAt);
+  return (
+    <span data-testid="call-timer" className="font-mono text-2xl font-semibold text-white tabular-nums" title="Call duration">
+      {mmss(ms)}
+    </span>
   );
 }

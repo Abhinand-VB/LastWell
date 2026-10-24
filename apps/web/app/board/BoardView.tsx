@@ -33,7 +33,7 @@ export function BoardView() {
           No pre-alerts yet. They appear here the moment a dispatcher sends one.
         </p>
       ) : (
-        <div className="mt-6 grid grid-cols-1 gap-6 xl:grid-cols-2">
+        <div className={`mt-6 grid grid-cols-1 gap-6 ${alerts.length === 1 ? "max-w-5xl" : "xl:grid-cols-2"}`}>
           {alerts.map((a) => (
             <AlertCard key={a.id} alert={a} label={labels[a.callId] || null} now={now} onAlert={setAlert} />
           ))}
@@ -133,12 +133,12 @@ function AlertCard({
 
       <div data-testid="countdown" data-kind={countdown.kind} title={s.lkw?.display ?? "LKW unknown"} className="mt-6">
         {countdown.kind === "left" && (
-          <p className="text-4xl font-bold text-white">
+          <p className="text-5xl font-bold text-white">
             {countdown.text} <span className="text-2xl font-medium text-slate-300">left</span>
           </p>
         )}
-        {countdown.kind === "passed" && <p className="text-4xl font-bold text-slate-300">Window passed</p>}
-        {countdown.kind === "unknown" && <p className="text-4xl font-bold text-amber-300">LKW unknown</p>}
+        {countdown.kind === "passed" && <p className="text-5xl font-bold text-slate-300">Window passed</p>}
+        {countdown.kind === "unknown" && <p className="text-5xl font-bold text-amber-300">LKW unknown</p>}
         <p className="mt-1 text-xl text-slate-300">
           4.5 h window from LKW{s.lkw?.lkwAt ? ` ${s.lkw.display.split(" (")[0]}` : ""}
           {s.lkw && (
@@ -147,7 +147,7 @@ function AlertCard({
             </span>
           )}
         </p>
-        <p className="mt-1 text-sm text-slate-500">{TREATMENT_FOOTNOTE}</p>
+        <p className="mt-1 text-base text-slate-400">{TREATMENT_FOOTNOTE}</p>
       </div>
 
       <dl className="mt-5 grid grid-cols-[9rem_1fr] gap-x-4 gap-y-2 text-xl">

@@ -3,12 +3,17 @@
 Only the screens session edits this file.
 
 ## Current task
-- W-11 Visual polish
+- idle: P0/P1 screens tasks landed; next: switch from the mock to `pnpm dev:fake` when V-04/V-11 land, re-run X-03 (`pnpm e2e:ui`)
 
 ## Last green commit on version1
-- W-08 (see below)
+- W-11 (see below)
 
 ## Acceptance evidence (pasted command output per task)
+
+### W-11 Visual polish — done 2026-10-24 ~17:25 PT (presenter approval pending)
+- Dark clinical theme, 17 px root, 20 px transcript and card text, 30 px banner, monospace `mm:ss` column, amber underlines on quotes, partial line in its own row (no shift of earlier rows). Console order: warnings → stroke card → next question → Send → look-alike → facts, so card + banner + Send fit at 1440×900 without scrolling. Header call timer (own component, 1 Hz). Board: single alert uses up to 1024 px width, countdown 48 px, footnote 17 px.
+- Screenshots (Edge, 1440×900, mock gateway, A01 replay): `apps/web/screenshots/{console-A01-mid,console-A01-end,console-send-modal,console-alert-status,board,home}.png`.
+- Human: presenter looks at the screenshots (or the live pages) from 2 m and approves → tick under Blockers for humans.
 
 ### W-08 Mic page (AudioWorklet) — done 2026-10-24 ~17:10 PT (live speech check pending V-09)
 - `app/mic/{page,MicView}.tsx`, `public/worklets/downsampler.js`, `lib/pcm.ts` (+ `pcm.test.ts`, 5 tests: 48 kHz → 50×640 B per second at any block size, 44.1 kHz within one frame of real time, clamping, rate guard, RMS). Start → `getUserMedia` → `POST /api/calls/browser` → WS `micWsUrl` → worklet frames; console opens in a new tab (opened inside the click so pop-up blockers allow it); Stop → `{"type":"end"}` + `POST /api/calls/:id/end`. Level meter from worklet RMS (~10 Hz). Hidden when `featureBrowserMic` is false.
@@ -66,6 +71,7 @@ Only the screens session edits this file.
 - [ ] to integration: the board renders "The treating team makes every treatment decision." under every card's countdown (docs/06 §9), so with ≥ 2 alerts `getByText(...)` hits strict mode; add `.first()`. (X-03)
 
 ## Blockers for humans
+- [ ] W-11 · presenter approval of the console/board look from 2 m (screenshots in `apps/web/screenshots/`) · nothing waits on it; polish continues on request
 -
 
 ## Notes and small decisions
