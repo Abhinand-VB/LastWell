@@ -179,7 +179,9 @@ export class AlertService {
       case "no-answer":
       case "failed":
       case "canceled":
-        if (a.status !== "completed") this.setStatus(a, "failed", { lastError: callStatus });
+        // After the stream answered, any terminal callback means the call is over, not that it failed.
+        if (reachedAnswered(a.status)) this.setStatus(a, "completed");
+        else this.setStatus(a, "failed", { lastError: callStatus });
         return;
       default:
         return; // queued, initiated, in-progress: the stream's start sets answered
