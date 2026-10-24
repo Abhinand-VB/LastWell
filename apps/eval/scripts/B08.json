@@ -15,7 +15,7 @@
     { "speaker": "dispatcher", "atMs": 49000, "text": "Okay. Help is on the way. Stay with her." }
   ],
   "truth": {
-    "isStroke": true, "expectedLevel": "possible", "signs": ["face", "speech"],
+    "isStroke": true, "expectedLevel": "likely", "signs": ["face", "speech"],
     "lkw": { "localTime": "2026-10-25T21:25:00", "toleranceMin": 10 },
     "bloodThinner": null, "lookalike": null,
     "facts": [ { "kind": "age", "value": "61" },

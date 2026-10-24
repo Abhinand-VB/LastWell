@@ -56,7 +56,7 @@ Contract: docs/03 §14. Files: `apps/eval/scripts/{id}.json`. The Clinical lane 
 | A09 | Friend, woman 73: dropped a glass, can't lift her arm, mouth drooping; "a little after three"; none | arms, face | 15:10 ±10 (call 15:40) | none | |
 | A10 | Granddaughter, grandmother 90: suddenly using wrong words, left face droop; "this morning around nine"; "the blood thinner, Eliquis" | speech, face | 09:00 ±15 (call 10:50) | Eliquis | |
 
-### 3.2 Stroke chameleons (B01–B08) — truth `isStroke:true`, `expectedLevel:"possible"` (B07 `likely`: it has a focal sign)
+### 3.2 Stroke chameleons (B01–B08) — truth `isStroke:true`, `expectedLevel:"possible"` (B07 and B08 `likely`: two kinds including a focal sign, D-41)
 
 | id | Seed | signs | LKW | blood thinner | lookalike the model may raise |
 | --- | --- | --- | --- | --- | --- |
@@ -67,9 +67,9 @@ Contract: docs/03 §14. Files: `apps/eval/scripts/{id}.json`. The Clinical lane 
 | B05 | Daughter, mother 79: sudden spinning dizziness and vomiting, can't sit up; "half an hour ago" | balance | call−30 ±5 | null | infection (vomiting) |
 | B06 | Husband, wife 72: suddenly can't see anything on her left, bumps into furniture, "maybe her glasses"; "ten minutes ago" | eyes, balance | call−10 ±5 | none | — (no focal sign → `possible`, next question = face/arm check) |
 | B07 | Grandson, grandfather 85: "acting strange", can't button his shirt with his right hand, drooling from one side; "fine at breakfast" | arms, face | 08:00 ±60 (call 11:15) | Eliquis | expectedLevel `likely` |
-| B08 | Roommate, woman 61: sudden bad headache, numb face, slurred speech, "she gets migraines" | face, speech | call−45 ±10 | null | migraine (raised, not resolved) |
+| B08 | Roommate, woman 61: sudden bad headache, numb face, slurred speech, "she gets migraines" | face, speech | call−45 ±10 | null | migraine (raised, not resolved); expectedLevel `likely` (D-41: two kinds incl. a focal sign) |
 
-### 3.3 Look-alikes, not stroke (C01–C08) — truth `isStroke:false`; expected level ≤ `possible`; truth `lookalike` set
+### 3.3 Look-alikes, not stroke (C01–C08) — truth `isStroke:false`; expected level ≤ `possible`; truth `lookalike` set. Signs the caller describes still count (C02 "not talking", C03 slurring + stumbling); a `likely` from LastWell on any look-alike is a real false positive in precision @likely (D-41).
 
 | id | Seed | lookalike | key facts |
 | --- | --- | --- | --- |
