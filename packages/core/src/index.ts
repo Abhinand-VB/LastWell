@@ -47,3 +47,4 @@ export { BASELINE_PATTERNS, keywordBaseline, type BaselineResult, type BaselineT
 export { parseLkw } from "./lkw/parser.js";
 export { formatLkw, formatRange, UNKNOWN_DISPLAY } from "./lkw/format.js";
 export { loadScripts, type RawScript, type ScriptError, type LoadedScripts } from "./eval/loadScripts.js";
+export type { FastPassInput, ModelClient, ModelResult, QaInput, ReasonerInput } from "./claude/types.js";
