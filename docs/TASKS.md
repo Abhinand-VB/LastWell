@@ -9,7 +9,7 @@ Lanes: **S** setup (shared) · **R** reasoning · **V** voice · **W** screens �
 | ID | Task | Lane | Owner | Status | Depends | Est | Gate | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | S-01 | Repo and workspace scaffold | S | AVB | done | — | 0.5 | 0 | `pnpm install` (pnpm 9.12.0 via corepack, Node 24.11.1): "Already up to date · Done in 386ms"; `git check-ignore -v .env .env.local` → `.gitignore:13:.env` / `.gitignore:14:.env.*`, `.env.example` not ignored, `git status` shows no .env; `pnpm typecheck` → "No projects matched the filters", exit 0. Kept existing README (C-06 replaces it). Merged scaffold .gitignore into the existing one (dropped Python lines: no Python). |
-| S-02 | Package skeletons + scripts (5 packages) | S | | todo | S-01 | 0.5 | 0 | |
+| S-02 | Package skeletons + scripts (5 packages) | S | AVB | doing | 0.5 | 0 | |
 | S-03 | Vendor accounts and `.env` | S | | todo | — | 1 | 0 | |
 | S-04 | Twilio: upgrade, number, webhook | S | | todo | S-03 | 0.5 | 0 | |
 | S-05 | Cartesia credits, concurrency, voice pick | S | | todo | S-03 | 0.5 | 0 | |
