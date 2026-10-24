@@ -1,0 +1,129 @@
+{
+  "callId": "b0100000-0000-4000-8000-000000000000",
+  "version": 6,
+  "level": "possible",
+  "modelLevel": "possible",
+  "signs": [
+    {
+      "kind": "balance",
+      "ref": {
+        "quote": "she keeps bumping into the wall",
+        "utteranceId": "b0100000-0000-4000-8000-000000000002",
+        "tMs": 3000,
+        "speaker": "caller"
+      },
+      "source": "fast"
+    },
+    {
+      "kind": "eyes",
+      "ref": {
+        "quote": "she sees double",
+        "utteranceId": "b0100000-0000-4000-8000-000000000002",
+        "tMs": 3000,
+        "speaker": "caller"
+      },
+      "source": "fast"
+    },
+    {
+      "kind": "balance",
+      "ref": {
+        "quote": "she can't walk straight",
+        "utteranceId": "b0100000-0000-4000-8000-000000000008",
+        "tMs": 29000,
+        "speaker": "caller"
+      },
+      "source": "fast"
+    }
+  ],
+  "facts": [
+    {
+      "kind": "address",
+      "value": "530 Ulloa Street",
+      "ref": {
+        "quote": "530 Ulloa Street",
+        "utteranceId": "b0100000-0000-4000-8000-000000000002",
+        "tMs": 3000,
+        "speaker": "caller"
+      },
+      "source": "fast"
+    },
+    {
+      "kind": "sex",
+      "value": "female",
+      "ref": {
+        "quote": "my wife",
+        "utteranceId": "b0100000-0000-4000-8000-000000000002",
+        "tMs": 3000,
+        "speaker": "caller"
+      },
+      "source": "fast"
+    },
+    {
+      "kind": "age",
+      "value": "74",
+      "ref": {
+        "quote": "She's 74",
+        "utteranceId": "b0100000-0000-4000-8000-000000000004",
+        "tMs": 14000,
+        "speaker": "caller"
+      },
+      "source": "fast"
+    },
+    {
+      "kind": "last_known_well",
+      "value": "about half an hour ago",
+      "ref": {
+        "quote": "She was fine about half an hour ago",
+        "utteranceId": "b0100000-0000-4000-8000-000000000006",
+        "tMs": 19000,
+        "speaker": "caller"
+      },
+      "source": "fast"
+    },
+    {
+      "kind": "blood_thinner",
+      "value": "none",
+      "ref": {
+        "quote": "No, nothing like that",
+        "utteranceId": "b0100000-0000-4000-8000-000000000012",
+        "tMs": 42000,
+        "speaker": "caller"
+      },
+      "source": "fast"
+    }
+  ],
+  "lkw": {
+    "phrase": "about half an hour ago",
+    "ref": {
+      "quote": "She was fine about half an hour ago",
+      "utteranceId": "b0100000-0000-4000-8000-000000000006",
+      "tMs": 19000,
+      "speaker": "caller"
+    },
+    "lkwAt": "2026-10-25T18:50:19-07:00",
+    "rangeStart": "2026-10-25T18:40:19-07:00",
+    "rangeEnd": "2026-10-25T19:00:19-07:00",
+    "confidence": "approx",
+    "note": null,
+    "display": "6:50 PM (6:40–7:00 PM)",
+    "minutesAgo": null
+  },
+  "lookalikes": [],
+  "nextQuestion": {
+    "kind": "face",
+    "text": "Ask the caller to look at her face: is one side drooping or uneven when she smiles?"
+  },
+  "summary": "Sudden dizziness, double vision and unsteadiness about half an hour ago; no blood thinners.",
+  "reasonerQuestion": {
+    "kind": "face",
+    "text": "Ask the caller to look at her face: is one side drooping or uneven when she smiles?"
+  },
+  "droppedCount": 0,
+  "warnings": [],
+  "latency": {
+    "fastPassMs": 800,
+    "reasonerMs": 3100,
+    "sttMs": null
+  },
+  "updatedAt": "2026-10-25T19:20:47-07:00"
+}

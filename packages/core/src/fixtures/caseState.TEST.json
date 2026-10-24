@@ -1,0 +1,32 @@
+{
+  "callId": "7e570000-0000-4000-8000-000000000000",
+  "version": 1,
+  "level": "possible",
+  "modelLevel": "possible",
+  "signs": [
+    {
+      "kind": "speech",
+      "ref": {
+        "quote": "test one two three",
+        "utteranceId": "7e570000-0000-4000-8000-000000000001",
+        "tMs": 0,
+        "speaker": "caller"
+      },
+      "source": "fast"
+    }
+  ],
+  "facts": [],
+  "lkw": null,
+  "lookalikes": [],
+  "nextQuestion": null,
+  "summary": "Smoke test: canned state, not a real call.",
+  "reasonerQuestion": null,
+  "droppedCount": 0,
+  "warnings": [],
+  "latency": {
+    "fastPassMs": null,
+    "reasonerMs": null,
+    "sttMs": null
+  },
+  "updatedAt": "2026-10-25T06:00:00-07:00"
+}
