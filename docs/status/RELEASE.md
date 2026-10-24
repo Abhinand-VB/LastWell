@@ -1,6 +1,6 @@
 # Release: `version1 → main`
 
-Maintained by the integration session (task X-05). A **draft** PR was opened at the P0 milestone (docs/10 §8); it tracks `version1` and is updated by every landing. A human reviews and merges it after the human gates (docs/10 §9); then tag `demo-ready` on the merge commit.
+Maintained by the integration session (task X-05). A **draft** PR was opened at the P0 milestone (docs/10 §8): https://github.com/Abhinand-VB/LastWell/pull/1 — it tracks `version1` and is updated by every landing. A human reviews and merges it after the human gates (docs/10 §9); then tag `demo-ready` on the merge commit.
 
 ## PR title
 
