@@ -62,12 +62,14 @@ Only the integration session edits this file.
 - `pnpm dev:fake` replays A01 through `POST /api/calls/replay`; it logs a 404 until V-11 lands, and the gateway runs without fakes until X-01b lands (it ignores `LASTWELL_FAKES` today).
 
 ## Periodic version1 checks (newest first)
+- 2026-10-24 16:50 PT · version1 eb5e836 (R-06 reasoner-2, D-42) · verify exit 0 (core 216 + 2 skipped, gateway 50, eval 51, web 37, stt 13; 20 valid) · e2e 23 passed, 0 failed, 0 pending (strict).
 - 2026-10-24 16:42 PT · version1 63555e3 (V-06 timing, V-09/V-10, V-08 Q&A behind FEATURE_QA_ENABLED, default false confirmed in apps/gateway/src/env.ts) · verify exit 0 (core 216 + 2 skipped, gateway 50, eval 51, web 37, stt 13; 20 valid) · e2e 23 passed, 0 failed, 0 pending (strict).
 - 2026-10-24 ~16:33 PT · version1 90936d4 + mine · verify exit 0 (core 216 + 2 skipped, gateway 39, eval 51, web 37, stt 13; 20 valid) · e2e 23 passed, 0 failed, 0 pending (strict too) · e2e:ui 4 passed (strict).
 - 2026-10-24 16:18 PT · version1 74acdd4..4cafd7c + mine · `pnpm verify` exit 0 (core 216 + 2 skipped, web 37, stt 13, eval 51, gateway 5; 20 scripts valid) · `pnpm e2e` 0 passed, 0 failed, 2 pending (X-01b, V-04).
 - 2026-10-24 15:58 PT · df3e7a7 · verify exit 0 · e2e 2 pending.
 
 ## Handled requests from other lanes
+- [x] from voice: demo gateway runs with `pnpm --filter @lastwell/gateway start`, never `dev` → docs/08 §2 pre-flight and README setup updated.
 - [x] from screens: X-03 board test approves before "fine at about 2 PM"/"Eliquis" are in the snapshot → the test now waits until `GET /api/calls/:id` reports `ended` before approving.
 - [x] from screens: board footnote repeats per card → `.first()`.
 - [x] from reasoning: E-03 run 1 numbers carried into README "Results" and docs/08 §3 "Slide numbers", with the footnote.

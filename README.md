@@ -69,7 +69,7 @@ corepack enable && pnpm install
 cp .env.example .env                       # fill in keys and phone numbers (comments explain each)
 (cd apps/gateway && npx convex dev --once) # creates the Convex deployment; copy CONVEX_URL into .env
 ngrok http 8787 --domain $NGROK_DOMAIN     # public URL for Twilio; set the number's voice webhook to $PUBLIC_BASE_URL/twilio/voice
-pnpm dev:gateway                           # gateway on :8787
+pnpm --filter @lastwell/gateway start      # gateway on :8787 (use `pnpm dev:gateway` only while editing: it restarts on save)
 pnpm dev:web                               # console and board on :3000
 ```
 

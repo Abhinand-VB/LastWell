@@ -20,7 +20,7 @@ With four people, the medical professional also runs the board and the fallback 
 Infrastructure
 - [ ] Gateway laptop on the hotspot (not venue Wi-Fi) — Cal Hacks venues have had unreliable Wi-Fi; a phone hotspot carried every test on Friday night, so it carries the demo.
 - [ ] `ngrok http 8787 --domain $NGROK_DOMAIN` running; `curl -s $PUBLIC_BASE_URL/healthz` → `{"ok":true,…,"cartesia":"ok"}`.
-- [ ] `pnpm --filter @lastwell/gateway dev` running with `LOG_LEVEL=info`; no red lines in the last 60 s.
+- [ ] `pnpm --filter @lastwell/gateway start` running (plain `tsx`, reads the repo-root `.env`, `LASTWELL_FAKES` empty, `DEMO_MODE=true`, `LOG_LEVEL=info`); no red lines in the last 60 s. **Never `dev` on the demo laptop:** `dev` is `tsx watch` and restarts the gateway on any file save, dropping live calls and in-memory alerts.
 - [ ] Twilio number webhook = `$PUBLIC_BASE_URL/twilio/voice` (Console → Phone Numbers → the number → Voice).
 - [ ] Twilio account is **upgraded** (balance ≥ $10), not trial; otherwise the caller's phone cannot call in and the medical professional's phone cannot be called.
 - [ ] Cartesia credits ≥ 100 000 (Playground → Billing).
