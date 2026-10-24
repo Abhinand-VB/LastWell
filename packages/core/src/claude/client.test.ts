@@ -162,7 +162,7 @@ describe("reasoner request shape (R-06)", () => {
     expect(buildReasonerUser(input)).toBe(
       [
         "Call started at 2026-10-25 2:47 PM (America/Los_Angeles). Current local time 2026-10-25 2:47 PM.",
-        "Current state: level=likely; signs=speech, arms; lkw=2:00 PM (1:45–2:15 PM); blood_thinner=Eliquis; facts=address=1842 Clement Street, apartment 3, sex=male, age=78",
+        "Current state: level=likely; signs=speech, arms; lkw=2:00 PM (1:45–2:15 PM) (settled); blood_thinner=Eliquis; facts=address=1842 Clement Street, apartment 3, sex=male, age=78",
         "",
         "TRANSCRIPT (utterance number, mm:ss, speaker: text)",
         "[1] 00:00 dispatcher: 911, what is the address of your emergency?",
@@ -179,7 +179,7 @@ describe("reasoner request shape (R-06)", () => {
     if (lkw === null) throw new Error("fixture");
     expect(lkwLine({ ...lkw, confidence: "vague", phrase: "Since lunch" })).toBe('approximate only ("Since lunch") — needs a clock time');
     expect(lkwLine({ ...lkw, note: "ampm_assumed" })).toContain("needs a clock time");
-    expect(lkwLine(lkw)).toBe("2:00 PM (1:45–2:15 PM)");
+    expect(lkwLine(lkw)).toBe("2:00 PM (1:45–2:15 PM) (settled)");
   });
 
   it("Q&A: haiku, thinking disabled, max_tokens 512; empty state still builds", async () => {
