@@ -1,8 +1,8 @@
 "use client";
 // Live view of one call (docs/01 §7, docs/03 §5): WebSocket first; while it is down, poll
 // GET /api/calls/:id every 1.5 s (degraded mode, status "polling").
-import { useEffect, useReducer, useState } from "react";
-import type { UiServerMessage } from "@lastwell/core";
+import { useCallback, useEffect, useReducer, useState } from "react";
+import type { AlertSummary, UiServerMessage } from "@lastwell/core";
 import { applyMessage, emptyCallView, type CallView } from "@/lib/callState";
 import { gateway } from "@/lib/gateway";
 import { UiSocket, type SocketStatus } from "@/lib/ws";
@@ -22,7 +22,11 @@ export function connectionFrom(socket: SocketStatus): ConnectionStatus {
   return socket === "down" ? "polling" : socket;
 }
 
-export function useCall(callId: string): CallView & { connection: ConnectionStatus; notFound: boolean } {
+export function useCall(callId: string): CallView & {
+  connection: ConnectionStatus;
+  notFound: boolean;
+  upsertAlert: (a: AlertSummary) => void;
+} {
   const [view, dispatch] = useReducer(reducer, callId, emptyCallView);
   const [socket, setSocket] = useState<SocketStatus>("connecting");
   const [notFound, setNotFound] = useState(false);
@@ -63,5 +67,7 @@ export function useCall(callId: string): CallView & { connection: ConnectionStat
     };
   }, [socket, callId]);
 
-  return { ...view, connection: connectionFrom(socket), notFound };
+  // REST answers (send, retry) are applied at once; the matching alert.updated is idempotent.
+  const upsertAlert = useCallback((a: AlertSummary) => dispatch({ kind: "msg", msg: { type: "alert.updated", alert: a } }), []);
+  return { ...view, connection: connectionFrom(socket), notFound, upsertAlert };
 }

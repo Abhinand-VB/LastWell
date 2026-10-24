@@ -3,12 +3,19 @@
 Only the screens session edits this file.
 
 ## Current task
-- W-05 Console: Send pre-alert modal + alert status
+- W-06 Board page
 
 ## Last green commit on version1
-- W-02…W-04 (see below)
+- W-05 (see below)
 
 ## Acceptance evidence (pasted command output per task)
+
+### W-05 Console: Send pre-alert modal + alert status — done 2026-10-24 ~16:20 PT
+- `components/console/SendAlert.tsx`, `lib/alerts.ts` (+ `alerts.test.ts`, 3 tests), `hooks/useConfig.ts`; `lib/config.ts` reads `alertDefaultTargetPhone` (D-39, kept optional so a pre-D-39 gateway still loads).
+- `pnpm --filter @lastwell/web test` → 7 files, 32 tests passed.
+- Browser, A01 replay via the mock gateway: button disabled with "Enabled once a stroke sign is heard" at level none; enabled at "Likely stroke" **while the call was live** (D-30). Modal: target prefilled `+14155550100` from `/api/config`, "Caller still on the line — this does not end or change the 911 call.", Send disabled until the confirm box is ticked. `+1 415 555 0199` (not allowlisted) → red alert "Not sent: this number is not on the allowed list (ALERT_ALLOWED_NUMBERS). No call was placed. (…)". Prefilled number → status pill `ringing` (2 s) → `answered` (5 s, "Call again" hidden, Send disabled) → `completed` (13 s).
+- "Call again" shows on calling/ringing/failed, "Hang up briefing" while the call is up; footer "Test briefing call" (window prompt, prefilled) and "Clear test alerts" call the docs/03 §6 endpoints. The prompt path was not driven in the browser pane (it blocks automation); the endpoints were exercised with curl against the mock.
+- Reading taken: the docs/TASKS.md W-05 text predates D-30 (prefill the caller number); docs/10 + D-30/D-39 win: prefill `alertDefaultTargetPhone`. `demoAlertToCaller` cannot prefill anything because the browser only ever gets the masked caller number; the typed field covers it.
 
 ### W-02, W-03, W-04 Console: transcript, stroke card, next question / look-alike / facts / latency — done 2026-10-24 ~16:00 PT
 - One commit: the three tasks share `app/console/[callId]/ConsoleView.tsx`. Components in `components/console/{Transcript,QuoteButton,StrokeCard,Panels}.tsx`; pure helpers in `lib/{format,consoleText}.ts`.
@@ -29,12 +36,12 @@ Only the screens session edits this file.
 -
 
 ## wired-to-fake (replace when the named task lands)
-- `apps/web/lib/config.ts`: `alertDefaultTargetPhone` is read as an optional field of `/api/config` until the requests below land; without it the Send modal requires a typed number.
+- `apps/web/lib/config.ts`: `alertDefaultTargetPhone` (D-39) stays optional until voice serves it from `/api/config`; without it the Send modal requires a typed number.
 - `apps/web/scripts/mock-gateway.ts` (`pnpm --filter @lastwell/web mock:gateway`, `MOCK_PORT`, `MOCK_AUTOREPLAY=A01`): a dev-only stand-in for the gateway's UI surface built from the core fixtures. Not used by any test or by `dev:fake`; switch to `pnpm dev:fake` once V-04/V-11 land.
 
 ## Requests to other lanes
-- [ ] to reasoning: add `alertDefaultTargetPhone: E164.nullable()` to `ConfigResponse` in `packages/core/src/contracts/rest.ts` (+ D-log line) (D-30: the Send modal prefills `ALERT_DEFAULT_TARGET_PHONE`, but the browser cannot read gateway env and `/api/config` has no field for it)
-- [ ] to voice: return `alertDefaultTargetPhone` (= `ALERT_DEFAULT_TARGET_PHONE` or null) from `GET /api/config` once the contract field exists (same reason)
+- [x] to reasoning (done 0c53f6b, D-39): add `alertDefaultTargetPhone: E164.nullable()` to `ConfigResponse` in `packages/core/src/contracts/rest.ts` (+ D-log line) (D-30: the Send modal prefills `ALERT_DEFAULT_TARGET_PHONE`, but the browser cannot read gateway env and `/api/config` has no field for it)
+- [ ] to voice: return `alertDefaultTargetPhone` (= `ALERT_DEFAULT_TARGET_PHONE` or null) from `GET /api/config` (contract field landed in 0c53f6b, D-39) (same reason)
 
 ## Blockers for humans
 -

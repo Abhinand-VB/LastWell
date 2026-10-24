@@ -1,9 +1,8 @@
 // Public flags from GET /api/config (docs/03 §6), loaded once per page load.
 import { ConfigResponse, E164 } from "@lastwell/core";
 
-// wired-to-fake: `alertDefaultTargetPhone` is requested from reasoning (contract) and voice
-// (/api/config) so the Send modal can prefill ALERT_DEFAULT_TARGET_PHONE (D-30). Until it lands
-// the field is optional and the modal falls back to a typed number.
+// alertDefaultTargetPhone is in the contract since D-39; it stays optional here so a gateway that
+// predates D-39 still loads (the Send modal then asks for a typed number).
 export const WebConfig = ConfigResponse.extend({ alertDefaultTargetPhone: E164.nullable().optional() });
 export type WebConfig = ReturnType<typeof WebConfig.parse>;
 

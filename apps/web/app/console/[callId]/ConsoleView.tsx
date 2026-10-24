@@ -7,10 +7,13 @@ import { ConnectionBadge } from "@/components/ConnectionBadge";
 import { Transcript } from "@/components/console/Transcript";
 import { StrokeCard } from "@/components/console/StrokeCard";
 import { FactsPanel, LatencyReadout, LookalikePanel, NextQuestionBanner, WarningBanners } from "@/components/console/Panels";
+import { SendAlert } from "@/components/console/SendAlert";
+import { useConfig } from "@/hooks/useConfig";
 import { stateRefs } from "@/lib/format";
 
 export function ConsoleView({ callId }: { callId: string }) {
   const view = useCall(callId);
+  const { config } = useConfig();
   const refs = useMemo(() => stateRefs(view.state), [view.state]);
   const call = view.call;
 
@@ -60,6 +63,14 @@ export function ConsoleView({ callId }: { callId: string }) {
           <div className="flex min-h-0 flex-col gap-4 overflow-y-auto pr-1">
             <WarningBanners state={view.state} />
             <StrokeCard state={view.state} />
+            <SendAlert
+              callId={callId}
+              call={call}
+              state={view.state}
+              alerts={view.alerts}
+              config={config}
+              onAlert={view.upsertAlert}
+            />
             <NextQuestionBanner state={view.state} />
             <LookalikePanel state={view.state} />
             <FactsPanel state={view.state} />
