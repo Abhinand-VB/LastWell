@@ -65,15 +65,29 @@ export class AlertStreamSession {
   }
 
   private playBriefing(alert: AlertRecord, streamSid: string): void {
-    if (alert.audio === null) {
-      this.deps.log.error({ event: "alert_media.no_audio", alertId: alert.id }, "no cached briefing audio");
-      this.deps.alerts.setStatus(alert, "failed", { lastError: "No briefing audio cached — call again", force: true });
+    if (alert.audio !== null) {
+      this.sendBriefing(alert, alert.audio, streamSid);
       return;
     }
-    const t = Date.now();
-    const msgs = briefingMessages(streamSid, alert.audio);
+    // Answered before Sonic finished (the call is dialled in parallel with synthesis): wait for it.
+    void (alert.audioPending ?? Promise.resolve(null)).then((audio) => {
+      if (this.ended) return;
+      if (audio === null) {
+        this.deps.log.error({ event: "alert_media.no_audio", alertId: alert.id }, "no briefing audio");
+        this.deps.alerts.setStatus(alert, "failed", { lastError: "No briefing audio — call again", force: true });
+        return;
+      }
+      this.sendBriefing(alert, audio, streamSid);
+    });
+  }
+
+  private sendBriefing(alert: AlertRecord, audio: Buffer, streamSid: string): void {
+    const msgs = briefingMessages(streamSid, audio);
     for (const m of msgs) this.send(m);
-    this.deps.log.info({ event: "alert.briefing_sent", alertId: alert.id, messages: msgs.length, ms: Date.now() - t }, "briefing queued to Twilio");
+    this.deps.log.info(
+      { event: "alert.briefing_sent", alertId: alert.id, messages: msgs.length, ms: alert.answeredAtMs === null ? null : Date.now() - alert.answeredAtMs },
+      "briefing queued to Twilio",
+    );
   }
 
   /** stop or socket close. */

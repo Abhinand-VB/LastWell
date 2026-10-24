@@ -130,4 +130,21 @@ describe("approve (V-06)", () => {
     const off = await gw.app.inject({ method: "POST", url: `/api/alerts/${a.id}/ems-confirm`, headers: auth, payload: { confirmed: false } });
     expect(off.json().alert.emsConfirmedAt).toBeNull();
   });
+
+  it("dials in parallel with synthesis: an answer before the audio is ready waits for it, then briefs", async () => {
+    gw = testGateway({ telephonySpeed: 100 }); // answers 20 ms after dialing
+    const slow: TtsClient = { synthesize: async (t) => {
+      await new Promise((r) => setTimeout(r, 300));
+      return gw!.tts.synthesize(t);
+    } };
+    (gw.alerts as unknown as { deps: { tts: TtsClient } }).deps.tts = slow;
+    const call = await likelyCall(gw);
+    const res = await gw.app.inject({ method: "POST", url: `/api/calls/${call.id}/alert`, headers: auth, payload: { targetPhone: ALLOWED, confirm: true } });
+    expect(res.statusCode).toBe(200);
+    const rec = gw.alerts.registry.get(res.json().alert.id)!;
+    await until(() => rec.status === "completed", 5000);
+    const media = gw.telephony.sent.filter((x) => x.msg.event === "media");
+    expect(media.length).toBeGreaterThan(1);
+    expect(gw.telephony.sent.at(-1)?.msg).toMatchObject({ event: "mark", mark: { name: "briefing" } });
+  });
 });

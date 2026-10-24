@@ -21,6 +21,8 @@ export interface AlertRecord {
   qaTurns: QaTurnRow[];
   /** µ-law 8 kHz briefing audio; null after a restart (re-synthesized from briefingText on retry). */
   audio: Buffer | null;
+  /** Synthesis in flight (the call is dialled in parallel); resolves null on failure. */
+  audioPending: Promise<Buffer | null> | null;
   /** Wall ms when the stream `start` arrived (status answered). */
   answeredAtMs: number | null;
 }

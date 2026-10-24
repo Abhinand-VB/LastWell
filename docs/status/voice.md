@@ -3,12 +3,20 @@
 Only the voice session edits this file.
 
 ## Current task
-- 2026-10-24 16:25 PT: live checks with the keys in `.env` (Claude/Convex/Sonic through the gateway), then V-10, V-09 hardening.
+- 2026-10-24 16:45 PT: V-10 (degrade/reconnect plumbing, retry after restart), then V-09 tests.
+- **V-01 has landed (bfa43ca):** the human can now start ngrok and point the Twilio number's voice webhook at `{PUBLIC_BASE_URL}/twilio/voice` (integration's keys request).
 
 ## Last green commit on version1
 - bfa43ca (gateway X-01b … V-11), `pnpm e2e` 23 passed / 0 failed / 0 pending. Unit tests for it follow in the next commit.
 
 ## Acceptance evidence (pasted command output per task)
+
+### Live checks with the keys (2026-10-24 ~16:35 PT, gateway on :18999, no phone dialled)
+- Real boot (`LASTWELL_FAKES=twilio`, everything else from `.env`): `/healthz` → `{"ok":true,…,"cartesia":"ok","fakes":["twilio"]}`; log `server.listening` `store:"convex"`; **`claude.warmup` ms 2569** (fast 2350, reasoner 2550).
+- **V-05 live (real Claude, replay A01 at speed 2):** 4.0 s first fast pass 1555 ms; 8.0 s `possible` with speech "his words come out all mixed up" + arms "his right hand is weak", LKW "about 12:30 PM (12:00–1:30 PM)" (vague "since lunch"), banner `lkw`; **11.1 s `likely`** (reasoner 3109 ms); 19.1 s LKW `2:00 PM (1:45–2:15 PM)` → banner `blood_thinner`; 20.1 s blood thinner `Eliquis` → banner `face`; call ended 24 s, final reasoner 2701 ms. Fast pass 922–2687 ms, reasoner 2701–3272 ms.
+- **V-06/V-07 live Sonic (Twilio faked):** approve → 200 `calling`; briefing: "Stroke pre-alert from nine one one, approved by the dispatcher. 78-year-old man. Signs heard: one-sided weakness and speech trouble. The caller said: 'his right hand is weak' and 'his words come out all mixed up'. Last known well: 2:00 PM, 148 minutes ago. Caller's words: 'fine at about 2 PM'. Blood thinner: Eliquis, per the caller. Not yet confirmed by paramedics. Goodbye." `tts.synthesized` ms 2967, 211 200 bytes (26.4 s); events calling → ringing → answered → `alert.briefing_sent` → `alert.briefing_done` ms 26706 → briefed → completed.
+  - `alert.created` was 2972 ms (> 2.5 s budget) because Sonic ran before the dial. Fixed in the next commit: Twilio is dialled in parallel with synthesis, the stream waits for pending audio if answered first, and a synthesis failure hangs up the call (test added).
+- **Store:** with a wrong `INTERNAL_API_KEY` every Convex write logged `store.error` (insertCall, insertUtterance, insertAlert …) and the call, replay, approval and briefing all completed (V-04 "a wrong secret does not stop the call"). With the real key, an unsigned local `POST /twilio/voice` (`TWILIO_VALIDATE_SIGNATURE=false`) → TwiML with the ngrok stream URL and the Twilio number as callerId; `call.webhook` + `call.created`, **no `store.error`** (Convex accepted insertCall).
 
 ### Gateway: X-01b, V-01, V-03, V-04, V-05, V-06, V-07, V-11 — offline done, landed bfa43ca
 - `pnpm e2e` (spawns `pnpm --filter @lastwell/gateway dev` with LASTWELL_FAKES=all and only the X-02 variables) → **23 passed, 0 failed, 0 pending in 27 s**: healthz fakes; ws token + auth; A01 likely, ≥ 2 kinds, quotes in utterances with tMs, LKW = card time ±15 min, Eliquis, "what time exactly" → blood thinner banner; approve to a non-allowlisted number → 409; allowlisted → 200, briefing names Eliquis + LKW; alert reached `briefed` (fake telephony); board REST lists it; B01 possible, never likely, balance + eyes, face/arm banner; C01 ≤ possible, low blood sugar resolved by diabetes; every /ws/ui message matched docs/03 §5.
@@ -40,6 +48,8 @@ Only the voice session edits this file.
 - (none)
 
 ## Handled requests from other lanes
+- [x] from integration (keys): live checks run within §7.4 (one Claude replay, one Sonic briefing, no Twilio call); V-01 landed, ngrok/webhook can be set up — see Current task.
+- [x] from integration (D-41): the gateway never words blood thinners itself; spoken and logged briefing text comes only from core's `composeBriefing`.
 - [x] from integration (X-02): dev routes exactly per docs/10 §4.1 (`POST /api/dev/calls` → 201 `{callId}`, utterances, end → `call.ended`), `/healthz` `fakes`, boots with only the X-02 variables, missing routes stay Fastify's default 404 — bfa43ca.
 - [x] from integration (X-02): `alert.updated` goes to sockets subscribed to the alert's call **and** to `board` (once per socket) — bfa43ca.
 - [x] from screens and reasoning: `GET /api/config` returns `alertDefaultTargetPhone` (ALERT_DEFAULT_TARGET_PHONE or null, D-39) — bfa43ca.

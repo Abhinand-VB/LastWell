@@ -111,6 +111,7 @@ export class AlertService {
       updatedAt: createdAt,
       qaTurns: [],
       audio: null,
+      audioPending: null,
       answeredAtMs: null,
     };
     this.deps.alerts.add(a);
@@ -129,26 +130,30 @@ export class AlertService {
     return a;
   }
 
-  /** Audio (cached or fresh) → place the call → `calling`. Failures mark the alert failed (502). */
+  /**
+   * Audio (cached or fresh) and the outbound call run in parallel: the phone needs seconds to ring and
+   * be answered, Sonic needs about one second per 8 s of speech, so dialing first saves ~3 s. If
+   * synthesis fails, the call is hung up and the alert fails (502). Failures mark the alert failed.
+   */
   private async synthesizeAndDial(a: AlertRecord): Promise<ActionResult<AlertSummary>> {
-    if (a.audio === null) {
-      const t = Date.now();
-      try {
-        a.audio = await this.deps.tts.synthesize(a.briefingText);
-        this.deps.log.info({ event: "tts.synthesized", alertId: a.id, ms: Date.now() - t, bytes: a.audio.length }, "briefing synthesized");
-      } catch (err) {
-        this.deps.log.error({ event: "tts.error", alertId: a.id, err: err instanceof Error ? err.message : String(err) }, "sonic failed");
-        this.setStatus(a, "failed", { lastError: SYNTH_FAILED, force: true });
-        return fail(502, "tts_failed", `Cartesia: ${SYNTH_FAILED}`);
-      }
+    const t0 = Date.now();
+    const before = a.status;
+    const audio = a.audio !== null ? Promise.resolve(a.audio) : this.synthesize(a);
+    a.audioPending = audio.catch(() => null);
+    const dial = this.deps.telephony.placeCall({ to: a.targetPhone, alertId: a.id });
+    const [synth, placed] = await Promise.allSettled([audio, dial]);
+    if (placed.status === "fulfilled") {
+      a.twilioCallSid = placed.value.sid;
+      this.deps.repo.patchAlert(a.id, { twilioCallSid: placed.value.sid }, this.now().toISOString());
     }
-    try {
-      const { sid } = await this.deps.telephony.placeCall({ to: a.targetPhone, alertId: a.id });
-      a.twilioCallSid = sid;
-      this.deps.repo.patchAlert(a.id, { twilioCallSid: sid }, this.now().toISOString());
-      this.setStatus(a, "calling", { lastError: null, force: true });
-      return { ok: true, value: toSummary(a) };
-    } catch (err) {
+    if (synth.status === "rejected") {
+      if (placed.status === "fulfilled") await this.hangupSid(a, placed.value.sid);
+      a.twilioCallSid = null;
+      this.setStatus(a, "failed", { lastError: SYNTH_FAILED, force: true });
+      return fail(502, "tts_failed", `Cartesia: ${SYNTH_FAILED}`);
+    }
+    if (placed.status === "rejected") {
+      const err: unknown = placed.reason;
       if (err instanceof NotAllowedError) {
         this.setStatus(a, "failed", { lastError: err.message, force: true });
         return this.notAllowed(a.targetPhone);
@@ -157,6 +162,23 @@ export class AlertService {
       this.deps.log.error({ event: "twilio.call_error", alertId: a.id, err: msg }, "outbound call failed");
       this.setStatus(a, "failed", { lastError: `Call failed: ${msg}`, force: true });
       return fail(502, "twilio_failed", `Twilio: ${msg}`);
+    }
+    // Unless the new call's own callbacks already moved it on (a fast fake), the alert is now `calling`.
+    if (a.status === before) this.setStatus(a, "calling", { lastError: null, force: true });
+    this.deps.log.info({ event: "alert.dialed", alertId: a.id, ms: Date.now() - t0 }, "dialed and audio ready");
+    return { ok: true, value: toSummary(a) };
+  }
+
+  private async synthesize(a: AlertRecord): Promise<Buffer> {
+    const t = Date.now();
+    try {
+      const buf = await this.deps.tts.synthesize(a.briefingText);
+      a.audio = buf;
+      this.deps.log.info({ event: "tts.synthesized", alertId: a.id, ms: Date.now() - t, bytes: buf.length }, "briefing synthesized");
+      return buf;
+    } catch (err) {
+      this.deps.log.error({ event: "tts.error", alertId: a.id, err: err instanceof Error ? err.message : String(err) }, "sonic failed");
+      throw err;
     }
   }
 
