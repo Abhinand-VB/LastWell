@@ -74,7 +74,10 @@ Only the reasoning session edits this file.
   - Row 1: signs speech + arms ✓, LKW "Since lunch" ✓, but sex quoted as `"he"` → validator drop (too_short). Row 5: model returned no sex fact. → blocker below (prompt wording).
   - Reasoner A01: `likely`, speech + arms validated, LKW phrase "fine at about 2 PM", blood thinner "Eliquis", next `face`, **6134 ms < 7000**. ✓
   - Reasoner C01: `possible`, lookalikes[0] "low blood sugar". ✓ (3823 ms)
-  - Reasoner B01 on all 12 turns: `possible`, balance + eyes ✓, but next `speech` (the dispatcher had already checked face and arms). Reading taken: TASKS says "all turns" only for A01, so the B01 live test now runs the first 6 turns (through the LKW answer, before the face/arm checks). Re-run pending within budget.
+  - Reasoner B01 on all 12 turns: `possible`, balance + eyes ✓, but next `speech` (the dispatcher had already checked face and arms). Reading taken: TASKS says "all turns" only for A01, so the B01 live test now runs the first 6 turns (through the LKW answer, before the face/arm checks).
+- Live run 2: 32 passed, 3 failed. Fast pass median **1133 ms**; rows 1 and 5 again miss only the sex fact (blocker below). Reasoner B01 (6 turns): `possible`, balance + eyes ✓, next `lkw` ("ask … the exact time they finished dinner") although the state line already showed `lkw=6:50 PM (6:40–7:00 PM)` → blocker below. A01 and C01 ✓ again.
+- Demo impact: none. The ladder only takes a reasoner proposal while it is still open; an `lkw` proposal with LKW established falls through to the face check, so the B01 banner is the face question (fake-pipeline test and E-03 run).
+- R-03/R-06 status: code done; live acceptance green except the two prompt-wording items below (not re-run further, §7.4 budget).
 
 ### X-01a ModelClient interface + fake model — done 2026-10-25
 - Interface landed first at 92a9b96: `packages/core/src/claude/types.ts` (`ModelClient`, `ModelResult`, `FastPassInput`, `ReasonerInput`, `QaInput`), exported from `@lastwell/core`.
@@ -105,6 +108,7 @@ Only the reasoning session edits this file.
 
 ## Blockers for humans
 - [ ] R-03 · Fast-pass prompt (docs/04 §2) lists "he"/"she" as sex evidence and asks for "the shortest verbatim span", so the model quotes `"he"` (2 characters), which the quote validator always drops (needs ≥ 3). Proposed wording change (docs/04 §6 protocol, bump to `fast-2`): in the `sex:` line, replace "(father, husband, he, mom, wife, she)" with "(father, husband, mom, wife, or a pronoun quoted with its next word, e.g. "his chest", "she says"; a quote must be at least 3 characters)". Not on the demo path (A01's sex comes from "my father"). Meanwhile: test left strict, rows 1 and 5 fail live on the sex item only.
+- [ ] R-06 · Reasoner prompt (docs/04 §3) rule 5(a) vs. the chameleon line: on B01 the model asks for an exact LKW clock time (or, on the full call, a speech check) instead of the face/arm check. Proposed wording (bump to `reasoner-2`): in rule 5(a) add "when the state line shows a clock time for lkw, last-known-well is settled: do not choose lkw"; and in the chameleon paragraph "…make the next question the face or arm check, unless the caller has already answered it". Not on the demo path (the code ladder decides the banner). Meanwhile: live test left strict.
 
 ## Notes and small decisions
 - `ModelResult.output` is null on refusal / max_tokens / unparseable output; transport errors (timeout after the one retry, 429, 5xx) are thrown (docs/04 §1).
