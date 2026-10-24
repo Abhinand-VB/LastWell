@@ -18,9 +18,9 @@ Owner: Reasoning lane (runner, scoring, baseline) + Clinical lane (scripts, reco
 | Wrong facts | shown facts whose value contradicts the truth table | ✔ | n/a |
 | Level agreement | scripts whose final level equals `truth.expectedLevel` (informational; not on the slide) | ✔ | n/a |
 
-Also reported per `group` (native / non_native / panicked / tv_background) for the hard-audio scripts, and the wall-clock latency medians (`fastPassMs`, `reasonerMs`) from the run.
+Also reported per `group` (native / non_native / panicked / tv_background) for the hard-audio scripts (deferred by D-33), and the wall-clock latency medians (`fastPassMs`, `reasonerMs`) from the run.
 
-The slide shows: sensitivity @possible and @likely, precision @possible and @likely, seconds to first flag, LKW correct, blood thinner correct, invented facts, for LastWell vs baseline, with the footnote "32 scripted calls (+6 hard-audio re-reads), written and recorded by the team; real-world precision will be lower — the Copenhagen model was right about one time in four (63.0 % recall, 24.9 % precision)."
+The slide shows: sensitivity @possible and @likely, precision @possible and @likely, seconds to first flag, LKW correct, blood thinner correct, invented facts, for LastWell vs baseline, with the footnote "20 scripted calls (text mode), written by the team; real-world precision will be lower — the Copenhagen model was right about one time in four (63.0 % recall, 24.9 % precision)."
 
 ## 2. The keyword baseline — `packages/core/src/baseline/keywordBaseline.ts`
 
@@ -36,6 +36,8 @@ export const BASELINE_PATTERNS = [
 That is the whole baseline. It is deliberately what a keyword-alert feature in a general 911 tool does. If LastWell loses to it on any script type, the slide says so and names the scripts.
 
 ## 3. Script format and the 38 scripts
+
+> **D-33 (2026-10-24): the eval runs in text mode on 20 scripts only:** A01–A07, B01, B02, B04, B06, B08, C01–C05, D01, D02, D04. The other 18 seeds below (A08–A10, B03, B05, B07, C06–C08, D03, D05, D06, E01–E06) are **backlog**: keep the seeds, do not write them before the 20 are done and P1 is merged. Audio mode (§5 "Audio mode", E-02, E-04, §6 item 3) is deferred.
 
 Contract: docs/03 §14. Files: `apps/eval/scripts/{id}.json`. The Clinical lane writes dialogues from the seeds below (task C-02), each 8–14 turns, dispatcher and caller alternating, realistic 911 phrasing (address first, then "tell me exactly what happened", then protocol questions). Every stroke script must contain at least the signs listed in its truth, stated by the caller in lay words, and must avoid the word "stroke" unless the seed says otherwise. Every script sets `callStartLocal` so that the LKW arithmetic is testable.
 

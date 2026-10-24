@@ -3,7 +3,7 @@
 Only the integration session edits this file.
 
 ## Current task
-- X-00 Docs alignment
+- C-02 Write the 20 scripts (D-33)
 
 ## Last green commit on version1
 - (X-04, see below)
@@ -16,6 +16,12 @@ Only the integration session edits this file.
 - Secret scan negative check: a file with a fake `sk_car_…` (34 chars) added with `git add -N` → "scan:secrets FAILED: 1 finding(s) · leak-probe.txt: Cartesia API key sk_car_Z…(34 chars)", exit 1. Placeholders in `.env.example` (`sk_car_...`, `sk-ant-...`, `ACxxxx…`) do not trigger; a self-test asserts both directions on every run.
 - `GATEWAY_PORT=18787 WEB_PORT=13000 pnpm dev:fake` → gateway "listening on 18787", "[dev:fake] gateway up: {"ok":true,…}", web `curl /` → 200, "POST /api/calls/replay → 404 (V-11 not landed yet); will keep trying". SIGINT → both children and their ports gone (`lsof` empty).
 - `pnpm e2e` → "e2e: no scenarios yet (task X-02 not landed) — nothing was tested" (placeholder package `apps/e2e`; X-02 fills it).
+
+### X-00 Docs alignment — done 2026-10-24 15:40 PT
+- D-30…D-38 added to docs/09; docs/00, 01, 05, 07, 08, .env.example, CLAUDE.md, TASKS.md edited per the docs/10 §2 Consequence column.
+- `grep -n -i judge docs/*.md CLAUDE.md README.md .env.example` (excluding docs/10, SESSION-PROMPTS) → every remaining mention has the judge drawing/flipping cards or watching; none says the judge calls in or that the judge's phone rings.
+- `pnpm verify` → exit 0.
+- Reading taken: docs/08 §3 — the stroke-pile draw happens only when the first (full-deck) card was not a stroke, so a briefing call always happens; otherwise the replays fill the slot.
 
 ## blocked-keys (exact command to run once keys exist)
 -

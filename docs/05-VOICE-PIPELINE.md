@@ -39,6 +39,8 @@ All audio on the phone paths is **µ-law, 8 kHz, mono** end to end (Twilio ↔ C
 
 Twilio Console configuration (task S-04): number → Voice → "A call comes in" → Webhook `POST {PUBLIC_BASE_URL}/twilio/voice`. Nothing else.
 
+Demo note (D-31): the caller is a teammate dialing from their own phone; the judge only draws the card. The path above is unchanged. With `LASTWELL_FAKES` containing `twilio` or `stt`, the dev route `POST /api/dev/calls` creates a call as if this webhook had run, and `POST /api/dev/calls/:callId/utterances` injects finals where the utterance assembler would (docs/10 §4.1).
+
 ## 3. Media stream handler — `twilio/mediaStream.ts`
 
 Route `WS /twilio/media`. State per socket: `{callId, streamSid, sessions: {inbound?: InkSession, outbound?: InkSession}, lastTs: {inbound: 0, outbound: 0}, framesIn: 0}`.
@@ -159,6 +161,8 @@ Length control: target 45–70 words. If the text exceeds 70 words, drop in this
 Approval snapshots both `state` (→ `alerts.caseSnapshot`) and the utterance list (→ `alerts.transcriptSnapshot`); the Q&A and the test-briefing path read from the alert, never from the live registry.
 
 Pre-synthesis: `POST https://api.cartesia.ai/tts/bytes` with `{model_id: CARTESIA_TTS_MODEL, transcript, voice: CARTESIA_VOICE_ID, language: "en", output_format: {container:"raw", encoding:"pcm_mulaw", sample_rate: 8000}}`, headers `Authorization: Bearer`, `Cartesia-Version`, `Content-Type: application/json`. Store the bytes on the alert record in memory (`alert.audio`; re-synthesized from `alerts.briefingText` on retry after a restart). Expected: ~8 KB per second of speech; a 20 s briefing ≈ 160 KB, ~1 s to generate. Timeout 10 s; failure → alert `failed`, `lastError`, UI shows "Briefing synthesis failed — retry".
+
+Target number (D-30, D-35): `targetPhone` must be in `ALERT_ALLOWED_NUMBERS`, otherwise the approve route returns 409 and places no call; the web modal prefills `ALERT_DEFAULT_TARGET_PHONE` (the medical professional's phone). Approval is allowed while the 911 call is still live, because the target is a different phone (D-18 relaxed). `opts.qaEnabled` follows `FEATURE_QA_ENABLED`, `false` by default (D-32), so the default close is "Goodbye." With `twilio` faked, `FakeTelephony` drives the same status transitions without dialing (docs/10 §4).
 
 Then `twilio.calls.create({ to: targetPhone, from: TWILIO_PHONE_NUMBER, timeout: 25, twiml: "<Response><Connect><Stream url=\"wss://{host}/twilio/alert-media\"><Parameter name=\"alertId\" value=\"{alertId}\"/></Stream></Connect></Response>", statusCallback: PUBLIC_BASE_URL + "/twilio/alert-status", statusCallbackEvent: ["initiated","ringing","answered","completed"], statusCallbackMethod: "POST" })`. Status → `calling`; `ringing` and `completed` come from the status callback; `answered` is set when the media stream's `start` arrives (more precise than the callback).
 

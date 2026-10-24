@@ -4,6 +4,8 @@ LastWell is a Cal Hacks 13.0 project (Palace of Fine Arts, SF). **Devpost submis
 
 Nothing in this repository was written before the event. These documents are planning material (allowed by the Hacker Guide); all code is written during the hacking window. The original brief is at `docs/brief/LastWell_Project_Brief.pdf`; where this manual and the brief differ, the decision log in `docs/09` explains why.
 
+**Autonomous sessions:** `docs/10-BUILD-SPEC.md` is the build spec for the four parallel Claude Code sessions (lanes, fakes, work order, coordination, landing). Where it and an earlier doc disagree, docs/10 wins; decisions D-30 to D-38 in `docs/09` record each difference.
+
 ## Read in this order (≈10 minutes)
 
 1. `docs/00-OVERVIEW.md` — what we build, what we never build, the acceptance test that defines "done"
@@ -14,12 +16,13 @@ Nothing in this repository was written before the event. These documents are pla
    - Reasoning lane → `docs/04-PROMPTS.md`, `docs/06-LKW-PARSER.md`
    - Screens lane → `docs/02-DATA-MODEL.md` + the "Web app" section (§7) of `docs/01-ARCHITECTURE.md`
    - Eval / clinical / pitch lane → `docs/07-EVAL.md`, `docs/08-DEMO-RUNBOOK.md`
-5. `docs/TASKS.md` — pick the next unclaimed task in your lane. Claim it by writing your initials in the Owner column before starting.
-6. `docs/09-DECISIONS-AND-RISKS.md` — read the "Gotchas" section before touching Twilio, Cartesia or the Claude API. Every item there costs an hour if ignored.
+5. `docs/10-BUILD-SPEC.md` — your session's task list (§5) and how work lands (§7–§8).
+6. `docs/TASKS.md` — the ledger. Claims are the "Current task" line of your lane's `docs/status/<lane>.md` (D-38); only the Integration session edits `TASKS.md`.
+7. `docs/09-DECISIONS-AND-RISKS.md` — read the "Gotchas" section before touching Twilio, Cartesia or the Claude API. Every item there costs an hour if ignored.
 
 ## Non-negotiables
 
-- **The demo path never breaks.** Inbound call → live transcript → stroke flag with quotes → dispatcher approves → the caller's own phone rings with the Sonic briefing. Any change that risks this path ships behind a feature flag that defaults to the previous behavior.
+- **The demo path never breaks.** Caller dials the Twilio number → dispatcher answers → live transcript → stroke flag with quotes → dispatcher approves → the medical professional's phone rings with the Sonic briefing (D-30). Any change that risks this path ships behind a feature flag that defaults to the previous behavior.
 - **Quote or drop.** Every sign and fact shown to a human carries a verbatim quote from the transcript, attached to a transcript timestamp by code. The quote validator (`docs/03-CONTRACTS.md` §7) drops anything else. Never weaken it.
 - **Time is computed by code, never by a model** (`docs/06-LKW-PARSER.md`). Models output phrases; the parser outputs clock times and ranges.
 - **LastWell never says "not a stroke", never dispatches units, never changes call priority, never gives medical instructions to the caller.** When nothing is heard, the card says "No stroke signs heard yet."
@@ -36,13 +39,18 @@ Nothing in this repository was written before the event. These documents are pla
 - Timeouts: Claude requests 8 s with one retry; Cartesia WebSocket reconnect once then degrade (`docs/05` §9); Twilio REST 10 s.
 - `packages/core` does no I/O except calling the Claude API, and reads only `ANTHROPIC_API_KEY` and `CLAUDE_TIMEOUT_MS` from the environment; everything else arrives as config. The Ink 2 client lives in `packages/stt` (shared by the gateway and the eval runner). Everything else that touches Twilio, Cartesia, Convex or HTTP lives in `apps/gateway` (Convex functions in `apps/gateway/convex/`); the test runner lives in `apps/eval`.
 - Commit messages: `<lane>: <task-id> <what>` — e.g. `voice: V-03 route media frames to two STT sessions`.
-- Branch per task, merge to `main` as soon as the acceptance criteria pass. `main` must always start and serve the demo path.
+- Branches and landing: `docs/10-BUILD-SPEC.md` §6 and §8 (D-38). One worktree and branch per lane (`lane/<lane>`), rebase on `origin/version1`, run `pnpm verify && pnpm e2e`, then fast-forward push `git push origin HEAD:version1`. Never push to `main`, never force-push. One PR `version1 → main` at the end, merged by a human.
+- Outbound calls only to `ALERT_ALLOWED_NUMBERS` (D-35); never delete, skip or loosen a test to make it pass.
 
 ## Commands
 
 The first four exist after task S-02; `validate` arrives with R-01, `spike` with V-02, `eval --mode text` with E-01 and `--mode audio` with E-02. Teammates are on both macOS and Windows: package scripts must not rely on bash syntax (`LIVE=1 cmd`, `$VAR`) — the root `.npmrc` sets `shell-emulator=true` so pnpm runs scripts through its own POSIX-style emulator on every OS (scaffold in `docs/scaffold/README.md`).
 
 ```
+pnpm verify                                                   # scan:secrets + typecheck + test + eval validate (run before every landing)
+pnpm e2e                                                      # offline end-to-end test against a faked gateway (X-02)
+pnpm dev:fake                                                 # gateway (LASTWELL_FAKES=all) + web, replays A01 every 90 s; GATEWAY_PORT/WEB_PORT override
+pnpm scan:secrets                                             # secret scan of tracked files and history
 pnpm install
 pnpm -r typecheck
 pnpm -r test
