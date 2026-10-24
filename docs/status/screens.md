@@ -3,12 +3,19 @@
 Only the screens session edits this file.
 
 ## Current task
-- W-08 Mic page (AudioWorklet)
+- W-11 Visual polish
 
 ## Last green commit on version1
-- W-06, W-07, W-10 (see below)
+- W-08 (see below)
 
 ## Acceptance evidence (pasted command output per task)
+
+### W-08 Mic page (AudioWorklet) — done 2026-10-24 ~17:10 PT (live speech check pending V-09)
+- `app/mic/{page,MicView}.tsx`, `public/worklets/downsampler.js`, `lib/pcm.ts` (+ `pcm.test.ts`, 5 tests: 48 kHz → 50×640 B per second at any block size, 44.1 kHz within one frame of real time, clamping, rate guard, RMS). Start → `getUserMedia` → `POST /api/calls/browser` → WS `micWsUrl` → worklet frames; console opens in a new tab (opened inside the click so pop-up blockers allow it); Stop → `{"type":"end"}` + `POST /api/calls/:id/end`. Level meter from worklet RMS (~10 Hz). Hidden when `featureBrowserMic` is false.
+- `pnpm --filter @lastwell/web test` → 8 files, 37 tests passed.
+- In the browser pane: OfflineAudioContext, 1 s of 48 kHz sine through `/worklets/downsampler.js` → 50 frames, all 640 bytes, 9 level messages. Live AudioContext (48 kHz) oscillator → worklet → mock `/browser/media/:callId?token=` for 6 s → mock log "mic 250 frames, sizes [[640,250]], 20.0 ms/frame", then "mic control {"type":"end"}", "closed after 283 frames".
+- The pane blocks microphone capture: Start showed the permission error and closed the pre-opened tab (message now "Microphone permission denied — allow the microphone …").
+- Pending: "speaking Card A produces a transcript on the console" needs V-09 (gateway `/browser/media`) and a laptop browser with a mic: `pnpm dev:fake` is not enough (STT faked); run with `stt` real once Cartesia keys exist → blocked-keys.
 
 ### X-03 selector check — 2026-10-24 ~16:50 PT
 - Level pill now renders the level word in its own element ("Likely" + "stroke") so X-03's `getByText(/^likely$/i)` finds it. With the scratch config (no webServer, Edge channel, mock gateway): `home lists calls` ✓, `console renders the A01 replay` ✓, board test ✗ for the X-03 reasons filed under Requests.
@@ -46,7 +53,7 @@ Only the screens session edits this file.
 - Real gateway: `/ws/ui` and REST land with V-04; until then the check above runs against `apps/web/scripts/mock-gateway.ts`.
 
 ## blocked-keys (exact command to run once keys exist)
--
+- W-08 live speech: gateway with real STT (`LASTWELL_FAKES=` without `stt`, Cartesia key) + `pnpm --filter @lastwell/web dev`, open http://localhost:3000/mic in Chrome, Start, read Card A → console shows Mic utterances and the card reaches Likely.
 
 ## wired-to-fake (replace when the named task lands)
 - `apps/web/lib/config.ts`: `alertDefaultTargetPhone` (D-39) stays optional until voice serves it from `/api/config`; without it the Send modal requires a typed number.

@@ -207,6 +207,13 @@ const server = createServer(async (req, res) => {
     if (!/^[A-E]\d{2}$/.test(scriptId) || !existsSync(path.join(repo, "apps/eval/scripts", `${scriptId}.json`))) return err(res, 404, "unknown_script", scriptId);
     return json(res, 200, { callId: startReplay(scriptId, Number(body.speed ?? 1)) });
   }
+  if (m === "POST" && p === "/api/calls/browser") {
+    const callId = randomUUID();
+    calls.set(callId, { info: { id: callId, mode: "browser", callerNumberMasked: null, startedAt: nowIso(), endedAt: null, status: "live", timezone: TZ, label: null }, utterances: [], state: initialState(callId) });
+    const token = randomBytes(32).toString("hex");
+    tokens.add(token);
+    return json(res, 200, { callId, micWsUrl: `ws://localhost:${PORT}/browser/media/${callId}?token=${token}` });
+  }
   if (m === "GET" && p === "/api/alerts") return json(res, 200, { alerts: [...alerts.values()] });
   if (m === "POST" && p === "/api/alerts/test-briefing") {
     const target = String(body.targetPhone ?? "");
@@ -234,6 +241,11 @@ const server = createServer(async (req, res) => {
     const c = calls.get(parts[1]);
     if (!c) return err(res, 404, "unknown_call", parts[1]);
     if (m === "GET" && parts.length === 2) return json(res, 200, snapshotOf(c));
+    if (m === "POST" && parts[2] === "end") {
+      c.info = { ...c.info, status: "ended", endedAt: nowIso() };
+      toCall(c.info.id, { type: "call.ended", callId: c.info.id, endedAt: c.info.endedAt! });
+      return json(res, 200, { ok: true });
+    }
     if (m === "POST" && parts[2] === "alert") {
       const target = String(body.targetPhone ?? "");
       if (body.confirm !== true || !/^\+[1-9]\d{6,14}$/.test(target)) return err(res, 400, "validation", "targetPhone must be E.164 and confirm true");
@@ -269,6 +281,24 @@ const server = createServer(async (req, res) => {
 
 const wss = new WebSocketServer({ noServer: true });
 server.on("upgrade", (req, socket, head) => {
+  if (req.url?.startsWith("/browser/media/")) {
+    const u = new URL(req.url, "http://x");
+    if (!tokens.has(u.searchParams.get("token") ?? "")) return socket.destroy();
+    return wss.handleUpgrade(req, socket, head, (ws) => {
+      // Report frame sizes and cadence so W-08 can be checked without the real gateway.
+      let n = 0;
+      let first = 0;
+      const sizes = new Map<number, number>();
+      ws.on("message", (data, isBinary) => {
+        if (!isBinary) return console.log(`[mock-gateway] mic control ${String(data)}`);
+        const len = (data as Buffer).length;
+        sizes.set(len, (sizes.get(len) ?? 0) + 1);
+        if (n++ === 0) first = Date.now();
+        if (n % 250 === 0) console.log(`[mock-gateway] mic ${n} frames, sizes ${JSON.stringify([...sizes])}, ${((Date.now() - first) / (n - 1)).toFixed(1)} ms/frame`);
+      });
+      ws.on("close", () => console.log(`[mock-gateway] mic closed after ${n} frames, sizes ${JSON.stringify([...sizes])}`));
+    });
+  }
   if (!req.url?.startsWith("/ws/ui")) return socket.destroy();
   wss.handleUpgrade(req, socket, head, (ws) => {
     let authed = false;
