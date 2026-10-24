@@ -3,13 +3,16 @@
 Only the voice session edits this file.
 
 ## Current task
-- 2026-10-24 16:55 PT: P0/P1 offline complete. Next: live gates as soon as ngrok + the Twilio webhook are up (human); meanwhile robustness review of the demo path. V-08 (Q&A) only per D-32.
+- 2026-10-24 17:00 PT: V-08 Q&A loop with barge-in, behind `FEATURE_QA_ENABLED` (default false, D-32: P0/P1 landed on all lanes, X-02 + X-03 green). Live gates still wait for ngrok + the Twilio webhook (human).
 - **V-01 has landed (bfa43ca):** the human can now start ngrok and point the Twilio number's voice webhook at `{PUBLIC_BASE_URL}/twilio/voice` (integration's keys request).
 
 ## Last green commit on version1
 - bfa43ca (gateway X-01b … V-11), `pnpm e2e` 23 passed / 0 failed / 0 pending. Unit tests for it follow in the next commit.
 
 ## Acceptance evidence (pasted command output per task)
+
+### X-03 UI smoke against the real gateway (2026-10-24 ~16:58 PT)
+- `pnpm e2e:ui` (dev:fake → this gateway + web) → **4 passed (27.5 s)**: home lists calls; console renders the A01 replay (transcript, Likely, quoted chips); board shows the approved A01 alert; console starts empty with "No stroke signs heard yet.". Screens can drop `apps/web/scripts/mock-gateway.ts` and the optional `alertDefaultTargetPhone`.
 
 ### V-10 Degrade/reconnect, test-briefing, call-again — offline done (live parts need a real call)
 - Ink reconnect once → `degraded` on the second failure / 401 (stt tests); a degraded session publishes `stt_degraded` in `state.warnings` (streams test); `healthz.cartesia` = degraded after an Ink 401/403.
