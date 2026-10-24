@@ -14,7 +14,7 @@ Lanes: **S** setup (shared) · **R** reasoning · **V** voice · **W** screens �
 | S-04 | Twilio: upgrade, number, webhook | S | | todo | S-03 | 0.5 | 0 | |
 | S-05 | Cartesia credits, concurrency, voice pick | S | | todo | S-03 | 0.5 | 0 | |
 | S-06 | Supabase project + migration | S | | todo | S-03 | 0.5 | 0 | |
-| R-01 | Contracts (zod) + script validator CLI | R | | todo | S-02 | 1.5 | 2 | |
+| R-01 | Contracts (zod) + script validator CLI | R | AVB | doing | S-02 | 1.5 | 2 | |
 | R-02 | Quote validator | R | | todo | R-01 | 1 | 2 | |
 | R-03 | Claude client + fast pass | R | | todo | R-01, S-03 | 1.5 | 2 | |
 | R-04 | CaseState reducer, level guard, next-question ladder | R | | todo | R-01, R-02 | 2 | 2 | |
