@@ -1,0 +1,27 @@
+{
+  "id": "A07", "type": "classic", "title": "Son, father 66: violent dizziness, double vision, can't walk", "sourceId": null,
+  "callStartLocal": "2026-10-25T21:40:00",
+  "turns": [
+    { "speaker": "dispatcher", "atMs": 0,     "text": "911, what is the address of your emergency?" },
+    { "speaker": "caller",     "atMs": 4000,  "text": "88 Judah Street. It's my dad, he's 66." },
+    { "speaker": "dispatcher", "atMs": 8000,  "text": "Tell me exactly what happened." },
+    { "speaker": "caller",     "atMs": 11000, "text": "He suddenly got super dizzy, like the room is spinning really bad, and he's seeing two of everything." },
+    { "speaker": "dispatcher", "atMs": 19000, "text": "Can he walk?" },
+    { "speaker": "caller",     "atMs": 22000, "text": "No, he tried to get up and he can't walk, he almost fell over." },
+    { "speaker": "dispatcher", "atMs": 28000, "text": "When was he last seen completely normal?" },
+    { "speaker": "caller",     "atMs": 32000, "text": "About twenty minutes ago. We were watching TV and he was fine." },
+    { "speaker": "dispatcher", "atMs": 38000, "text": "Does he take any blood thinners?" },
+    { "speaker": "caller",     "atMs": 41000, "text": "No, he doesn't take anything like that." },
+    { "speaker": "dispatcher", "atMs": 45000, "text": "Okay. Help is on the way. Keep him sitting down." }
+  ],
+  "truth": {
+    "isStroke": true, "expectedLevel": "possible", "signs": ["balance", "eyes"],
+    "lkw": { "localTime": "2026-10-25T21:20:00", "toleranceMin": 10 },
+    "bloodThinner": "none", "lookalike": null,
+    "facts": [ { "kind": "age", "value": "66" },
+               { "kind": "sex", "value": "male" },
+               { "kind": "blood_thinner", "value": "none" },
+               { "kind": "address", "value": "88 Judah Street" } ]
+  },
+  "audio": null, "group": "native"
+}

@@ -3,7 +3,7 @@
 Only the integration session edits this file.
 
 ## Current task
-- C-02 Write the 20 scripts (D-33)
+- X-02 Offline end-to-end test
 
 ## Last green commit on version1
 - (X-04, see below)
@@ -23,6 +23,14 @@ Only the integration session edits this file.
 - `pnpm verify` → exit 0.
 - Reading taken: docs/08 §3 — the stroke-pile draw happens only when the first (full-deck) card was not a stroke, so a briefing call always happens; otherwise the replays fill the slot.
 
+### C-02 Write the 20 scripts (D-33) — done 2026-10-24 15:25 PT
+- 17 new files in apps/eval/scripts (A02–A07, B02, B04, B06, B08, C02–C05, D01, D02, D04); A01/B01/C01 unchanged.
+- `pnpm --filter @lastwell/eval validate` → "20 valid, 0 invalid (20 files)".
+- `apps/eval/scripts/scripts.test.ts` → "Tests 42 passed". Parsed LKW per script at the moment spoken (all within tolerance):
+  A01 2:00 PM (1:45–2:15 PM) · A02 12:30 PM (12:15–12:45 PM) · A03 3:10 PM (2:55–3:25 PM) · A05 9:02 AM (8:59–9:05 AM) · A06 about 8:00 AM (7:00–9:00 AM) · A07 9:20 PM (9:10–9:30 PM) · B01 6:50 PM (6:40–7:00 PM) · B02 4:15 PM (4:00–4:30 PM) · B04 11:00 AM (10:50–11:10 AM) · B06 11:35 AM (11:32–11:38 AM) · B08 9:25 PM (9:14–9:36 PM) · C01 7:05 PM (6:50–7:20 PM) · C02 3:10 PM (3:07–3:13 PM) · C03 10:30 PM (10:15–10:45 PM) · C04 3:40 PM (3:25–3:55 PM) · C05 yesterday 9:00 AM (6:00 AM–12:00 PM). A04, D01, D02, D04: no LKW (truth null).
+- Keyword baseline flags 6 of 20: A02, A05, B08, C03, C04, C05 (it misses A03, A04, A06, A07 and all of B01–B06; it fires on the look-alikes C03–C05).
+- `pnpm verify` → exit 0 (core 191, eval 43, gateway 5, web 1, stt 1 tests).
+
 ## blocked-keys (exact command to run once keys exist)
 -
 
@@ -33,7 +41,7 @@ Only the integration session edits this file.
 -
 
 ## Blockers for humans
--
+- [ ] C-02 · Clinical glance at the 20 eval scripts (apps/eval/scripts/*.json), especially the truth choices B08 (possible despite face+speech), C02/C03 (signs on look-alikes), A05 (aspirin counted as the blood thinner) · Scripts landed and validated; numbers are scripted either way. Answer by editing the script JSON or ticking here.
 
 ## Notes and small decisions
 - Secret scan is a Node script, not the docs/08 §9 grep: the literal grep matches the `.env.example` placeholders, and grep is not available the same way on Windows. It scans tracked files plus the `git log -p` history of HEAD, and fails on any tracked `.env*` other than `.env.example`.

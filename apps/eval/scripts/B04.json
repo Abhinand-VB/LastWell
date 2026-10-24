@@ -1,0 +1,26 @@
+{
+  "id": "B04", "type": "chameleon", "title": "Sister, woman 68: sounds weird on the phone, words won't come out", "sourceId": null,
+  "callStartLocal": "2026-10-25T13:30:00",
+  "turns": [
+    { "speaker": "dispatcher", "atMs": 0,     "text": "911, what is the address of your emergency?" },
+    { "speaker": "caller",     "atMs": 4000,  "text": "It's for my sister, she's at 19 Vicente Street. I'm on my way there." },
+    { "speaker": "dispatcher", "atMs": 10000, "text": "Okay. Tell me exactly what happened." },
+    { "speaker": "caller",     "atMs": 13000, "text": "I just called her and she sounds weird on the phone. Her words won't come out, she keeps trying and stopping." },
+    { "speaker": "dispatcher", "atMs": 22000, "text": "How old is she?" },
+    { "speaker": "caller",     "atMs": 25000, "text": "She's 68." },
+    { "speaker": "dispatcher", "atMs": 28000, "text": "When was she last seen completely normal?" },
+    { "speaker": "caller",     "atMs": 32000, "text": "We talked at 11 and she was fine." },
+    { "speaker": "dispatcher", "atMs": 36000, "text": "Is anyone with her right now?" },
+    { "speaker": "caller",     "atMs": 39000, "text": "No, she lives alone. Please hurry." },
+    { "speaker": "dispatcher", "atMs": 42000, "text": "Okay. Help is on the way to 19 Vicente Street." }
+  ],
+  "truth": {
+    "isStroke": true, "expectedLevel": "possible", "signs": ["speech"],
+    "lkw": { "localTime": "2026-10-25T11:00:00", "toleranceMin": 10 },
+    "bloodThinner": null, "lookalike": null,
+    "facts": [ { "kind": "age", "value": "68" },
+               { "kind": "sex", "value": "female" },
+               { "kind": "address", "value": "19 Vicente Street" } ]
+  },
+  "audio": null, "group": "native"
+}

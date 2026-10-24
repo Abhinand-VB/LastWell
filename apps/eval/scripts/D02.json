@@ -1,0 +1,27 @@
+{
+  "id": "D02", "type": "other", "title": "Son, mother 84: fell in the bathroom, hip pain, can't get up, talking normally", "sourceId": null,
+  "callStartLocal": "2026-10-25T08:20:00",
+  "turns": [
+    { "speaker": "dispatcher", "atMs": 0,     "text": "911, what is the address of your emergency?" },
+    { "speaker": "caller",     "atMs": 4000,  "text": "1630 Ortega Street. It's my mother, she's 84." },
+    { "speaker": "dispatcher", "atMs": 8000,  "text": "Okay. Tell me exactly what happened." },
+    { "speaker": "caller",     "atMs": 11000, "text": "She slipped and fell in the bathroom. Her hip hurts really bad and she can't get up off the floor." },
+    { "speaker": "dispatcher", "atMs": 20000, "text": "Did she hit her head?" },
+    { "speaker": "caller",     "atMs": 23000, "text": "No, she says she didn't hit her head. She landed on her hip." },
+    { "speaker": "dispatcher", "atMs": 29000, "text": "Is she awake and talking normally?" },
+    { "speaker": "caller",     "atMs": 32000, "text": "Yes, she's talking normally, she's completely with it, she's just in a lot of pain." },
+    { "speaker": "dispatcher", "atMs": 39000, "text": "Can she move her arms and legs?" },
+    { "speaker": "caller",     "atMs": 43000, "text": "Her arms are fine. It's just the hip, she can't put any weight on that leg because it hurts." },
+    { "speaker": "dispatcher", "atMs": 51000, "text": "Okay. Help is on the way. Don't try to move her." }
+  ],
+  "truth": {
+    "isStroke": false, "expectedLevel": "none", "signs": [],
+    "lkw": null,
+    "bloodThinner": null, "lookalike": null,
+    "facts": [ { "kind": "age", "value": "84" },
+               { "kind": "sex", "value": "female" },
+               { "kind": "head_injury", "value": "no" },
+               { "kind": "address", "value": "1630 Ortega Street" } ]
+  },
+  "audio": null, "group": "native"
+}

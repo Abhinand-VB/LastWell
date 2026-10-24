@@ -1,0 +1,27 @@
+{
+  "id": "B06", "type": "chameleon", "title": "Husband, wife 72: can't see on her left, bumps into furniture", "sourceId": null,
+  "callStartLocal": "2026-10-25T11:45:00",
+  "turns": [
+    { "speaker": "dispatcher", "atMs": 0,     "text": "911, what is the address of your emergency?" },
+    { "speaker": "caller",     "atMs": 4000,  "text": "560 Cabrillo Street. It's my wife, she's 72." },
+    { "speaker": "dispatcher", "atMs": 8000,  "text": "Tell me exactly what happened." },
+    { "speaker": "caller",     "atMs": 11000, "text": "She suddenly can't see anything on her left side. She keeps bumping into the furniture. Maybe it's her glasses." },
+    { "speaker": "dispatcher", "atMs": 19000, "text": "Is she awake and talking normally?" },
+    { "speaker": "caller",     "atMs": 22000, "text": "She's awake. She's talking, she's just upset." },
+    { "speaker": "dispatcher", "atMs": 26000, "text": "When was she last seen completely normal?" },
+    { "speaker": "caller",     "atMs": 30000, "text": "Ten minutes ago, she was fine, she was doing the crossword." },
+    { "speaker": "dispatcher", "atMs": 35000, "text": "Does she take any blood thinners?" },
+    { "speaker": "caller",     "atMs": 38000, "text": "No, she doesn't." },
+    { "speaker": "dispatcher", "atMs": 41000, "text": "Okay. Help is on the way. Have her sit down and stay with her." }
+  ],
+  "truth": {
+    "isStroke": true, "expectedLevel": "possible", "signs": ["eyes", "balance"],
+    "lkw": { "localTime": "2026-10-25T11:35:00", "toleranceMin": 5 },
+    "bloodThinner": "none", "lookalike": null,
+    "facts": [ { "kind": "age", "value": "72" },
+               { "kind": "sex", "value": "female" },
+               { "kind": "blood_thinner", "value": "none" },
+               { "kind": "address", "value": "560 Cabrillo Street" } ]
+  },
+  "audio": null, "group": "native"
+}

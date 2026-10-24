@@ -1,0 +1,31 @@
+{
+  "id": "C04", "type": "lookalike", "title": "Husband, wife 45: flashing lights, numb hand, headache, 'her usual migraine'", "sourceId": null,
+  "callStartLocal": "2026-10-25T16:40:00",
+  "turns": [
+    { "speaker": "dispatcher", "atMs": 0,     "text": "911, what is the address of your emergency?" },
+    { "speaker": "caller",     "atMs": 4000,  "text": "915 Clayton Street. It's my wife, she's 45." },
+    { "speaker": "dispatcher", "atMs": 8000,  "text": "Okay. Tell me exactly what happened." },
+    { "speaker": "caller",     "atMs": 11000, "text": "She started seeing flashing lights, then her right hand went numb, and now she has a bad headache." },
+    { "speaker": "dispatcher", "atMs": 19000, "text": "Has she had anything like this before?" },
+    { "speaker": "caller",     "atMs": 23000, "text": "She gets migraines. She says it's her usual migraine but worse this time." },
+    { "speaker": "dispatcher", "atMs": 29000, "text": "Did it come on all at once or slowly?" },
+    { "speaker": "caller",     "atMs": 33000, "text": "Slowly. The lights came first and the numbness kind of crept up over twenty minutes." },
+    { "speaker": "dispatcher", "atMs": 40000, "text": "When was she last completely normal?" },
+    { "speaker": "caller",     "atMs": 43000, "text": "About an hour ago, before the lights started, she was fine." },
+    { "speaker": "dispatcher", "atMs": 48000, "text": "Does she have a fever?" },
+    { "speaker": "caller",     "atMs": 51000, "text": "No, no fever." },
+    { "speaker": "dispatcher", "atMs": 54000, "text": "Okay. Help is on the way. Let her rest somewhere dark and quiet." }
+  ],
+  "truth": {
+    "isStroke": false, "expectedLevel": "possible", "signs": ["eyes", "arms"],
+    "lkw": { "localTime": "2026-10-25T15:40:00", "toleranceMin": 15 },
+    "bloodThinner": null, "lookalike": "migraine",
+    "facts": [ { "kind": "age", "value": "45" },
+               { "kind": "sex", "value": "female" },
+               { "kind": "migraine_history", "value": "yes" },
+               { "kind": "onset", "value": "gradual" },
+               { "kind": "fever_or_infection", "value": "no fever" },
+               { "kind": "address", "value": "915 Clayton Street" } ]
+  },
+  "audio": null, "group": "native"
+}

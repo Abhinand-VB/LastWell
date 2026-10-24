@@ -1,0 +1,29 @@
+{
+  "id": "A03", "type": "classic", "title": "Daughter, mother 82: can't move left arm and leg, slid off the chair", "sourceId": null,
+  "callStartLocal": "2026-10-25T16:10:00",
+  "turns": [
+    { "speaker": "dispatcher", "atMs": 0,     "text": "911, what is the address of your emergency?" },
+    { "speaker": "caller",     "atMs": 4000,  "text": "1200 Fell Street, apartment 5. It's my mom, she's 82." },
+    { "speaker": "dispatcher", "atMs": 9000,  "text": "Tell me exactly what happened." },
+    { "speaker": "caller",     "atMs": 12000, "text": "She suddenly can't move her left arm or her left leg. She just slid off her chair onto the floor." },
+    { "speaker": "dispatcher", "atMs": 21000, "text": "Is she awake and talking to you?" },
+    { "speaker": "caller",     "atMs": 25000, "text": "She's awake, she's talking to me, but she can't get up." },
+    { "speaker": "dispatcher", "atMs": 30000, "text": "Can she stand if you help her?" },
+    { "speaker": "caller",     "atMs": 34000, "text": "No, she can't stand up at all, she just falls over to the left." },
+    { "speaker": "dispatcher", "atMs": 40000, "text": "When was she last seen completely normal?" },
+    { "speaker": "caller",     "atMs": 44000, "text": "About an hour ago. She was fine, she was reading in her chair." },
+    { "speaker": "dispatcher", "atMs": 50000, "text": "Does she take any blood thinners?" },
+    { "speaker": "caller",     "atMs": 53000, "text": "Yes, she takes warfarin." },
+    { "speaker": "dispatcher", "atMs": 56000, "text": "Okay. Help is on the way. Don't try to lift her, keep her comfortable." }
+  ],
+  "truth": {
+    "isStroke": true, "expectedLevel": "likely", "signs": ["arms", "balance"],
+    "lkw": { "localTime": "2026-10-25T15:10:00", "toleranceMin": 15 },
+    "bloodThinner": "warfarin", "lookalike": null,
+    "facts": [ { "kind": "age", "value": "82" },
+               { "kind": "sex", "value": "female" },
+               { "kind": "blood_thinner", "value": "warfarin" },
+               { "kind": "address", "value": "1200 Fell Street, apartment 5" } ]
+  },
+  "audio": null, "group": "native"
+}
