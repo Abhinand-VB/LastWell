@@ -74,7 +74,7 @@ Pass criteria, all observed in one run:
 | Reasoner | Claude Sonnet 5.5 pass over the whole transcript, every ~10 s or on a new sign |
 | Pre-alert | The dispatcher-approved notification to the stroke team (call + board card) |
 | Level | `none` / `possible` / `likely` — never "not a stroke" |
-| Gateway | Our Node service that talks to Twilio, Cartesia, Claude and Supabase |
+| Gateway | Our Node service that talks to Twilio, Cartesia, Claude and Convex |
 | Console | Dispatcher web page; Board = stroke-team web page |
 
 ## Key numbers to keep straight (sources are in the project brief, `docs/brief/LastWell_Project_Brief.pdf`, §14)

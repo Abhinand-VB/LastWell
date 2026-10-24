@@ -21,7 +21,7 @@ Everything below was checked against the vendors' current documentation on 2026-
    │  alerts/    approve ──► compose briefing (code) ──► Sonic 3.6 TTS bytes ──► Twilio outbound call          │
    │             <Connect><Stream> bidirectional ──► play briefing ──► Q&A loop (Ink 2 → Haiku → Sonic)        │
    │  ui/        WebSocket /ws/ui (console + board live events)   REST /api/*  (snapshots, actions)            │
-   │  store/     Supabase (Postgres) write-through: calls, utterances, case_states, alerts, qa_turns           │
+   │  store/     Convex write-through (apps/gateway/convex): calls, utterances, caseStates, alerts, qaTurns    │
    └──────────────────────────────────────────┬────────────────────────────────────────────┬──────────────────┘
                                               │ wss /ws/ui + REST                           │ wss /ws/ui + REST
                                               ▼                                             ▼
@@ -42,7 +42,6 @@ lastwell/
 ├── pnpm-workspace.yaml           packages/* apps/*
 ├── tsconfig.base.json            strict, ESM, NodeNext, target ES2022
 ├── docs/                         source of truth (this folder)
-├── supabase/migrations/0001_init.sql
 ├── packages/core/                @lastwell/core
 │   └── src/
 │       ├── contracts/            zod schemas from docs/03 incl. twilio.ts, cartesia.ts, eval.ts (index.ts re-exports all)
@@ -61,6 +60,7 @@ lastwell/
 │   ├── src/wav.ts                parse a 16 kHz mono WAV, stream samples at real-time pace
 │   └── scripts/spike.ts          `pnpm --filter @lastwell/stt spike file.wav`
 ├── apps/gateway/                 @lastwell/gateway
+│   ├── convex/                   schema.ts, store.ts (Convex functions), lib.ts; _generated/ from `npx convex dev`
 │   └── src/
 │       ├── server.ts             Fastify app, plugins, routes, boot validation, warmup call
 │       ├── env.ts                zod-validated process.env (the only place the gateway reads env)
@@ -71,7 +71,7 @@ lastwell/
 │       ├── pipeline/             callRegistry.ts, callRunner.ts (per-call orchestrator), triggers.ts, replay.ts
 │       ├── alerts/               alertRegistry.ts, approve.ts, briefingCall.ts, qaLoop.ts
 │       ├── ui/                   wsHub.ts (/ws/ui, tokens, Origin allowlist), rest.ts (/api/*)
-│       ├── store/                supabase.ts, repo.ts
+│       ├── store/                convex.ts (ConvexHttpClient), convexApi.ts (typed refs), repo.ts
 │       └── browser/              browserMedia.ts (mic fallback WS)
 ├── apps/web/                     @lastwell/web (Next.js 15 App Router, Tailwind 4)
 │   └── app/
@@ -105,7 +105,8 @@ Package names: `@lastwell/core`, `@lastwell/stt`, `@lastwell/gateway`, `@lastwel
 | `@fastify/formbody` | ^8 | Twilio webhooks are `application/x-www-form-urlencoded` |
 | `pino`, `pino-pretty` | ^9 | logging |
 | `luxon` | ^3 | timezone-aware clock math in the LKW parser |
-| `@supabase/supabase-js` | ^2 | store (gateway: service role; web: anon) |
+| `convex` | ^1.48 | store: Convex functions in `apps/gateway/convex/` + `ConvexHttpClient` in the gateway (the web app has no database client) |
+| `convex-test` | ^0.0 | dev: runs the Convex functions in memory in vitest |
 | `next` / `react` | 15 / 19 | web app |
 | `tailwindcss` | ^4 | styling |
 | `vitest` | ^3 | tests in every package |
@@ -176,9 +177,10 @@ No Python anywhere. No LangChain/Vercel AI SDK; the vendor SDKs are enough and h
 - `stop_reason === "refusal"` or `"max_tokens"` → treat as "no output this round", log, keep the previous state. Prompt caching: `cache_control: {type:"ephemeral"}` on the static system block from day one (docs/04 §1); task R-10 measures its effect and tunes effort.
 - Rate limits at a fresh tier are low (tens of requests per minute per model). The eval runner uses `EVAL_CONCURRENCY=2` and backs off on 429.
 
-### 4.5 Supabase
+### 4.5 Convex
 
-- Postgres tables from `supabase/migrations/0001_init.sql` (docs/02). The gateway writes with `SUPABASE_SERVICE_ROLE_KEY`; the web app reads with the anon key for initial loads/history only. Live updates do **not** go through Supabase Realtime (decision D-04): partial transcripts at 5–10 Hz would hammer Postgres and add a venue-network hop on the demo path. The web app subscribes to the gateway's `/ws/ui`.
+- Tables and functions in `apps/gateway/convex/` (docs/02, decision D-29). `npx convex dev` (run in `apps/gateway`) logs in, creates the project, pushes the schema and functions, writes `convex/_generated/`, and writes `CONVEX_DEPLOYMENT` and `CONVEX_URL` to `apps/gateway/.env.local`; leave it running while editing `convex/`. The gateway calls functions over HTTPS with `ConvexHttpClient(CONVEX_URL)`. Functions are public on the deployment URL, so each one checks a `secret` argument against the deployment's `INTERNAL_API_KEY` (`npx convex env set INTERNAL_API_KEY …`). The web app has no Convex client and no Convex keys. Doc: https://docs.convex.dev/client/javascript/node
+- Live updates do **not** go through Convex reactive queries (decision D-04): partial transcripts at 5–10 Hz would mean a database write per partial and add a venue-network hop on the demo path. The web app subscribes to the gateway's `/ws/ui`.
 
 ### 4.6 Public URL
 
@@ -186,16 +188,16 @@ No Python anywhere. No LangChain/Vercel AI SDK; the vendor SDKs are enough and h
 
 ## 5. Data flow, step by step (phone mode)
 
-1. **Webhook** `POST /twilio/voice` → validate signature → create `callId` (uuid v4) → insert `calls` row (`mode='phone'`, `caller_number=From`, `twilio_call_sid=CallSid`, `started_at=now`) → register the call in `CallRegistry` (in-memory) → return TwiML (§4.1). Latency budget 200 ms.
+1. **Webhook** `POST /twilio/voice` → validate signature → create `callId` (uuid v4) → insert the `calls` record (`mode: "phone"`, `callerNumber: From`, `twilioCallSid: CallSid`, `startedAt: now`) → register the call in `CallRegistry` (in-memory) → return TwiML (§4.1). Latency budget 200 ms.
 2. **Media stream** connects to `wss://…/twilio/media`. On `start`: read `customParameters.callId`, verify `accountSid === TWILIO_ACCOUNT_SID` and the callId is registered (else close 1008). Create two `InkSession`s: `caller` (inbound) and `dispatcher` (outbound; skipped when `STT_DISPATCHER_TRACK=false`). Record `streamStartedAt = now`.
 3. Each `media` frame: base64-decode → forward bytes to the session for its track. Keep `lastFrameTs[track] = media.timestamp`.
 4. `InkSession` emits `turn.start` (capture `tStartMs = lastFrameTs[track]`), `turn.update` (broadcast `utterance.partial` to the UI, not stored), `turn.end` (build `Utterance {id, callId, seq, speaker, text, tStartMs, tEndMs=lastFrameTs}` → store → broadcast `utterance.final` → enqueue for the pipeline).
-5. **Pipeline** (`callRunner`): caller utterances go through the fast pass FIFO (one in flight per call). Output → quote validator (docs/03 §7) → `reducer.applyFastPass` → LKW parser on any `last_known_well` fact → `nextQuestion` → state version++ → store `case_states` → broadcast `state.updated`. A new validated sign or a new LKW/blood-thinner fact triggers the reasoner immediately; otherwise the reasoner runs every `REASONER_INTERVAL_MS` if the transcript changed since its last run. The reasoner reads the full transcript (both speakers) and the current state; output → validator → level guard → `reducer.applyReasoner` → store → broadcast.
+5. **Pipeline** (`callRunner`): caller utterances go through the fast pass FIFO (one in flight per call). Output → quote validator (docs/03 §7) → `reducer.applyFastPass` → LKW parser on any `last_known_well` fact → `nextQuestion` → state version++ → store `caseStates` → broadcast `state.updated`. A new validated sign or a new LKW/blood-thinner fact triggers the reasoner immediately; otherwise the reasoner runs every `REASONER_INTERVAL_MS` if the transcript changed since its last run. The reasoner reads the full transcript (both speakers) and the current state; output → validator → level guard → `reducer.applyReasoner` → store → broadcast.
 6. **Console** renders from `state.updated` + utterances; shows `fastPassMs` / `reasonerMs`.
 7. **Approve** `POST /api/calls/:callId/alert {targetPhone}` → snapshot the state → `composeBriefing(snapshot)` (code) → Sonic bytes → cache µ-law in memory → insert `alerts` (status `queued`) → `calls.create` (status `calling`) → broadcast `alert.updated`. Budget: Sonic bytes ≈ 1 s; Twilio create ≈ 1 s.
 8. **Alert stream** connects to `wss://…/twilio/alert-media`; on `start`, look up `alertId` → status `answered` → send 300 ms of µ-law silence, then the briefing in 1280-byte media messages, then `mark {name:"briefing"}`. When Twilio echoes the mark → status `briefed`, then `qa` → open an Ink 2 session on the inbound track (Q&A mode, `qa` profile). On `turn.end` → `qa()` (Haiku, docs/04 §4) → validate evidence → TTS websocket → forward chunks as media → `mark {name:"answer-N"}`. On `turn.start` while an answer is playing → send `clear` and cancel the TTS context (barge-in). On `stop` → status `completed`.
 9. **Board** subscribes to the board scope and renders alert cards with countdown; `POST /api/alerts/:id/ems-confirm` toggles the status label.
-10. **Call end**: Twilio `stop` on the media stream → close Ink sessions with `{"type":"close"}` → mark `calls.ended_at` → broadcast `call.ended`. The in-memory call stays for 30 minutes for snapshots, then is evicted.
+10. **Call end**: Twilio `stop` on the media stream → close Ink sessions with `{"type":"close"}` → mark `calls.endedAt` → broadcast `call.ended`. The in-memory call stays for 30 minutes for snapshots, then is evicted.
 
 Browser mode (docs/05 §10) replaces steps 1–3 with `POST /api/calls/browser` and a mic WebSocket carrying `pcm_s16le` 16 kHz; everything from step 4 on is identical.
 
@@ -234,7 +236,7 @@ Each process reads its own variables once at boot and validates them with zod (`
 | `PORT` | gateway (opt) | `8787` | |
 | `PUBLIC_BASE_URL` | gateway (req) | `https://lastwell.ngrok-free.app` | no trailing slash; wss derived |
 | `NGROK_DOMAIN` | shell only | `lastwell.ngrok-free.app` | host part of `PUBLIC_BASE_URL`; used by the `ngrok` command, not read by code |
-| `INTERNAL_API_KEY` | gateway (req), web server (req) | long random string | `x-internal-key` header on REST; WebSockets use short-lived tokens issued by `GET /api/ws-token` (docs/03 §5) |
+| `INTERNAL_API_KEY` | gateway (req), web server (req) | long random string | `x-internal-key` header on REST; WebSockets use short-lived tokens issued by `GET /api/ws-token` (docs/03 §5); also set as `INTERNAL_API_KEY` in the Convex deployment (docs/02 §1) |
 | `TWILIO_ACCOUNT_SID` | gateway (req) | `AC…` | |
 | `TWILIO_AUTH_TOKEN` | gateway (req) | | signature validation + REST |
 | `TWILIO_PHONE_NUMBER` | gateway (req) | `+1415…` E.164 | the demo number |
@@ -258,10 +260,8 @@ Each process reads its own variables once at boot and validates them with zod (`
 | `LIKELY_MIN_DISTINCT_SIGNS` | gateway, eval (opt) → core config | `2` | level guard |
 | `CALL_TIMEZONE` | gateway, eval (opt) → core config | `America/Los_Angeles` | LKW clock math |
 | `EVAL_SCRIPTS_DIR` | gateway (opt) | `../eval/scripts` | replay scripts (docs/05 §13) |
-| `SUPABASE_URL` | gateway (req) | `https://xxxx.supabase.co` | |
-| `SUPABASE_SERVICE_ROLE_KEY` | gateway only (req) | | never in web |
-| `NEXT_PUBLIC_SUPABASE_URL` | web (opt) | same as above | history pages only |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | web (opt) | | read-only history |
+| `CONVEX_URL` | gateway (req) | `https://happy-animal-123.convex.cloud` | written to `apps/gateway/.env.local` by `npx convex dev`; copy it into `.env`. The Convex functions authenticate the gateway with `INTERNAL_API_KEY` (same value set in the Convex deployment) |
+| `CONVEX_DEPLOYMENT` | Convex CLI only | `dev:happy-animal-123` | written by `npx convex dev` to `apps/gateway/.env.local`; not read by our code |
 | `GATEWAY_URL` | web server (req) | `http://localhost:8787` | proxy target |
 | `NEXT_PUBLIC_GATEWAY_WS_URL` | web browser (req) | `ws://localhost:8787/ws/ui` or `wss://…ngrok…/ws/ui` | |
 | `ALERT_SMS_ENABLED` | gateway (opt) | `false` | needs 10DLC-registered number |
@@ -275,7 +275,8 @@ Each process reads its own variables once at boot and validates them with zod (`
 ## 9. Security and privacy (demo scope)
 
 - Twilio webhooks (`/twilio/voice`, `/twilio/alert-status`) signature-validated; media and alert streams verify `accountSid` and a registered id; REST requires `INTERNAL_API_KEY`; the UI and mic WebSockets require a token from `GET /api/ws-token`.
-- No audio is written to disk or database in phone mode. Transcripts and states are stored in Supabase for the demo and deleted after the event (task M-07 wipes the project).
+- Convex functions check a shared secret (the deployment's `INTERNAL_API_KEY`) on every call; only the gateway holds it, and the web app has no database access (docs/02 §1).
+- No audio is written to disk or database in phone mode. Transcripts and states are stored in Convex for the demo and deleted after the event (task M-07 wipes the tables).
 - The repo contains no keys. `.env.example` only.
 
 ## 10. Observability

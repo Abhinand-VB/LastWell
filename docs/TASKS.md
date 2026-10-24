@@ -13,7 +13,7 @@ Lanes: **S** setup (shared) · **R** reasoning · **V** voice · **W** screens �
 | S-03 | Vendor accounts and `.env` | S | | todo | — | 1 | 0 | |
 | S-04 | Twilio: upgrade, number, webhook | S | | todo | S-03 | 0.5 | 0 | |
 | S-05 | Cartesia credits, concurrency, voice pick | S | | todo | S-03 | 0.5 | 0 | |
-| S-06 | Supabase project + migration | S | | todo | S-03 | 0.5 | 0 | |
+| S-06 | Convex project + schema deploy | S | | todo | S-03 | 0.5 | 0 | |
 | R-01 | Contracts (zod) + script validator CLI | R | AVB | done | S-02 | 1.5 | 2 | Observed 2026-10-24 03:30 PT. `pnpm --filter @lastwell/core test` → "Test Files 2 passed (2) · Tests 63 passed (63)": A01/B01/C01 parse + pass cross-field rules; sample CaseState round-trips through JSON; all 11 UiServerMessage variants + 6 client shapes parse; FastPassOutput with an extra top-level or nested field fails (strict), same for Reasoner/Qa; zodOutputFormat(Fast/Reasoner/Qa) converts; Twilio connected/start/media(in+out)/mark/stop + media without track + outbound media/mark/clear parse; Ink connected/turn.*/error and Sonic chunk/done/error parse; hard_audio expansion from sourceId. `pnpm --filter @lastwell/eval validate` → "ok A01 classic 11 turns · ok B01 chameleon 12 turns · ok C01 lookalike 10 turns · 3 valid, 0 invalid (3 files)", exit 0. `pnpm --filter @lastwell/eval validate fixtures/invalid` (A01 copy with signs ["speech"]) → "FAIL fixtures\invalid\A01.json (A01) - truth.expectedLevel: "likely" needs ≥ 2 distinct sign kinds, got 1 (speech) · 0 valid, 1 invalid", exit 1. No `any`: grep for `: any\|as any\|<any>\|any[]` in packages/apps src → no matches. `pnpm -r typecheck` 5× Done; `pnpm -r test` core 63, stt/web/eval/gateway 1 each, all passed. Readings taken: contracts use `zod/v4` (SDK helper requires it) and UiClientMessage is z.union (zod throws "Duplicate discriminator value" on the doc's discriminatedUnion) → D-24 + note in docs/03 §5. loadScripts takes parsed JSON (core does no file I/O); the CLI reads files. Cross-field rules enforced beyond the §14 comments: id prefix ↔ type (docs/07 §3), isStroke ↔ type, none ⇒ no signs, lookalike ⇒ truth.lookalike set and ≤ possible, other ⇒ none, local-time format for callStartLocal/lkw.localTime, atMs non-decreasing, blood_thinner fact = bloodThinner, file name = {id}.json, unique ids. Extra contracts added for consumers (no doc shapes changed): REST bodies/responses from §6, TwilioOutboundMessage, TwilioVoiceWebhookBody, TwilioStatusCallbackBody, BrowserMediaControl, initialCaseState(), NO_SIGNS_HEADLINE. Web regression found and fixed: Turbopack 500 "Can't resolve './contracts/index.js'" → web dev/build on webpack with extensionAlias (D-25); re-checked `curl localhost:3000/` → 200 with "core 0.0.0". |
 | R-02 | Quote validator | R | AVB | done | R-01 | 1 | 2 | Observed 2026-10-24 03:32 PT. `vitest run src/validate` → "Test Files 1 passed · Tests 19 passed (19)": the ten docs/03 §7 cases (exact; "He can't lift his coffee cup." vs "he cant lift his coffee cup" → returns "He can't lift his coffee cup"; curly apostrophe both ways; spanning two utterances → no_match; dispatcher-only sign → null; newer dispatcher echo + older caller → caller's ref (speaker filter before recency); "ok" → too_short; 161+ chars → too_long while exactly 160 passes; original casing/punctuation returned; address from dispatcher accepted) plus R-02 extras: "fine at about 2 PM" in "He was fine at about 2 PM. We had lunch and he was fine." → {quote:"fine at about 2 PM", tMs:8000, speaker:caller}, also for an upper-cased quote; Q&A dispatcher evidence accepted for "What's the address?"/"Where is the patient?", rejected for "Is he on blood thinners?"; caller/mixed-only for non-address facts and look-alikes; newest-first; no near-miss repair; same span for two signs; LKW phrase-within-quote. `pnpm -r typecheck` 5× Done; `pnpm -r test` core "Test Files 3 passed · Tests 82 passed", stt/web/eval/gateway 1 each passed. API: validateQuote(quote, purpose, utterances) → QuoteRef\|null; checkQuote(...) → {ok,ref}\|{ok:false, reason: too_short\|too_long\|no_match} so the caller can log `validator.dropped` with the reason (core does no logging); phraseWithinQuote() for the LKW rule. Reading taken (D-26, needs a human glance): norm drops apostrophes too, because the spec's own "cant" test cannot match while `'` is kept. Matching is otherwise exactly §7 (plain substring after norm, no word-boundary or fuzzy logic). |
 | R-03 | Claude client + fast pass | R | | todo | R-01, S-03 | 1.5 | 2 | |
@@ -85,7 +85,7 @@ Critical path for the demo: S-01 → S-02 → S-03/S-04 → V-01 → V-03 → V-
 
 ### S-03 Vendor accounts and `.env`
 **Goal.** Every key in `.env`, each verified with one request.
-**Steps.** Anthropic: key from a funded org; `curl` one `claude-haiku-5-5` message. Cartesia: key from play.cartesia.ai/keys; `curl -H "Authorization: Bearer $CARTESIA_API_KEY" -H "Cartesia-Version: 2026-08-14" https://api.cartesia.ai/voices?limit=1`. Supabase: project created (S-06 applies the schema). ngrok: account + reserved domain; `ngrok http 8787 --domain …` reachable. Generate `INTERNAL_API_KEY` with `openssl rand -hex 32`.
+**Steps.** Anthropic: key from a funded org; `curl` one `claude-haiku-5-5` message. Cartesia: key from play.cartesia.ai/keys; `curl -H "Authorization: Bearer $CARTESIA_API_KEY" -H "Cartesia-Version: 2026-08-14" https://api.cartesia.ai/voices?limit=1`. Convex: account created (S-06 creates the project and deploys the schema). ngrok: account + reserved domain; `ngrok http 8787 --domain …` reachable. Generate `INTERNAL_API_KEY` with `openssl rand -hex 32`.
 **Acceptance.** Paste the four successful responses (keys redacted) into Notes. `.env` is not tracked.
 
 ### S-04 Twilio: upgrade, number, webhook
@@ -98,10 +98,10 @@ Critical path for the demo: S-01 → S-02 → S-03/S-04 → V-01 → V-03 → V-
 **Steps.** Check plan credits and concurrent-connection limit in the Playground billing page; buy or obtain sponsor credits so that ≥ 300 000 credits are available; set `EVAL_CONCURRENCY` ≤ the limit. Generate the Card A briefing text (docs/05 §7 example) with Skylar and Daniel via `/tts/bytes` (wav container) and listen; set `CARTESIA_VOICE_ID`.
 **Acceptance.** Screenshot of the balance in Notes; the chosen voice id in `.env` and in `docs/01 §4.3` if it differs from the default.
 
-### S-06 Supabase project + migration
-**Goal.** Schema applied; keys in `.env`.
-**Steps.** Run `supabase/migrations/0001_init.sql` (docs/02 §1) in the SQL editor. Copy `SUPABASE_URL`, service role key (gateway) and anon key (web).
-**Acceptance.** `select count(*) from calls` returns 0 via the SQL editor; a `curl` with the anon key to `/rest/v1/calls?select=id` returns `[]`.
+### S-06 Convex project + schema deploy
+**Goal.** Schema and functions deployed (docs/02 §1); `CONVEX_URL` in `.env`.
+**Steps.** `cd apps/gateway && npx convex dev` (log in, create project `lastwell`; it pushes `convex/schema.ts` + `convex/store.ts`, writes `convex/_generated/` and `apps/gateway/.env.local`). `npx convex env set INTERNAL_API_KEY <the .env value>`. Copy `CONVEX_URL` from `apps/gateway/.env.local` into `.env`. Commit `convex/_generated/`.
+**Acceptance.** The dashboard shows the five tables; `npx convex run store:listCalls '{"secret":"<INTERNAL_API_KEY>"}'` returns `[]`; the same call with a wrong secret fails with `unauthorized`; `pnpm --filter @lastwell/gateway typecheck` still passes with `_generated/` present.
 
 ### R-01 Contracts (zod)
 **Goal.** Every schema in docs/03 implemented and exported from `@lastwell/core`, plus the script validator the Clinical lane needs on day one.
@@ -163,12 +163,12 @@ Critical path for the demo: S-01 → S-02 → S-03/S-04 → V-01 → V-03 → V-
 ### V-03 Media stream + InkSession + utterances
 **Goal.** docs/05 §3–§5.
 **Files.** `twilio/mediaStream.ts`, `stt/utteranceAssembler.ts`, `pipeline/callRegistry.ts`, tests with an in-process mock Twilio socket.
-**Acceptance (Gate 0 + 1 evidence).** Real call: gateway log shows `utterance.final` lines for both `caller` and `dispatcher` with `tStartMs` increasing and `calls.stream_started_at` set; finals arrive ≤ 2.5 s after the speaker stops (stopwatch, and `sttMs` in the log); hanging up produces `call.ended`. Unit: a `start` with a wrong `accountSid` closes with 1008; a `media` message without `track` is treated as inbound.
+**Acceptance (Gate 0 + 1 evidence).** Real call: gateway log shows `utterance.final` lines for both `caller` and `dispatcher` with `tStartMs` increasing and `calls.streamStartedAt` set; finals arrive ≤ 2.5 s after the speaker stops (stopwatch, and `sttMs` in the log); hanging up produces `call.ended`. Unit: a `start` with a wrong `accountSid` closes with 1008; a `media` message without `track` is treated as inbound.
 
 ### V-04 UI hub (WS) + REST + store write-through
 **Goal.** docs/03 §5–§6; docs/02 §2.
-**Files.** `ui/{wsHub,rest,tokens}.ts`, `store/{supabase,repo}.ts`; endpoints `GET /api/ws-token`, `GET /api/config`; Origin allowlist on WS upgrades (docs/03 §6).
-**Acceptance.** `curl -H x-internal-key GET /api/ws-token` → token; `wscat -c ws://localhost:8787/ws/ui` → `{type:"auth", token}` → `subscribe call` returns `snapshot`; a bad token gets `error unauthorized`; an upgrade with `Origin: http://evil` is refused; during a real call the socket receives `utterance.partial` then `utterance.final`; `GET /api/calls/:id` returns the same utterances; `GET /api/config` returns the four flags; rows appear in Supabase `utterances`; killing Supabase credentials does not stop the call (log `store.error`).
+**Files.** `ui/{wsHub,rest,tokens}.ts`, `store/{convex,repo}.ts` (`convex.ts` wraps `ConvexHttpClient` with the typed refs in `store/convexApi.ts`; the functions already exist in `apps/gateway/convex/store.ts`); endpoints `GET /api/ws-token`, `GET /api/config`; Origin allowlist on WS upgrades (docs/03 §6).
+**Acceptance.** `curl -H x-internal-key GET /api/ws-token` → token; `wscat -c ws://localhost:8787/ws/ui` → `{type:"auth", token}` → `subscribe call` returns `snapshot`; a bad token gets `error unauthorized`; an upgrade with `Origin: http://evil` is refused; during a real call the socket receives `utterance.partial` then `utterance.final`; `GET /api/calls/:id` returns the same utterances; `GET /api/config` returns the four flags; rows appear in the Convex `utterances` table; a wrong `CONVEX_URL` or secret does not stop the call (log `store.error`).
 
 ### V-05 Call runner (pipeline wiring)
 **Goal.** docs/05 §6 with R-03/R-04/R-06.
@@ -178,7 +178,7 @@ Critical path for the demo: S-01 → S-02 → S-03/S-04 → V-01 → V-03 → V-
 ### V-06 Alert approve: compose → Sonic bytes → outbound call
 **Goal.** docs/05 §7.
 **Files.** `alerts/{approve,alertRegistry}.ts`, `tts/sonic.ts` (bytes), `twilio/client.ts`, `twilio/alertStatus.ts`.
-**Acceptance.** `POST /api/calls/:id/alert` on a live Card A state returns an `AlertSummary` with `briefingText` matching R-07; `alerts.transcript_snapshot` holds the utterances; the gateway log shows `alert.created` with `ms` < 2500; the target phone rings within 20 s; status callbacks move the alert to `ringing`; 409 when level is `none`.
+**Acceptance.** `POST /api/calls/:id/alert` on a live Card A state returns an `AlertSummary` with `briefingText` matching R-07; `alerts.transcriptSnapshot` holds the utterances; the gateway log shows `alert.created` with `ms` < 2500; the target phone rings within 20 s; status callbacks move the alert to `ringing`; 409 when level is `none`.
 
 ### V-07 Alert media stream: play briefing, marks, hang-up
 **Goal.** docs/05 §8 up to the `briefing` mark; `FEATURE_QA_ENABLED=false` path hangs up after the mark.
@@ -188,7 +188,7 @@ Critical path for the demo: S-01 → S-02 → S-03/S-04 → V-01 → V-03 → V-
 ### V-08 Q&A loop with barge-in
 **Goal.** docs/05 §8 after the mark.
 **Files.** `alerts/qaLoop.ts`, `tts/sonic.ts` (websocket).
-**Acceptance.** On the briefing call: "Is he on blood thinners?" → spoken answer within 3 s containing "Eliquis"; "Any seizure before this?" → "That wasn't mentioned on the call."; talking over an answer stops it within 0.5 s (clear + cancel); silence for 60 s hangs up; `qa_turns` rows written.
+**Acceptance.** On the briefing call: "Is he on blood thinners?" → spoken answer within 3 s containing "Eliquis"; "Any seizure before this?" → "That wasn't mentioned on the call."; talking over an answer stops it within 0.5 s (clear + cancel); silence for 60 s hangs up; `qaTurns` records written.
 
 ### V-09 Browser-mic fallback (gateway)
 **Files.** `browser/browserMedia.ts`, `POST /api/calls/browser`.
@@ -196,7 +196,7 @@ Critical path for the demo: S-01 → S-02 → S-03/S-04 → V-01 → V-03 → V-
 
 ### V-10 Degrade/reconnect, test-briefing endpoint, call-again
 **Files.** reconnect logic in `packages/stt/src/inkSession.ts` and `state.warnings` plumbing in `callRunner.ts`; `POST /api/alerts/test-briefing {targetPhone}` (uses `fixtures/caseState.TEST.json`, label `TEST`); `POST /api/alerts/:id/retry`; `DELETE /api/alerts/test` (docs/03 §6).
-**Acceptance.** Killing the Ink socket mid-call (block the host for 2 s) reconnects once and transcription resumes; a second kill puts `stt_degraded` in `state.warnings`; the test-briefing endpoint rings a phone with the canned text and the alert shows on the board with label `TEST`; `DELETE /api/alerts/test` removes it from the board without a reload (`alert.removed`) and from the registries; retry from `ringing` ends the first call and re-dials using the cached audio (no second Sonic call in the log); retry after a gateway restart re-synthesizes from `briefing_text`.
+**Acceptance.** Killing the Ink socket mid-call (block the host for 2 s) reconnects once and transcription resumes; a second kill puts `stt_degraded` in `state.warnings`; the test-briefing endpoint rings a phone with the canned text and the alert shows on the board with label `TEST`; `DELETE /api/alerts/test` removes it from the board without a reload (`alert.removed`) and from the registries; retry from `ringing` ends the first call and re-dials using the cached audio (no second Sonic call in the log); retry after a gateway restart re-synthesizes from `briefingText`.
 
 ### V-11 Replay endpoint for scripted calls
 **Goal.** docs/05 §13: `POST /api/calls/replay {scriptId, speed}` creates a `replay` call (`label: scriptId`, `streamStartedAt = now`) and feeds the script's turns through the normal pipeline at `atMs / speed`, then ends the call.
@@ -267,7 +267,7 @@ Critical path for the demo: S-01 → S-02 → S-03/S-04 → V-01 → V-03 → V-
 **Acceptance.** Cards printed; slide with the eval table placeholder; pitch timed at ≤ 2:00 in two dry runs.
 
 ### C-05 Devpost draft + final
-**Acceptance.** Draft saved Saturday 11 PM with all sections from brief §13; "Built with" = claude-api, cartesia, twilio, next.js, supabase, typescript; tracks selected per runbook §9.
+**Acceptance.** Draft saved Saturday 11 PM with all sections from brief §13; "Built with" = claude-api, cartesia, twilio, next.js, convex, typescript; tracks selected per runbook §9.
 
 ### C-06 README for judges
 **Acceptance.** Setup in ≤ 10 commands; Cartesia features used; model list; known limits (scripted calls, single-track browser fallback, no SMS, demo auth); no keys.
@@ -288,7 +288,7 @@ Observed by the whole team; the gate is `done` only when the brief's milestone i
 Runbook §7; the latency table from run 10 in Notes.
 
 ### M-07 Teardown
-`truncate calls cascade` in Supabase; rotate Twilio auth token, Cartesia and Anthropic keys; confirm the public repo has no secrets (`git log -p | grep -iE "sk_car|sk-ant|AC[0-9a-f]{32}"` empty).
+`npx convex run store:wipe '{"secret":"…"}'` until `remaining` is 0 (or delete the Convex project); rotate Twilio auth token, Cartesia and Anthropic keys; confirm the public repo has no secrets (`git log -p | grep -iE "sk_car|sk-ant|AC[0-9a-f]{32}"` empty).
 
 ---
 
@@ -298,4 +298,4 @@ Runbook §7; the latency table from run 10 in Notes.
 - SMS alert when a 10DLC-registered number exists (`alerts/sms.ts`, `ALERT_SMS_ENABLED`).
 - Spanish/Cantonese (Ink 2 detects es; Sonic speaks es; prompts stay English).
 - Prompt-cache metrics in the latency readout.
-- Supabase Realtime for the board (alerts only) as an alternative transport.
+- Convex reactive queries for the board (alerts only) as an alternative transport.

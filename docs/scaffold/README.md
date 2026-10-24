@@ -147,7 +147,7 @@ Live tests (`*.live.test.ts`) skip themselves when `LIVE` is unset, so `vitest r
     "@fastify/websocket": "^11.0.0",
     "@lastwell/core": "workspace:*",
     "@lastwell/stt": "workspace:*",
-    "@supabase/supabase-js": "^2.45.0",
+    "convex": "^1.48.0",
     "fastify": "^5.0.0",
     "luxon": "^3.5.0",
     "pino": "^9.0.0",
@@ -198,7 +198,7 @@ Live tests (`*.live.test.ts`) skip themselves when `LIVE` is unset, so `vitest r
 
 ## apps/web
 
-Create with `pnpm create next-app@latest apps/web --ts --app --tailwind --eslint --no-src-dir --import-alias "@/*"`, then set `"name": "@lastwell/web"`, add `"typecheck": "tsc --noEmit"`, `"test": "vitest run"`, dependencies `@lastwell/core: workspace:*`, `@supabase/supabase-js`, `zod`, and in `next.config.ts`: `transpilePackages: ["@lastwell/core"]` (the package exports TypeScript source).
+Create with `pnpm create next-app@latest apps/web --ts --app --tailwind --eslint --no-src-dir --import-alias "@/*"`, then set `"name": "@lastwell/web"`, add `"typecheck": "tsc --noEmit"`, `"test": "vitest run"`, dependencies `@lastwell/core: workspace:*`, `zod` (no database client: the web app reads through the gateway, D-29), and in `next.config.ts`: `transpilePackages: ["@lastwell/core"]` (the package exports TypeScript source).
 
 ## Package tsconfig.json (each package)
 

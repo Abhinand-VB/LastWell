@@ -46,7 +46,7 @@ Route `WS /twilio/media`. State per socket: `{callId, streamSid, sessions: {inbo
 | Twilio event | Action |
 | --- | --- |
 | `connected` | log |
-| `start` | parse (docs/03 §12). `callId = start.customParameters.callId`. Reject (close 1008, log) if `start.accountSid !== TWILIO_ACCOUNT_SID` or `CallRegistry.get(callId)` is missing. Store `streamSid`. Create `InkSession("caller", "pcm_mulaw", 8000)` for `inbound`; if `STT_DISPATCHER_TRACK`, `InkSession("dispatcher", ...)` for `outbound`. Set `call.streamStartedAt = now` (also written to `calls.stream_started_at`); this is the zero point for every `tStartMs` and for LKW `saidAt`. |
+| `start` | parse (docs/03 §12). `callId = start.customParameters.callId`. Reject (close 1008, log) if `start.accountSid !== TWILIO_ACCOUNT_SID` or `CallRegistry.get(callId)` is missing. Store `streamSid`. Create `InkSession("caller", "pcm_mulaw", 8000)` for `inbound`; if `STT_DISPATCHER_TRACK`, `InkSession("dispatcher", ...)` for `outbound`. Set `call.streamStartedAt = now` (also written to `calls.streamStartedAt`); this is the zero point for every `tStartMs` and for LKW `saidAt`. |
 | `media` | `ts = Number(media.timestamp)`; `track = media.track ?? "inbound"`; `lastTs[track] = ts`; `sessions[track]?.sendAudio(Buffer.from(media.payload, "base64"))`. Drop frames for a track with no session. Count frames; log every 500. |
 | `mark`, `dtmf` | ignore (log debug) |
 | `stop` | `sessions.*.close()` (sends `{"type":"close"}` and waits ≤ 2 s for remaining `turn.end`s), `CallRegistry.end(callId)`, `repo.endCall`, broadcast `call.ended`. |
@@ -156,9 +156,9 @@ On call end: stop the interval timer, wait for the fast-pass queue to drain, run
 
 Length control: target 45–70 words. If the text exceeds 70 words, drop in this order until it fits: quote 2 → the "Caller's words" sentence → the look-alike sentence. Sentences 1, 2, 3 (labels), 4 (time), 5 and 7 are never dropped. `compose.test.ts` asserts the word count for fixtures A/B/C, the trim order on an oversized fixture, and that no sentence contains text absent from the snapshot (every quoted fragment must be a substring of a validated quote).
 
-Approval snapshots both `state` (→ `alerts.case_snapshot`) and the utterance list (→ `alerts.transcript_snapshot`); the Q&A and the test-briefing path read from the alert, never from the live registry.
+Approval snapshots both `state` (→ `alerts.caseSnapshot`) and the utterance list (→ `alerts.transcriptSnapshot`); the Q&A and the test-briefing path read from the alert, never from the live registry.
 
-Pre-synthesis: `POST https://api.cartesia.ai/tts/bytes` with `{model_id: CARTESIA_TTS_MODEL, transcript, voice: CARTESIA_VOICE_ID, language: "en", output_format: {container:"raw", encoding:"pcm_mulaw", sample_rate: 8000}}`, headers `Authorization: Bearer`, `Cartesia-Version`, `Content-Type: application/json`. Store the bytes on the alert record in memory (`alert.audio`; re-synthesized from `alerts.briefing_text` on retry after a restart). Expected: ~8 KB per second of speech; a 20 s briefing ≈ 160 KB, ~1 s to generate. Timeout 10 s; failure → alert `failed`, `last_error`, UI shows "Briefing synthesis failed — retry".
+Pre-synthesis: `POST https://api.cartesia.ai/tts/bytes` with `{model_id: CARTESIA_TTS_MODEL, transcript, voice: CARTESIA_VOICE_ID, language: "en", output_format: {container:"raw", encoding:"pcm_mulaw", sample_rate: 8000}}`, headers `Authorization: Bearer`, `Cartesia-Version`, `Content-Type: application/json`. Store the bytes on the alert record in memory (`alert.audio`; re-synthesized from `alerts.briefingText` on retry after a restart). Expected: ~8 KB per second of speech; a 20 s briefing ≈ 160 KB, ~1 s to generate. Timeout 10 s; failure → alert `failed`, `lastError`, UI shows "Briefing synthesis failed — retry".
 
 Then `twilio.calls.create({ to: targetPhone, from: TWILIO_PHONE_NUMBER, timeout: 25, twiml: "<Response><Connect><Stream url=\"wss://{host}/twilio/alert-media\"><Parameter name=\"alertId\" value=\"{alertId}\"/></Stream></Connect></Response>", statusCallback: PUBLIC_BASE_URL + "/twilio/alert-status", statusCallbackEvent: ["initiated","ringing","answered","completed"], statusCallbackMethod: "POST" })`. Status → `calling`; `ringing` and `completed` come from the status callback; `answered` is set when the media stream's `start` arrives (more precise than the callback).
 
@@ -210,7 +210,7 @@ Hang-up: when the neurologist hangs up, Twilio sends `stop`. Timeout: if no ques
 | Sonic bytes fails at approval | HTTP ≠ 200 or timeout | alert `failed`, retry button; the dispatcher can retry without re-approving |
 | Sonic websocket fails during Q&A | error/close | reopen once; if the answer cannot be spoken within 6 s, speak nothing and log; the next question gets a fresh socket |
 | Outbound call not answered | status callback `no-answer`/`busy`/`failed` | alert `failed` with reason; "Call again" button |
-| Supabase down | any store error | log only; nothing on the demo path awaits the store |
+| Convex down | any store error | log only; nothing on the demo path awaits the store |
 | ngrok down | Twilio webhook 502 | the phone line is dead → runbook §5: browser mic + the phone for the briefing only (requires ngrok for the briefing stream too, so really: fix ngrok/hotspot) |
 
 Every per-socket handler is wrapped; an exception in one call never reaches the process. `process.on("uncaughtException")` and `unhandledRejection` log and keep the process alive (last line of defense, not a strategy).
