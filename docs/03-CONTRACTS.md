@@ -276,6 +276,8 @@ else if distinctKinds < LIKELY_MIN_DISTINCT_SIGNS (default 2) → level = "possi
 else                                                          → level = max("possible", modelLevel)
 ```
 
+As implemented (D-27), `likely` additionally needs a focal sign (face, arms, speech) among the kinds, per D-21.
+
 In words: no validated sign → `none`; any validated sign → at least `possible` (the card moves before Sonnet runs; the demo script depends on this, and a quoted sign is evidence the dispatcher should see); `likely` needs two distinct kinds **and** the reasoner saying `likely`. The reasoner can therefore lower `likely` to `possible` but cannot push a card with quoted signs back to `none` — its disagreement shows up as look-alikes and in `summary`, and the quote is on screen for the human to judge. `modelLevel` is kept for the debug readout.
 
 ## 9. Next-question ladder — `packages/core/src/state/nextQuestion.ts`
