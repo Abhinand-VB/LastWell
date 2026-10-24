@@ -1,0 +1,97 @@
+{
+  "id": "A01",
+  "type": "classic",
+  "title": "BROKEN COPY of A01 — expectedLevel likely with one sign kind (validator must reject)",
+  "sourceId": null,
+  "callStartLocal": "2026-10-25T14:47:00",
+  "turns": [
+    {
+      "speaker": "dispatcher",
+      "atMs": 0,
+      "text": "911, what is the address of your emergency?"
+    },
+    {
+      "speaker": "caller",
+      "atMs": 3000,
+      "text": "It's 1842 Clement Street, apartment 3. It's my father, he's 78."
+    },
+    {
+      "speaker": "dispatcher",
+      "atMs": 9000,
+      "text": "Okay. Tell me exactly what happened."
+    },
+    {
+      "speaker": "caller",
+      "atMs": 11000,
+      "text": "Since lunch his words come out all mixed up and his right hand is weak, he can't lift his coffee cup."
+    },
+    {
+      "speaker": "dispatcher",
+      "atMs": 19000,
+      "text": "Is he awake and breathing normally?"
+    },
+    {
+      "speaker": "caller",
+      "atMs": 21000,
+      "text": "Yes, he's awake, he's sitting on the couch, he just can't get the words out right."
+    },
+    {
+      "speaker": "dispatcher",
+      "atMs": 27000,
+      "text": "When was he last seen completely normal?"
+    },
+    {
+      "speaker": "caller",
+      "atMs": 30000,
+      "text": "He was fine at about 2 PM. We had lunch and he was fine."
+    },
+    {
+      "speaker": "dispatcher",
+      "atMs": 35000,
+      "text": "Does he take any blood thinners, like Eliquis, Xarelto or warfarin?"
+    },
+    {
+      "speaker": "caller",
+      "atMs": 37000,
+      "text": "Yes, he takes Eliquis. For his heart."
+    },
+    {
+      "speaker": "dispatcher",
+      "atMs": 41000,
+      "text": "Okay. Help is on the way. Stay with him and keep the phone with you."
+    }
+  ],
+  "truth": {
+    "isStroke": true,
+    "expectedLevel": "likely",
+    "signs": [
+      "speech"
+    ],
+    "lkw": {
+      "localTime": "2026-10-25T14:00:00",
+      "toleranceMin": 15
+    },
+    "bloodThinner": "Eliquis",
+    "lookalike": null,
+    "facts": [
+      {
+        "kind": "age",
+        "value": "78"
+      },
+      {
+        "kind": "sex",
+        "value": "male"
+      },
+      {
+        "kind": "blood_thinner",
+        "value": "Eliquis"
+      },
+      {
+        "kind": "address",
+        "value": "1842 Clement Street, apartment 3"
+      }
+    ]
+  },
+  "audio": null,
+  "group": "native"
+}

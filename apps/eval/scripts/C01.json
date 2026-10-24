@@ -1,0 +1,23 @@
+{
+  "id": "C01", "type": "lookalike", "title": "Card C — diabetic husband, skipped dinner, sweaty and confused", "sourceId": null,
+  "callStartLocal": "2026-10-25T20:05:00",
+  "turns": [
+    { "speaker": "dispatcher", "atMs": 0,     "text": "911, what is the address of your emergency?" },
+    { "speaker": "caller",     "atMs": 3000,  "text": "2210 Taraval Street. It's my husband, he's diabetic, he skipped dinner, and now he's sweaty and confused." },
+    { "speaker": "dispatcher", "atMs": 11000, "text": "How old is he?" },
+    { "speaker": "caller",     "atMs": 13000, "text": "He's 68." },
+    { "speaker": "dispatcher", "atMs": 15000, "text": "Is he talking to you?" },
+    { "speaker": "caller",     "atMs": 17000, "text": "He's mumbling, he's not making much sense. And he's shaky." },
+    { "speaker": "dispatcher", "atMs": 22000, "text": "Does he take insulin, and when did he last eat?" },
+    { "speaker": "caller",     "atMs": 25000, "text": "Yes, he took his insulin at five and then he didn't eat anything." },
+    { "speaker": "dispatcher", "atMs": 30000, "text": "When was he last acting normally?" },
+    { "speaker": "caller",     "atMs": 33000, "text": "About an hour ago, he was fine." }
+  ],
+  "truth": {
+    "isStroke": false, "expectedLevel": "possible", "signs": ["speech"],
+    "lkw": { "localTime": "2026-10-25T19:05:00", "toleranceMin": 15 },
+    "bloodThinner": null, "lookalike": "low blood sugar",
+    "facts": [ { "kind": "age", "value": "68" }, { "kind": "sex", "value": "male" }, { "kind": "diabetes", "value": "diabetic" }, { "kind": "medication", "value": "insulin" } ]
+  },
+  "audio": null, "group": "native"
+}

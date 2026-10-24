@@ -1,0 +1,25 @@
+{
+  "id": "B01", "type": "chameleon", "title": "Card B — wife dizzy, sees double, 'just tired'", "sourceId": null,
+  "callStartLocal": "2026-10-25T19:20:00",
+  "turns": [
+    { "speaker": "dispatcher", "atMs": 0,     "text": "911, what is the address of your emergency?" },
+    { "speaker": "caller",     "atMs": 3000,  "text": "530 Ulloa Street. It's my wife. She's dizzy and she keeps bumping into the wall, and she says she sees double. I think she's just tired." },
+    { "speaker": "dispatcher", "atMs": 12000, "text": "How old is she?" },
+    { "speaker": "caller",     "atMs": 14000, "text": "She's 74." },
+    { "speaker": "dispatcher", "atMs": 16000, "text": "When was she last seen completely normal?" },
+    { "speaker": "caller",     "atMs": 19000, "text": "She was fine about half an hour ago, when we finished dinner." },
+    { "speaker": "dispatcher", "atMs": 25000, "text": "Ask her to smile for you. Is one side of her face drooping or uneven?" },
+    { "speaker": "caller",     "atMs": 29000, "text": "No, her face looks normal. She's just wobbly, she can't walk straight." },
+    { "speaker": "dispatcher", "atMs": 34000, "text": "Can she lift both arms and keep them up?" },
+    { "speaker": "caller",     "atMs": 37000, "text": "Yes, both arms are fine." },
+    { "speaker": "dispatcher", "atMs": 40000, "text": "Does she take any blood thinners?" },
+    { "speaker": "caller",     "atMs": 42000, "text": "No, nothing like that." }
+  ],
+  "truth": {
+    "isStroke": true, "expectedLevel": "possible", "signs": ["balance", "eyes"],
+    "lkw": { "localTime": "2026-10-25T18:50:00", "toleranceMin": 10 },
+    "bloodThinner": "none", "lookalike": null,
+    "facts": [ { "kind": "age", "value": "74" }, { "kind": "sex", "value": "female" }, { "kind": "blood_thinner", "value": "none" } ]
+  },
+  "audio": null, "group": "native"
+}
