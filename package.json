@@ -13,6 +13,7 @@
     "e2e": "pnpm --filter @lastwell/e2e e2e",
     "dev:fake": "node scripts/dev-fake.mjs",
     "dev:gateway": "pnpm --filter @lastwell/gateway dev",
-    "dev:web": "pnpm --filter @lastwell/web dev"
+    "dev:web": "pnpm --filter @lastwell/web dev",
+    "cards": "node scripts/build-cards.mjs"
   }
 }

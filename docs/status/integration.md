@@ -3,7 +3,7 @@
 Only the integration session edits this file.
 
 ## Current task
-- X-02 Offline end-to-end test
+- C-06 README for judges (X-02 waits on X-01b/V-04…V-11; C-04 check waits on X-01a createFakeModel; X-03 waits on W-03/W-06/V-11)
 
 ## Last green commit on version1
 - (X-04, see below)
@@ -31,6 +31,12 @@ Only the integration session edits this file.
 - Keyword baseline flags 6 of 20: A02, A05, B08, C03, C04, C05 (it misses A03, A04, A06, A07 and all of B01–B06; it fires on the look-alikes C03–C05).
 - `pnpm verify` → exit 0 (core 191, eval 43, gateway 5, web 1, stt 1 tests).
 
+### C-04 Cards — deck built, check pending (2026-10-24 16:00 PT)
+- `pnpm cards` → "cards: wrote docs/cards/cards.html (12 full-deck + 4 stroke-pile cards, 32 pages)". The generator refuses a stroke-pile card that is not a stroke and a stroke card without the LKW blank.
+- Stroke pile: A01, A02, A05, A06 (all truth `likely` with LKW + blood thinner). Full deck: A03, A04, A07, B01, B02, B04, B06 (strokes), C01, C02, C05 (look-alikes), D01, D04 (no-stroke traps).
+- Reading: the deck uses D01/D04 instead of C03/C04 because those two carry two sign kinds incl. a focal one, so only the model's judgment keeps them at Possible; D-31's "strokes, chameleons, look-alikes" read as "cases that may or may not be strokes".
+- Not yet: X-02-style check of the 16 scripts through `createFakeModel` (X-01a); visual check of the print layout (no Chrome here; X-03 brings Playwright).
+
 ## blocked-keys (exact command to run once keys exist)
 -
 
@@ -43,6 +49,7 @@ Only the integration session edits this file.
 - [ ] to voice: `alert.updated` must reach a socket subscribed to the alert's call **and** to `board` (e2e waits for status `briefed` there, then `GET /api/alerts?sinceHours=24`). (X-02)
 
 ## Blockers for humans
+- [ ] C-04 · Print docs/cards/cards.html duplex (flip on long edge), seal each back (fold + tape or envelope); bring a marker for the LKW blanks (D-20). Slide with the eval table placeholder and two timed pitch dry runs are human tasks · deck file is landed.
 - [ ] C-02 · Clinical glance at the 20 eval scripts (apps/eval/scripts/*.json), especially the truth choices B08 (possible despite face+speech), C02/C03 (signs on look-alikes), A05 (aspirin counted as the blood thinner) · Scripts landed and validated; numbers are scripted either way. Answer by editing the script JSON or ticking here.
 
 ## Notes and small decisions
