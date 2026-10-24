@@ -2,7 +2,10 @@
 import { describe, expect, it } from "vitest";
 import { createFakeModel } from "@lastwell/core";
 import { EvalEnv, requireApiKey } from "./env.js";
-import { main, parseArgs, runEval, withBackoff } from "./run.js";
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import { main, parseArgs, rescore, runEval, withBackoff } from "./run.js";
 import { contradicts } from "./score.js";
 
 const env = EvalEnv.parse({});
@@ -69,5 +72,15 @@ describe("eval runner (text mode, fake model)", () => {
     expect(contradicts("age", "78", "78")).toBe(false);
     expect(contradicts("sex", "female", "male")).toBe(true);
     expect(contradicts("onset", "suddenly", "gradual")).toBe(false);
+    expect(contradicts("alcohol_or_drugs", "does not drink at all", "doesn't drink")).toBe(false);
+  });
+
+  it("--rescore reproduces the table from a saved results file", async () => {
+    const out = mkdtempSync(join(tmpdir(), "lw-eval-"));
+    const args = parseArgs(["--mode", "text", "--ids", "A01,C01", "--model", "fake", "--out", out]);
+    const run = await runEval(args, env, createFakeModel(), true, () => {});
+    expect(run.outFile).not.toBeNull();
+    const again = rescore(run.outFile ?? "", args.scriptsDir, env);
+    expect(again.replace(", rescored", "")).toBe(run.markdown);
   });
 });

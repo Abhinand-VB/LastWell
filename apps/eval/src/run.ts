@@ -154,14 +154,50 @@ export async function runEval(args: RunArgs, env: EvalEnv, model: ModelClient, w
       wallMs: Date.now() - t0,
       summary,
       records,
-      states: results.map((r) => ({ scriptId: r.scriptId, state: r.state, turns: r.turns, calls: r.calls, drops: r.drops })),
+      states: results,
     };
     writeFileSync(outFile, `${JSON.stringify(payload, null, 2)}\n`);
   }
   return { records, results, markdown, outFile };
 }
 
+interface SavedRun {
+  model: string;
+  records: ScriptRecord[];
+  states: (Omit<ScriptedRunResult, "firstAtMs" | "errors" | "utterances"> & Partial<ScriptedRunResult>)[];
+}
+
+/** Re-score a saved results file with the current score.ts (scorer fixes cost no model calls). */
+export function rescore(file: string, scriptsDir: string, env: EvalEnv): string {
+  const saved = JSON.parse(readFileSync(file, "utf8")) as SavedRun;
+  const scripts = readScripts(scriptsDir);
+  const records = saved.states.map((st) => {
+    const script = scripts.find((s) => s.id === st.scriptId);
+    if (script === undefined) throw new Error(`${file}: unknown script ${st.scriptId}`);
+    const old = saved.records.find((r) => r.id === st.scriptId);
+    const ms = (x: number | null | undefined): number | null => (x == null ? null : Math.round(x * 1000));
+    const r: ScriptedRunResult = {
+      utterances: [],
+      errors: old?.errors ?? 0,
+      firstAtMs: { possible: ms(old?.firstPossibleS), likely: ms(old?.firstLikelyS) },
+      ...st,
+    };
+    return scoreScript(script, r, env.CALL_TIMEZONE);
+  });
+  return [summaryTable(summarize(records), `${saved.model}, rescored`), "", perScriptTable(records)].join("\n");
+}
+
 export async function main(argv: readonly string[]): Promise<number> {
+  const i = argv.indexOf("--rescore");
+  if (i >= 0) {
+    const file = argv[i + 1];
+    if (file === undefined) {
+      console.error("--rescore needs a results JSON file");
+      return 2;
+    }
+    console.log(rescore(resolve(file), join(EVAL_DIR, "scripts"), loadEnv()));
+    return 0;
+  }
   let args: RunArgs;
   try {
     args = parseArgs(argv);

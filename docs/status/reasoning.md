@@ -3,12 +3,32 @@
 Only the reasoning session edits this file.
 
 ## Current task
-- E-03 Full text run → slide
+- (P0 + P1 of the lane done; R-08 waits for D-32. Next: re-run test:live for the B01 reading; second E-03 run kept in reserve for after any prompt change.)
 
 ## Last green commit on version1
-- R-10 latency bench (see below)
+- E-03 run 1 results (see below)
 
 ## Acceptance evidence (pasted command output per task)
+
+### E-03 Full text run → slide — run 1 of 2 done 2026-10-25
+- `pnpm --filter @lastwell/eval eval --mode text` → 20 scripts, **4 m 16 s, 0 model errors** (≤ 2 allowed). Results committed: `apps/eval/results/2026-10-24T23-03-14-943Z-text-live.json` and the table `apps/eval/results/E-03-run1-table.md` (rescored after a scorer fix: "does not drink at all" vs truth "doesn't drink" was counted as a wrong fact; `--rescore` re-scores a saved file with no model calls).
+- **Slide table** (for Integration / Devpost; footnote "20 scripted calls (text mode), written by the team"):
+  ```
+  | Metric | LastWell (claude-haiku-5-5 + claude-sonnet-5-5 @medium) | Keyword baseline |
+  | Sensitivity @possible (n=12) | 12/12 (100%) | 3/12 (25%) |
+  | Sensitivity @likely | 6/12 (50%) | — |
+  | Precision @possible (flags=17) | 12/17 (71%) | 3/6 (50%) |
+  | Precision @likely | 6/7 (86%) | — |
+  | Median seconds to first flag | 12 s | 12 s |
+  | LKW correct (n=16 with truth) | 16/16 | — |
+  | Blood thinner correct (n=8) | 8/8 | — |
+  | Invented facts shown | 0 | — |
+  | Dropped by validator | 1 items | — |
+  | Wrong facts | 0 | — |
+  | Level agreement (n=20) | 18/20 (90%) | — |
+  Median latency: fast pass 1207 ms, reasoner 2861 ms.
+  ```
+- Honest notes for the slide: the 5 non-stroke flags at `possible` are the 5 look-alike scripts C01–C05 (by design: each shows its look-alike panel, e.g. C01 "low blood sugar"); D01, D02, D04 stay `none`. The one non-stroke `likely` is C03 (intoxication, reached likely mid-call, ended `possible`). Level disagreements: A03 ended `possible` (expected likely; the reasoner listed low blood sugar + head injury), B08 ended `likely` (expected possible; it has face + speech signs). Seconds to first flag tie the baseline (12 s) because the baseline only fires on 3 of 12 strokes.
 
 ### R-10 Prompt caching + latency tuning — done 2026-10-25
 - `ClaudeConfig.onResponse` reports pass, ms, stop reason, input/output and cache read/write tokens (the gateway can log it per call). Bench: `apps/eval/src/latency.ts` (sequential live calls, A01/B01/C01 inputs; reasoner inputs are the transcripts cut after 4, 6, 8 … turns with the fake pipeline's state).
@@ -77,6 +97,7 @@ Only the reasoning session edits this file.
 
 ## Requests to other lanes
 - [ ] to voice: `GET /api/config` must return `alertDefaultTargetPhone` (`ALERT_DEFAULT_TARGET_PHONE` or null); the field is now required in `ConfigResponse` (D-39, screens request).
+- [ ] to integration: E-03 slide/Devpost numbers are under "E-03" above (and `apps/eval/results/E-03-run1-table.md`); please carry them into docs/08 / the Devpost text with the footnote. `apps/eval/results` is gitignored, so the committed files were added with `git add -f`.
 - [ ] to screens: `ConfigResponse` now has `alertDefaultTargetPhone: E164 | null` (D-39); `WebConfig`'s `.extend` in `apps/web/lib/config.ts` can be dropped.
 
 ## Handled requests from other lanes
