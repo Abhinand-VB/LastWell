@@ -6,7 +6,7 @@
   "scripts": {
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
-    "test:live": "LIVE=1 vitest run"
+    "test:live": "LIVE=1 node --env-file-if-exists=../../.env ./node_modules/vitest/vitest.mjs run src/claude"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.0.0",

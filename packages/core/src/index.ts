@@ -56,3 +56,16 @@ export {
   type ScriptedRunResult,
   type TurnRecord,
 } from "./eval/scriptedRunner.js";
+export {
+  DEFAULT_CLAUDE_CONFIG,
+  MAX_TOKENS,
+  createAnthropic,
+  createClaudeClient,
+  parseJson,
+  warmup,
+  type ClaudeConfig,
+  type Effort,
+} from "./claude/client.js";
+export { FAST_PASS_PROMPT_VERSION } from "./prompts/fastPass.js";
+export { REASONER_PROMPT_VERSION } from "./prompts/reasoner.js";
+export { QA_FALLBACK, QA_PROMPT_VERSION, spokenLkw } from "./prompts/qa.js";
