@@ -210,6 +210,8 @@ export const UiServerMessage = z.discriminatedUnion("type", [
 ]);
 ```
 
+Implementation note (D-24): `UiClientMessage` is implemented as `z.union([...])` with the same five shapes, because zod rejects a discriminated union whose two `subscribe` variants share a discriminator value; all contracts use `import { z } from "zod/v4"`.
+
 Rules: the server sends `snapshot` immediately after a `call` subscribe and `board.snapshot` after a `board` subscribe; the client drops any `state.updated` whose `state.version` is lower than the one it holds; `utterance.partial` is replaced in place (one partial line per speaker) and removed when the matching `utterance.final` arrives. Degradation banners are read from `state.warnings` (no separate message). A `replay` call behaves exactly like a live call on the console (its `callerNumberMasked` is null, so the alert modal needs a typed number).
 
 Browser authentication: the browser never holds `INTERNAL_API_KEY`. It calls `GET /api/gateway/ws-token` (the Next.js proxy adds the key) and receives `{token, expiresInS: 600}`; the gateway keeps issued tokens in memory and accepts `{type:"auth", token}` on `/ws/ui` and `?token=` on `/browser/media/:callId` until expiry. Tokens are random 32-byte hex strings; a used token stays valid until expiry (reconnects reuse it).
