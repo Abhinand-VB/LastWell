@@ -10,7 +10,7 @@
 | Invented facts shown | 0 | — |
 | Dropped by validator | 1 items | — |
 | Wrong facts | 0 | — |
-| Level agreement (n=20) | 18/20 (90%) | — |
+| Level agreement (n=20) | 19/20 (95%) | — |
 
 Model errors: 0. Median latency: fast pass 1207 ms, reasoner 2861 ms.
 20 scripted calls (text mode), written by the team; real-world precision will be lower.
@@ -28,7 +28,7 @@ Model errors: 0. Median latency: fast pass 1207 ms, reasoner 2861 ms.
 | B02 | chameleon | possible | possible | speech | 11s | — | ok 4:15 PM (4:00–4:30 PM) (truth 16:15) | n/a | low blood sugar | 0 |  |
 | B04 | chameleon | possible | possible | speech | 13s | — | ok 11:00 AM (10:50–11:10 AM) (truth 11:00) | n/a | low blood sugar, seizure | 0 |  |
 | B06 | chameleon | possible | possible | eyes, balance | 11s | — | ok 11:35 AM (11:32–11:38 AM) (truth 11:35) | ok none | migraine | 0 |  |
-| B08 | chameleon | possible | likely | face, speech | 12s | 12s | ok 9:25 PM (9:14–9:36 PM) (truth 21:25) | n/a | migraine | 0 |  |
+| B08 | chameleon | likely | likely | face, speech | 12s | 12s | ok 9:25 PM (9:14–9:36 PM) (truth 21:25) | n/a | migraine | 0 |  |
 | C01 | lookalike | possible | possible | speech | 17s | — | ok 7:05 PM (6:50–7:20 PM) (truth 19:05) | n/a | low blood sugar | 0 |  |
 | C02 | lookalike | possible | possible | speech | 11s | — | ok 3:10 PM (3:07–3:13 PM) (truth 15:10) | n/a | seizure, low blood sugar | 0 |  |
 | C03 | lookalike | possible | possible (max likely) | speech, balance | 12s | 12s | ok 10:30 PM (10:15–10:45 PM) (truth 22:30) | n/a | intoxication, low blood sugar, head injury | 0 |  |

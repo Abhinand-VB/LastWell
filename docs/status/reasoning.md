@@ -10,6 +10,11 @@ Only the reasoning session edits this file.
 
 ## Acceptance evidence (pasted command output per task)
 
+### D-41(c) briefing: antiplatelets are named, never "Blood thinner" — done 2026-10-25
+- `composeBriefing`: a blood-thinner fact whose value names aspirin, clopidogrel/Plavix, ticagrelor/Brilinta or prasugrel/Effient is spoken as "Takes {value}, per the caller." (docs/05 §7 rule 5); anticoagulants unchanged ("Blood thinner: Eliquis, per the caller."). `isAntiplatelet(value)` is exported from `@lastwell/core`.
+- Test "D-41: an antiplatelet is named…": "baby aspirin every day" (A05's live value) → "Takes baby aspirin every day, per the caller.", Plavix, Brilinta likewise, no "blood thinner" anywhere in the text; warfarin still "Blood thinner: warfarin". Briefing tests 13 passed.
+- E-03 run 1 rescored with the D-41(a) B08 truth (`--rescore`, no model calls): only level agreement changes, 18/20 → 19/20. Table updated in `apps/eval/results/E-03-run1-table.md`.
+
 ### E-03 Full text run → slide — run 1 of 2 done 2026-10-25
 - `pnpm --filter @lastwell/eval eval --mode text` → 20 scripts, **4 m 16 s, 0 model errors** (≤ 2 allowed). Results committed: `apps/eval/results/2026-10-24T23-03-14-943Z-text-live.json` and the table `apps/eval/results/E-03-run1-table.md` (rescored after a scorer fix: "does not drink at all" vs truth "doesn't drink" was counted as a wrong fact; `--rescore` re-scores a saved file with no model calls).
 - **Slide table** (for Integration / Devpost; footnote "20 scripted calls (text mode), written by the team"):
@@ -25,10 +30,10 @@ Only the reasoning session edits this file.
   | Invented facts shown | 0 | — |
   | Dropped by validator | 1 items | — |
   | Wrong facts | 0 | — |
-  | Level agreement (n=20) | 18/20 (90%) | — |
+  | Level agreement (n=20) | 19/20 (95%) | — |
   Median latency: fast pass 1207 ms, reasoner 2861 ms.
   ```
-- Honest notes for the slide: the 5 non-stroke flags at `possible` are the 5 look-alike scripts C01–C05 (by design: each shows its look-alike panel, e.g. C01 "low blood sugar"); D01, D02, D04 stay `none`. The one non-stroke `likely` is C03 (intoxication, reached likely mid-call, ended `possible`). Level disagreements: A03 ended `possible` (expected likely; the reasoner listed low blood sugar + head injury), B08 ended `likely` (expected possible; it has face + speech signs). Seconds to first flag tie the baseline (12 s) because the baseline only fires on 3 of 12 strokes.
+- Honest notes for the slide: the 5 non-stroke flags at `possible` are the 5 look-alike scripts C01–C05 (by design: each shows its look-alike panel, e.g. C01 "low blood sugar"); D01, D02, D04 stay `none`. The one non-stroke `likely` is C03 (intoxication, reached likely mid-call, ended `possible`). Level disagreement: A03 ended `possible` (expected likely; the reasoner listed low blood sugar + head injury). Rescored after D-41(a) (B08 truth now `likely`): level agreement 18/20 → 19/20; nothing else changed. Seconds to first flag tie the baseline (12 s) because the baseline only fires on 3 of 12 strokes.
 
 ### R-10 Prompt caching + latency tuning — done 2026-10-25
 - `ClaudeConfig.onResponse` reports pass, ms, stop reason, input/output and cache read/write tokens (the gateway can log it per call). Bench: `apps/eval/src/latency.ts` (sequential live calls, A01/B01/C01 inputs; reasoner inputs are the transcripts cut after 4, 6, 8 … turns with the fake pipeline's state).
@@ -107,6 +112,7 @@ Only the reasoning session edits this file.
 -
 
 ## Requests to other lanes
+- [ ] to screens: D-41(c) — wherever the console or board labels the blood-thinner fact, use `isAntiplatelet(value)` from `@lastwell/core` and show the drug (e.g. "Takes daily aspirin") instead of "Blood thinner: …" for antiplatelets.
 - [ ] to voice: `GET /api/config` must return `alertDefaultTargetPhone` (`ALERT_DEFAULT_TARGET_PHONE` or null); the field is now required in `ConfigResponse` (D-39, screens request).
 - [ ] to integration: E-03 slide/Devpost numbers are under "E-03" above (and `apps/eval/results/E-03-run1-table.md`); please carry them into docs/08 / the Devpost text with the footnote. `apps/eval/results` is gitignored, so the committed files were added with `git add -f`.
 - [ ] to screens: `ConfigResponse` now has `alertDefaultTargetPhone: E164 | null` (D-39); `WebConfig`'s `.extend` in `apps/web/lib/config.ts` can be dropped.

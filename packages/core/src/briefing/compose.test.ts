@@ -2,7 +2,7 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { CaseState, type LkwResult, type Sign } from "../contracts/index.js";
-import { composeBriefing, countWords, spokenLkwSentence } from "./compose.js";
+import { composeBriefing, isAntiplatelet, countWords, spokenLkwSentence } from "./compose.js";
 
 const TZ = "America/Los_Angeles";
 const FIXTURES = fileURLToPath(new URL("../fixtures/", import.meta.url));
@@ -60,6 +60,26 @@ describe("composeBriefing — fixtures A/B/C/TEST (docs/05 §7)", () => {
     expect(text).toMatchInlineSnapshot(
       `"Stroke pre-alert from nine one one, approved by the dispatcher. 78-year-old man. Signs heard: one-sided weakness and speech trouble. The caller said: 'he can't lift his coffee cup' and 'his words come out all mixed up'. Last known well: 2:00 PM, 48 minutes ago. Caller's words: 'fine at about 2 PM'. Blood thinner: Eliquis, per the caller. Not yet confirmed by paramedics. You can ask me about the call now."`,
     );
+  });
+
+  it("D-41: an antiplatelet is named, never called a blood thinner", () => {
+    const withThinner = (value: string) => ({
+      ...A01,
+      facts: A01.facts.map((f) => (f.kind === "blood_thinner" ? { ...f, value } : f)),
+    });
+    for (const [value, sentence] of [
+      ["baby aspirin every day", "Takes baby aspirin every day, per the caller."],
+      ["daily aspirin", "Takes daily aspirin, per the caller."],
+      ["Plavix", "Takes Plavix, per the caller."],
+      ["Brilinta", "Takes Brilinta, per the caller."],
+    ] as const) {
+      const { text } = composeBriefing(withThinner(value), NOW.A01, TZ, qa);
+      expect(text).toContain(sentence);
+      expect(text).not.toMatch(/blood thinner/i);
+    }
+    expect(composeBriefing(withThinner("warfarin"), NOW.A01, TZ, qa).text).toContain("Blood thinner: warfarin, per the caller.");
+    expect(isAntiplatelet("Eliquis")).toBe(false);
+    expect(isAntiplatelet("clopidogrel")).toBe(true);
   });
 
   it("B01", () => {

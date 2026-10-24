@@ -38,6 +38,7 @@ export {
 export {
   MAX_BRIEFING_WORDS,
   composeBriefing,
+  isAntiplatelet,
   countWords,
   spokenLkwSentence,
   type Briefing,

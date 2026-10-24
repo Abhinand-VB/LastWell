@@ -15,6 +15,13 @@ export interface Briefing {
 }
 
 export const MAX_BRIEFING_WORDS = 70;
+
+/** Antiplatelets are not anticoagulants: the briefing names the drug, never "Blood thinner" (D-41). */
+const ANTIPLATELET = /\b(aspirin|asa|clopidogrel|plavix|ticagrelor|brilinta|prasugrel|effient)\b/i;
+
+export function isAntiplatelet(value: string): boolean {
+  return ANTIPLATELET.test(value);
+}
 const MAX_QUOTE_WORDS = 12;
 
 const SIGN_ORDER: readonly SignKind[] = ["balance", "eyes", "face", "arms", "speech"];
@@ -139,7 +146,9 @@ export function composeBriefing(snapshot: CaseState, now: Date, tz: string, opts
       ? "Blood thinners were not mentioned."
       : thinner.value.trim().toLowerCase() === "none"
         ? "The caller says no blood thinners."
-        : `Blood thinner: ${thinner.value.trim()}, per the caller.`;
+        : isAntiplatelet(thinner.value)
+          ? `Takes ${thinner.value.trim()}, per the caller.`
+          : `Blood thinner: ${thinner.value.trim()}, per the caller.`;
   const looksLike = lookalike !== undefined ? `Could also be ${lookalike.name}; not yet ruled out.` : null;
   const close = opts.qaEnabled
     ? "Not yet confirmed by paramedics. You can ask me about the call now."
