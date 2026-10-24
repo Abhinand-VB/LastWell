@@ -2,10 +2,16 @@
   "name": "lastwell",
   "private": true,
   "packageManager": "pnpm@9.12.0",
-  "engines": { "node": ">=22" },
+  "engines": {
+    "node": ">=22"
+  },
   "scripts": {
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
+    "verify": "pnpm scan:secrets && pnpm -r typecheck && pnpm -r test && pnpm --filter @lastwell/eval validate",
+    "scan:secrets": "node scripts/scan-secrets.mjs",
+    "e2e": "pnpm --filter @lastwell/e2e e2e",
+    "dev:fake": "node scripts/dev-fake.mjs",
     "dev:gateway": "pnpm --filter @lastwell/gateway dev",
     "dev:web": "pnpm --filter @lastwell/web dev"
   }
