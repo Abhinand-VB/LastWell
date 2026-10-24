@@ -3,7 +3,7 @@
 Only the integration session edits this file.
 
 ## Current task
-- C-06 README for judges (X-02 waits on X-01b/V-04…V-11; C-04 check waits on X-01a createFakeModel; X-03 waits on W-03/W-06/V-11)
+- waiting: X-02 (needs X-01b, V-04…V-07, V-11), C-04 check (needs X-01a createFakeModel), X-03 (needs W-03, W-06, V-11); re-running checks on version1 meanwhile
 
 ## Last green commit on version1
 - (X-04, see below)
@@ -36,6 +36,9 @@ Only the integration session edits this file.
 - Stroke pile: A01, A02, A05, A06 (all truth `likely` with LKW + blood thinner). Full deck: A03, A04, A07, B01, B02, B04, B06 (strokes), C01, C02, C05 (look-alikes), D01, D04 (no-stroke traps).
 - Reading: the deck uses D01/D04 instead of C03/C04 because those two carry two sign kinds incl. a focal one, so only the model's judgment keeps them at Possible; D-31's "strokes, chameleons, look-alikes" read as "cases that may or may not be strokes".
 - Not yet: X-02-style check of the 16 scripts through `createFakeModel` (X-01a); visual check of the print layout (no Chrome here; X-03 brings Playwright).
+
+### C-06 README for judges — done 2026-10-24 16:10 PT
+- README.md: setup in 7 commands (clone, install, .env, convex, ngrok, gateway, web), `pnpm dev:fake` path without keys, Cartesia features, model table, results placeholder, honest limits. `pnpm scan:secrets` ok. Feature claims describe the spec; X-05 re-checks them against landed code before the PR.
 
 ## blocked-keys (exact command to run once keys exist)
 -
