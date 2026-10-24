@@ -48,3 +48,11 @@ export { parseLkw } from "./lkw/parser.js";
 export { formatLkw, formatRange, UNKNOWN_DISPLAY } from "./lkw/format.js";
 export { loadScripts, type RawScript, type ScriptError, type LoadedScripts } from "./eval/loadScripts.js";
 export type { FastPassInput, ModelClient, ModelResult, QaInput, ReasonerInput } from "./claude/types.js";
+export { createFakeModel, fakeFastPass, fakeReason, fakeAnswer, type FakeModelOptions } from "./claude/fake.js";
+export {
+  runScript,
+  type ModelCallRecord,
+  type ScriptedRunOptions,
+  type ScriptedRunResult,
+  type TurnRecord,
+} from "./eval/scriptedRunner.js";
