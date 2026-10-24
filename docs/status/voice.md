@@ -3,13 +3,18 @@
 Only the voice session edits this file.
 
 ## Current task
-- 2026-10-24 17:00 PT: V-08 Q&A loop with barge-in, behind `FEATURE_QA_ENABLED` (default false, D-32: P0/P1 landed on all lanes, X-02 + X-03 green). Live gates still wait for ngrok + the Twilio webhook (human).
+- 2026-10-24 17:15 PT: every voice task is offline-done; waiting on ngrok + the Twilio webhook (human) for the live gates. Meanwhile: demo-path robustness only (bug fixes with tests).
 - **V-01 has landed (bfa43ca):** the human can now start ngrok and point the Twilio number's voice webhook at `{PUBLIC_BASE_URL}/twilio/voice` (integration's keys request).
 
 ## Last green commit on version1
 - bfa43ca (gateway X-01b … V-11), `pnpm e2e` 23 passed / 0 failed / 0 pending. Unit tests for it follow in the next commit.
 
 ## Acceptance evidence (pasted command output per task)
+
+### V-08 Q&A loop with barge-in — offline done, behind FEATURE_QA_ENABLED (default false)
+- `tts/sonicWs.ts` (one Sonic WebSocket per briefing call, opened at stream `start`; fresh `context_id`, `continue:false`, cancel; reopen once) + `FakeTtsStream`; `alerts/qaAnswer.ts` (docs/04 §4 post-processing in code: evidence quote-or-drop with purpose `qa`, fallback "That wasn't mentioned on the call.", LKW questions answered with the parser's spoken time, "not established" when unknown); loop in `twilio/alertStream.ts`.
+- `alerts/qa.test.ts` → 7 passed: with Q&A on the briefing ends "You can ask me about the call now."; no STT during the briefing; after the `briefing` mark status `qa` and an Ink session with the `qa` profile; "Is he on blood thinners?" → answer naming Eliquis as media then `mark answer-1`, qaTurn recorded (store + alert.updated); "Any seizure before this?" → fallback; invented evidence → fallback + `qa.evidence_dropped`; LKW answer "Last seen normal at 2:00 PM, N minutes ago." with no parentheses/dashes; barge-in (`turn.start` while answering) → `clear` + TTS cancel of `a-1`; no question within the idle timeout → hang-up → completed.
+- Live (blocked on a real call + rehearsal): `FEATURE_QA_ENABLED=true`, approve, answer the phone, ask "Is he on blood thinners?" → spoken answer ≤ 3 s (`qa.answer` ms), barge-in stops it ≤ 0.5 s, 60 s silence hangs up. Stays off until two clean rehearsals (D-32).
 
 ### X-03 UI smoke against the real gateway (2026-10-24 ~16:58 PT)
 - `pnpm e2e:ui` (dev:fake → this gateway + web) → **4 passed (27.5 s)**: home lists calls; console renders the A01 replay (transcript, Likely, quoted chips); board shows the approved A01 alert; console starts empty with "No stroke signs heard yet.". Screens can drop `apps/web/scripts/mock-gateway.ts` and the optional `alertDefaultTargetPhone`.

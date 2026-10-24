@@ -4,7 +4,8 @@ import { randomUUID } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import type { Logger } from "pino";
-import { CaseState, composeBriefing, type AlertStatus, type AlertSummary } from "@lastwell/core";
+import { CaseState, composeBriefing, type AlertStatus, type AlertSummary, type ModelClient } from "@lastwell/core";
+import { finalizeQa, type QaFinal } from "./qaAnswer.js";
 import type { CallService } from "../pipeline/calls.js";
 import type { Repo } from "../store/repo.js";
 import type { TtsClient } from "../tts/sonic.js";
@@ -25,6 +26,8 @@ export interface AlertServiceDeps {
   allowedNumbers: readonly string[];
   timezone: string;
   qaEnabled: boolean;
+  /** Q&A on the briefing call (V-08, FEATURE_QA_ENABLED). */
+  model?: ModelClient;
   now?: () => Date;
 }
 
@@ -221,6 +224,45 @@ export class AlertService {
     this.setStatus(a, "briefed");
     this.deps.log.info({ event: "alert.briefing_done", alertId: a.id, ms: a.answeredAtMs === null ? null : Date.now() - a.answeredAtMs }, "briefing played");
     if (!this.deps.qaEnabled) await this.hangupSid(a);
+  }
+
+  get qaEnabled(): boolean {
+    return this.deps.qaEnabled;
+  }
+
+  /** The briefing finished and Q&A is on: status qa. */
+  onQaOpen(a: AlertRecord): void {
+    this.setStatus(a, "qa");
+  }
+
+  /** One neurologist question → validated answer text (docs/04 §4). Never throws: errors → fallback. */
+  async answerQuestion(a: AlertRecord, question: string): Promise<QaFinal & { modelMs: number }> {
+    const now = this.now();
+    let out = null;
+    let modelMs = 0;
+    try {
+      if (!this.deps.model) throw new Error("no model");
+      const r = await this.deps.model.answer({ questionText: question, utterances: a.transcriptSnapshot, state: a.caseSnapshot, now, timezone: this.deps.timezone });
+      out = r.output;
+      modelMs = Math.round(r.ms);
+    } catch (err) {
+      this.deps.log.warn({ event: "qa.model_error", alertId: a.id, err: err instanceof Error ? err.message : String(err) }, "qa model failed");
+    }
+    const final = finalizeQa(question, out, { state: a.caseSnapshot, transcript: a.transcriptSnapshot }, now, this.deps.timezone);
+    if (final.evidenceDropped) this.deps.log.info({ event: "qa.evidence_dropped", alertId: a.id }, "qa evidence did not validate");
+    return { ...final, modelMs };
+  }
+
+  /** Record an answered turn (store + board/console via alert.updated). */
+  recordQaTurn(a: AlertRecord, seq: number, question: string, f: QaFinal, ms: number | null): void {
+    const turn = { alertId: a.id, seq, question, answer: f.answer, known: f.known, evidence: f.evidence, ms };
+    a.qaTurns.push(turn);
+    this.deps.repo.insertQaTurn(turn);
+    this.broadcast(a);
+  }
+
+  async hangupAlert(a: AlertRecord): Promise<void> {
+    await this.hangupSid(a);
   }
 
   /** Stream `stop` / socket close. */

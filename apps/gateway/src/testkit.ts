@@ -7,6 +7,7 @@ import type { Services } from "./services.js";
 import { MemoryStore } from "./store/memory.js";
 import { fakeSttFactory } from "./stt/sessions.js";
 import { FakeTts } from "./tts/sonic.js";
+import { FakeTtsStream } from "./tts/sonicWs.js";
 import { FAKE_ACCOUNT_SID, FakeTelephony } from "./twilio/fake.js";
 
 export const KEY = "test-internal-key";
@@ -44,6 +45,7 @@ export function testGateway(opts: { env?: Record<string, string>; model?: ModelC
     model: opts.model ?? createFakeModel(),
     stt: fakeSttFactory,
     tts,
+    ttsStream: () => new FakeTtsStream(),
     telephony,
     store,
     expectedAccountSid: FAKE_ACCOUNT_SID,

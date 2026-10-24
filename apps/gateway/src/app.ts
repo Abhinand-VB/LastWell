@@ -75,17 +75,10 @@ export function buildApp(env: Env, services: Services, log: Logger): Gateway {
     allowedNumbers: env.ALERT_ALLOWED_NUMBERS,
     timezone: env.CALL_TIMEZONE,
     qaEnabled: env.FEATURE_QA_ENABLED,
+    model: services.model,
   });
   snapshotFn = (id) => callSnapshot({ calls, alerts, repo }, id);
   boardFn = () => alerts.board(Date.now() - 24 * 3600_000);
-
-  const alertStreamDeps = { alerts, log, expectedAccountSid: services.expectedAccountSid };
-  if (services.telephony instanceof FakeTelephony) {
-    services.telephony.bind({
-      status: (sid, s) => alerts.onTwilioStatus(sid, s),
-      openStream: (send, close) => new AlertStreamSession(alertStreamDeps, send, close),
-    });
-  }
 
   const sttFactory = services.stt;
   const stt: Services["stt"] = (o) => {
@@ -95,6 +88,15 @@ export function buildApp(env: Env, services: Services, log: Logger): Gateway {
     });
     return s;
   };
+
+  const alertStreamDeps = { alerts, log, expectedAccountSid: services.expectedAccountSid, stt, ttsStream: services.ttsStream };
+  if (services.telephony instanceof FakeTelephony) {
+    services.telephony.bind({
+      status: (sid, s) => alerts.onTwilioStatus(sid, s),
+      openStream: (send, close) => new AlertStreamSession(alertStreamDeps, send, close),
+    });
+  }
+
 
   app.register(formbody);
   app.register(websocket);

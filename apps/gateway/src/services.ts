@@ -7,6 +7,7 @@ import { MemoryStore } from "./store/memory.js";
 import type { Store } from "./store/types.js";
 import { fakeSttFactory, inkFactory, type SttSessionFactory } from "./stt/sessions.js";
 import { FakeTts, SonicTts, type TtsClient } from "./tts/sonic.js";
+import { FakeTtsStream, SonicWsStream, type TtsStreamFactory } from "./tts/sonicWs.js";
 import { TwilioTelephony, type TelephonyClient } from "./twilio/client.js";
 import { FAKE_ACCOUNT_SID, FakeTelephony } from "./twilio/fake.js";
 
@@ -14,6 +15,8 @@ export interface Services {
   model: ModelClient;
   stt: SttSessionFactory;
   tts: TtsClient;
+  /** Q&A answers (V-08): one Sonic WebSocket per briefing call. */
+  ttsStream: TtsStreamFactory;
   telephony: TelephonyClient;
   store: Store;
   /** accountSid that Twilio media streams must carry. */
@@ -39,6 +42,9 @@ export function createServices(env: Env, log: Logger): Services {
     model,
     stt: fake("stt") ? fakeSttFactory : inkFactory({ ...cartesia, model: env.CARTESIA_STT_MODEL, keyterms: env.STT_KEYTERMS }),
     tts: fake("tts") ? new FakeTts() : new SonicTts({ ...cartesia, model: env.CARTESIA_TTS_MODEL, voiceId: env.CARTESIA_VOICE_ID }),
+    ttsStream: fake("tts")
+      ? () => new FakeTtsStream()
+      : () => new SonicWsStream({ ...cartesia, model: env.CARTESIA_TTS_MODEL, voiceId: env.CARTESIA_VOICE_ID }),
     telephony: twilioReal
       ? new TwilioTelephony({
           accountSid: env.TWILIO_ACCOUNT_SID ?? "",
