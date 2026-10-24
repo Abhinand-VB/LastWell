@@ -23,7 +23,7 @@ Nothing in this repository was written before the event. These documents are pla
 - **Quote or drop.** Every sign and fact shown to a human carries a verbatim quote from the transcript, attached to a transcript timestamp by code. The quote validator (`docs/03-CONTRACTS.md` §7) drops anything else. Never weaken it.
 - **Time is computed by code, never by a model** (`docs/06-LKW-PARSER.md`). Models output phrases; the parser outputs clock times and ranges.
 - **LastWell never says "not a stroke", never dispatches units, never changes call priority, never gives medical instructions to the caller.** When nothing is heard, the card says "No stroke signs heard yet."
-- **No secrets in git.** `.env` is gitignored; `.env.example` lists every variable with a comment. Secrets are read from `process.env` only, in `apps/gateway/src/env.ts`, `apps/eval/src/env.ts`, `packages/stt/scripts/spike.ts`, `packages/core/src/claude/client.ts` and, for the web app's server side, `apps/web/lib/env.ts` (`INTERNAL_API_KEY`, `GATEWAY_URL`; the browser bundle sees only `NEXT_PUBLIC_*` variables, never the service-role key). The full variable-to-process table is `docs/01-ARCHITECTURE.md` §8.
+- **No secrets in git.** `.env` is gitignored; `.env.example` lists every variable with a comment. Secrets are read from `process.env` only, in `apps/gateway/src/env.ts`, `apps/eval/src/env.ts`, `packages/stt/scripts/spike.ts`, `packages/core/src/claude/client.ts` and, for the web app's server side, `apps/web/lib/env.ts` (`INTERNAL_API_KEY`, `GATEWAY_URL`; the browser bundle sees only `NEXT_PUBLIC_*` variables; the web app has no database access at all). The full variable-to-process table is `docs/01-ARCHITECTURE.md` §8.
 - **Contracts are shared.** Do not change a schema in `docs/03-CONTRACTS.md` without updating the producer and every consumer in the same change, and adding a line to the decision log in `docs/09`.
 - **No sampling parameters.** The Claude API version we use (`2026-10-21`, `@anthropic-ai/sdk` v1) rejects `temperature`, `top_p`, `top_k`. Do not set them.
 
@@ -32,9 +32,9 @@ Nothing in this repository was written before the event. These documents are pla
 - TypeScript everywhere, `"strict": true`, ESM, Node 22 LTS, pnpm workspaces. No Python (one language, fewer failure points).
 - Validate every external input with zod at the boundary: Twilio webhook bodies, WebSocket messages, LLM outputs, HTTP bodies, environment variables (fail fast at boot with a readable message).
 - Logging: `pino` JSON. Every gateway log line carries `callId` (and `alertId` when relevant). Latencies are integers in milliseconds under the key `ms`.
-- An error inside one call must never crash the gateway process. Every per-call handler is wrapped; log and continue; the call's `case_states` row gets `last_error`.
+- An error inside one call must never crash the gateway process. Every per-call handler is wrapped; log and continue; the call's `caseStates` record gets `lastError`.
 - Timeouts: Claude requests 8 s with one retry; Cartesia WebSocket reconnect once then degrade (`docs/05` §9); Twilio REST 10 s.
-- `packages/core` does no I/O except calling the Claude API, and reads only `ANTHROPIC_API_KEY` and `CLAUDE_TIMEOUT_MS` from the environment; everything else arrives as config. The Ink 2 client lives in `packages/stt` (shared by the gateway and the eval runner). Everything else that touches Twilio, Cartesia, Supabase or HTTP lives in `apps/gateway`; the test runner lives in `apps/eval`.
+- `packages/core` does no I/O except calling the Claude API, and reads only `ANTHROPIC_API_KEY` and `CLAUDE_TIMEOUT_MS` from the environment; everything else arrives as config. The Ink 2 client lives in `packages/stt` (shared by the gateway and the eval runner). Everything else that touches Twilio, Cartesia, Convex or HTTP lives in `apps/gateway` (Convex functions in `apps/gateway/convex/`); the test runner lives in `apps/eval`.
 - Commit messages: `<lane>: <task-id> <what>` — e.g. `voice: V-03 route media frames to two STT sessions`.
 - Branch per task, merge to `main` as soon as the acceptance criteria pass. `main` must always start and serve the demo path.
 
