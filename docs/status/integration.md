@@ -2,7 +2,7 @@
 
 Only the integration session edits this file.
 
-## Remaining work (snapshot 2026-10-24 21:31 PT; refreshed every 20-minute loop)
+## Remaining work (snapshot 2026-10-24 21:53 PT; refreshed every 20-minute loop)
 
 Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live eval on the 20 scripts, numbers on the slide → (c) browser-mic fallback + play-briefing-locally on the live gateway → (d) W-11 polish for the judging table. Q&A (D-32: R-08, V-08 live) only after all of that is green. No real phone calls 9 PM–8 AM (FakeTelephony overnight).
 
@@ -84,6 +84,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - `pnpm dev:fake` replays A01 through `POST /api/calls/replay`; it logs a 404 until V-11 lands, and the gateway runs without fakes until X-01b lands (it ignores `LASTWELL_FAKES` today).
 
 ## Periodic version1 checks (newest first)
+- 2026-10-24 21:53 PT · version1 5e55cd7 (no new commits) · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50). Idle: reasoning 1 h 31 → BLOCKERS, screens 2 h 43 (nothing P0/P1 open); voice 34 min ok.
 - 2026-10-24 ~21:40 PT · D-50: per-loop main syncs stopped (last: PR #5, dcc4d93). main stays behind version1 until the final merge.
 - 2026-10-24 21:30 PT · version1 2228586 = main (dcc4d93, PR #5 at 21:20 on request) · verify exit 0 · e2e 23/0/0 (strict) · no sync needed. Idle: screens 2 h 20 (nothing P0/P1 open); reasoning 1 h 08 (build work done; asked to review voice's core LKW edit); voice active 21:19.
 - 2026-10-24 21:08 PT · version1 11eb6ef (voice LKW widen fix, D-49 Q&A sorting) · verify exit 0 · e2e 23/0/0 (strict) · **synced to main: PR #4, a10249f**. Idle: screens 2 h (nothing P0/P1 open); voice active 20:52; reasoning 20:22.
