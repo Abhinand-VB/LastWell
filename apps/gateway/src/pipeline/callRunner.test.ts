@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { createFakeModel, type ModelClient } from "@lastwell/core";
-import { testGateway, until, type TestGateway } from "../testkit.js";
+import { auth, testGateway, until, type TestGateway } from "../testkit.js";
 
 let gw: TestGateway | null = null;
 afterEach(async () => {
@@ -47,5 +47,34 @@ describe("call runner (V-05)", () => {
     await gw.calls.end(call);
     expect(call.runner!.state.version).toBeGreaterThan(v);
     expect(call.status).toBe("ended");
+  });
+});
+
+describe("LKW on replay (B01: relative phrase, anchored to the replay's clock)", () => {
+  it("a model that hands over the truncated span 'an hour ago' still yields half an hour before the caller said it", async () => {
+    // As seen live (B01 replayed at 9:09 PM showed 8:09 PM): the phrase passed the in-quote check but lost "half".
+    const base = createFakeModel();
+    const truncate = (s: string) => s.replace(/^.*half an hour ago.*$/i, "an hour ago");
+    const model: ModelClient = {
+      ...base,
+      fastPass: async (i) => {
+        const r = await base.fastPass(i);
+        return r.output === null ? r : { ...r, output: { ...r.output, facts: r.output.facts.map((f) => (f.kind === "last_known_well" ? { ...f, value: truncate(f.value) } : f)) } };
+      },
+      reason: async (i) => {
+        const r = await base.reason(i);
+        const lkw = r.output?.last_known_well;
+        return r.output === null || !lkw ? r : { ...r, output: { ...r.output, last_known_well: { ...lkw, phrase: truncate(lkw.phrase) } } };
+      },
+    };
+    gw = testGateway({ model });
+    const res = await gw.app.inject({ method: "POST", url: "/api/calls/replay", headers: auth, payload: { scriptId: "B01", speed: 50 } });
+    const call = gw.calls.registry.get(res.json().callId)!;
+    await until(() => call.status === "ended" && call.runner!.state.lkw !== null, 8000);
+    const lkw = call.runner!.state.lkw!;
+    const said = call.utterances.find((u) => u.id === lkw.ref.utteranceId)!;
+    const saidAt = Date.parse(call.streamStartedAt!) + said.tStartMs;
+    expect(lkw.ref.quote).toMatch(/half an hour ago/);
+    expect(Math.round((saidAt - Date.parse(lkw.lkwAt!)) / 60_000)).toBe(30);
   });
 });

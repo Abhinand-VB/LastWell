@@ -16,6 +16,7 @@ import type {
 import { guardLevel } from "../validate/levelGuard.js";
 import type { ValidatedFact, ValidatedFastPass, ValidatedReasoner, ValidatedSign } from "../validate/outputs.js";
 import { nextQuestion } from "./nextQuestion.js";
+import { widenPhrase } from "../lkw/widen.js";
 
 export interface ReducerConfig {
   /** LIKELY_MIN_DISTINCT_SIGNS (level guard). */
@@ -102,7 +103,7 @@ function parseFact(f: Fact, utterances: readonly Utterance[], cfg: ReducerConfig
   if (!start.isValid) return null;
   const saidAt = start.plus({ milliseconds: u.tStartMs }).toISO();
   if (saidAt === null) return null;
-  const parsed = cfg.parseLkw({ phrase: f.value, saidAt, timezone: cfg.timezone });
+  const parsed = cfg.parseLkw({ phrase: widenPhrase(f.value, f.ref.quote), saidAt, timezone: cfg.timezone });
   return { ...parsed, ref: f.ref, minutesAgo: null };
 }
 
