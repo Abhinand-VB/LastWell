@@ -56,7 +56,7 @@ Two files in `docs/guardrails/`: `call-evidence-hard-rules.md` is the human-prov
 
 The output schemas (docs/03 §4) do not change; the compact file's own first paragraph tells the model to apply the rules inside them. Q&A (§4) does not get the rules. `packages/core/src/prompts/guardrails.ts` embeds the file as a string constant (core does no file I/O at runtime); regenerate it with `node packages/core/scripts/gen-guardrails.mjs` after editing the file, and `guardrails.test.ts` fails when they drift. The rules are part of the cached system block (`cache_control`), so they cost little after the first call. If the full file makes the fast pass more than ~0.3 s slower at p50, the fast pass gets only the intro and sections A and C (`GUARDRAILS_MODEL_AC`). Measured +0.18 s, so both passes ship the whole file (docs/09 D-46).
 
-Known conflicts (open, docs/status/reasoning.md): R24 (a wake-up time is not last-known-well) vs §2's "woke up like this" example and docs/06 R11; R19 (a corrected claim is not emitted again) vs docs/03 §3 (signs are never removed once added, so a sign the fast pass took before the correction stays on the card).
+Settled conflicts (D-47): the compact file drops R24's wake-up clause, so "woke up like this" stays a last_known_well phrase (§2, docs/06 R11); R19 (a corrected claim is not emitted again) does not remove a sign already on the card, because signs are append-only (docs/03 §3) — a known limitation.
 
 ## 2. Fast pass — `claude-haiku-5-5`, effort `low`, thinking disabled, `max_tokens 1024`
 

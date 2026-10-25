@@ -32,7 +32,7 @@ RULES THAT CANNOT BE BROKEN
 /** What Claude receives: the docs/04 base prompt plus the compact call-evidence rules (docs/04 §1.1, D-44, D-46). */
 export const REASONER_SYSTEM = withGuardrails(REASONER_BASE);
 
-export const REASONER_PROMPT_VERSION = "reasoner-4";
+export const REASONER_PROMPT_VERSION = "reasoner-5";
 
 /** docs/04 §3 `lkwLine`. */
 export function lkwLine(lkw: LkwResult | null): string {

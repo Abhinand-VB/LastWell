@@ -34,7 +34,7 @@ These rules decide what counts as evidence. [Rn] is the source rule number. Appl
 
 ## E. Time
 - Last known well, first symptom, time found and call time are different things; only a last-known-well phrase goes in last_known_well. [R23]
-- Waking up with symptoms, being found or calling at a time is not last known well; bedtime counts only if the caller says the patient was normal then. [R24]
+- Being found or calling at a time is not last known well; bedtime counts only if the caller says the patient was normal then. (Deviation, D-47: the original's wake-up clause is not used here; "woke up like this" is still a last-known-well phrase.) [R24]
 - Keep approximate or relative phrases as said ("about an hour ago", "around nine"); never choose AM/PM or convert to a clock time. [R25]
 - A missing time never cancels a reported sign. [R26]
 
