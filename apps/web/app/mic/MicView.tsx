@@ -175,9 +175,9 @@ export function MicView() {
 
           {callId && (
             <p className="mt-6 text-lg text-slate-300">
-              Call{" "}
+              The console for this call is open in another tab.{" "}
               <Link className="text-sky-300 underline" href={`/console/${callId}`} target="_blank">
-                open console
+                Open it again
               </Link>
             </p>
           )}

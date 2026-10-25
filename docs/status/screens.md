@@ -3,12 +3,22 @@
 Only the screens session edits this file.
 
 ## Current task
-- W-08 against the real gateway (D-43 order item 5)
+- done for tonight: all buildable screens tasks landed; waiting on human steps (W-08 speak-into-mic, W-11 approval)
 
 ## Last green commit on version1
-- W-12, D-41(c) (see below)
+- W-08 real-gateway check + W-11 polish (see below)
 
 ## Acceptance evidence (pasted command output per task)
+
+### W-08 against the real gateway — 2026-10-24 ~20:05 PT (speak-into-mic step: human)
+- Real gateway from this worktree (`GATEWAY_PORT=28787 WEB_PORT=23000 node scripts/dev-fake.mjs`; no `.env` here, so STT is FakeSttSession, which discards audio). Edge via Playwright with Chromium's fake microphone (`--use-fake-device-for-media-stream`, a test tone): `/mic` → Start → `getUserMedia` ok → `POST /api/calls/browser` → WS `ws://localhost:28787/browser/media/{callId}?token=…`; after ~3 s 163 binary frames sent, every one 640 bytes; level bar 84 %. Console tab opened at `/console/{callId}`: "Browser mic | Caller still on the line | Live"; gateway `GET /api/calls/{id}` → mode `browser`, status `live`.
+- Transcript path: STT is faked here, so one turn was injected with `POST /api/dev/calls/{id}/utterances` → 201 → console showed "…he can't lift his coffee cup." and the card reached Likely (fake model). Stop → text frame `{"type":"end"}` → console "Call ended" (207 frames in total).
+- Screenshots `apps/web/screenshots/{mic,console-browser-mic}.png`.
+- **Human step (blocked-keys, gateway Mac):** `LASTWELL_FAKES=twilio pnpm --filter @lastwell/gateway start` with the real `.env` (Cartesia key), `pnpm --filter @lastwell/web dev`, open http://localhost:3000/mic in Chrome, allow the microphone, Start, read Card A aloud → the console tab shows utterances labelled **Mic** within ~2.5 s of each pause and the card reaches Likely with quoted chips; Stop → "Call ended".
+
+### W-11 final polish — 2026-10-24 ~20:05 PT (presenter approval pending)
+- Header labels the call "A01 · Replay" / "Browser mic" / "Phone •••1234" instead of the raw mode; mic page says "The console for this call is open in another tab. Open it again"; the Next dev badge is gone (`devIndicators: false`).
+- Screenshots refreshed against the real gateway (phone delivery, FakeTelephony): `apps/web/screenshots/{console-A01-mid,console-A01-end,console-send-modal,console-alert-status,console-C01-end,board,home,mic,console-browser-mic,console-local-play,console-local-played}.png`. Send enabled at the A01 end state (`isDisabled() → false`); C01 end: Possible, speech chip, look-alike "low blood sugar — answered: diabetic". The board reads "Window passed" because a replayed "2 PM" is > 4.5 h before the real clock (correct; the demo card uses {T} ≈ 1 h earlier).
 
 ### W-12 Play briefing (D-43) — done 2026-10-24 ~19:30 PT
 - `hooks/useBriefingPlayer.ts` (one `<audio>` on `/api/gateway/alerts/:id/audio`, `onended` → `POST …/played`), `components/console/SendAlert.tsx` (local mode: "▶ Play briefing" on the alert status, steps Ready to play → Played → Completed, "Call again"/"Hang up" hidden; footer "Test briefing" + "▶ Play test briefing"), `lib/alerts.ts` (`statusSteps(…, delivery)`, `statusLabel`, `canPlay`), `lib/config.ts` (`alertDelivery` read with default `phone` until core's `ConfigResponse` has it; `alertDefaultTargetPhone` now required, since the gateway serves it), `lib/proxy.ts` (response body passed as bytes, not text). The proxy's path-segment allowlist already admits `alerts/:id/audio` and `alerts/:id/played`.
@@ -71,7 +81,8 @@ Only the screens session edits this file.
 - Real gateway: `/ws/ui` and REST land with V-04; until then the check above runs against `apps/web/scripts/mock-gateway.ts`.
 
 ## blocked-keys (exact command to run once keys exist)
-- W-08 live speech: gateway with real STT (`LASTWELL_FAKES=` without `stt`, Cartesia key) + `pnpm --filter @lastwell/web dev`, open http://localhost:3000/mic in Chrome, Start, read Card A → console shows Mic utterances and the card reaches Likely.
+- W-08 live speech: on the gateway Mac, `LASTWELL_FAKES=twilio pnpm --filter @lastwell/gateway start` (real `.env`) + `pnpm --filter @lastwell/web dev`, open http://localhost:3000/mic in Chrome, allow the mic, Start, read Card A → console shows Mic utterances and the card reaches Likely.
+- W-12 real audio: same gateway with `ALERT_DELIVERY=local`, Send on a Likely call, ▶ Play briefing → Sonic voice from the laptop speaker, pill Completed.
 
 ## wired-to-fake (replace when the named task lands)
 - `apps/web/lib/config.ts`: `alertDelivery` (D-43) is read as an optional field (default `phone`) until reasoning adds it to core's `ConfigResponse`.
@@ -86,6 +97,7 @@ Only the screens session edits this file.
 - [ ] to integration: W-12 acceptance asks for an X-03 step that clicks Play briefing under `pnpm dev:fake`; that needs `ALERT_DELIVERY=local` in the dev:fake/X-03 env (or a second project). Selectors: `[data-testid=send-button]`, `confirm-checkbox`, `modal-send`, then `play-briefing`; done when `[data-testid=alert-status][data-status=completed]`. (W-12)
 
 ## Blockers for humans
+- [ ] W-08 · speak Card A into /mic on the gateway Mac (steps under blocked-keys); the automated fake-mic run through the real gateway passed · nothing else waits on it
 - [ ] W-11 · presenter approval of the console/board look from 2 m (screenshots in `apps/web/screenshots/`) · nothing waits on it; polish continues on request
 -
 
