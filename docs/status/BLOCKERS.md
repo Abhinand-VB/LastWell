@@ -6,7 +6,7 @@ Integration copies open blockers from the four lane files here at each merge, ne
 ## Shift note (integration, 2026-10-25 05:20 PT) — morning order
 version1 green all night (verify + e2e 23/0/0 every 20 min); tag `freeze` = c5b7f7b (02:00); no lane commits since. **Devpost closes 9:00 AM; plan everything to finish by 8:00 (check-in).**
 1. **Decide the LKW parser gap** ("ten past three" → 10 AM; fix with a test, or leave) — reasoning can land a fix in ~30 min if yes.
-2. **W-13** (screens): Send at every level + notes field in the console (D-53, gateway side already done).
+2. ~~W-13~~ **done 05:40 PT** (3a9bae7; plus console auto-open c631968, post-freeze by human decision per screens).
 3. **Morning tests** on the phone path (after 8 AM is too late for anything but rehearsal; start as early as allowed): a chameleon card (B01/B06), a look-alike card, a Q&A rerun → **Q&A keep or kill** (`FEATURE_QA_ENABLED`).
 4. Print the deck (`docs/cards/cards.html`, duplex, seal backs); slide from docs/08 §3 (dev 20 + blind 8 + audio line); Devpost from docs/status/RELEASE.md (Inspiration, What we learned, Path to production, limits); backup video.
 5. **Final merge** (D-50): integration runs the green check on the version1 tip, merges `version1 → main` once, tags `demo-ready` — tell integration when the code is final.

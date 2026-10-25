@@ -69,6 +69,7 @@ describe("gateway app", () => {
       featureQa: false,
       callTimezone: "America/Los_Angeles",
       alertDefaultTargetPhone: "+14155550100",
+      alertAllowedNumbers: ["+14155550100"],
       alertDelivery: "phone",
     });
   });

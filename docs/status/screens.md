@@ -10,6 +10,11 @@ Only the screens session edits this file.
 
 ## Acceptance evidence (pasted command output per task)
 
+### Send modal: pick an allowed number, formatted (D-58; human request 2026-10-25 ~05:55 PT; not landed)
+- `/api/config` gains `alertAllowedNumbers` (core `ConfigResponse`, gateway `app.ts`, web `lib/config.ts` defaults to []). The modal lists `phoneChoices(default, allowed)` as radio cards formatted by `formatPhone` (`+1 (916) 233-8165`), the default first, preselected and labelled "On-call stroke team (default)", plus "Other number" (typed field, formatted on blur). One number per Send; ringing several at once was not built (D-58).
+- `pnpm verify` exit 0 (web 57 tests: +1 `formatPhone`, +2 `phoneChoices`); `pnpm e2e` 23 passed, 0 failed.
+- Observed on the live stack (real Claude/Cartesia/Convex, Twilio faked, `ALERT_DELIVERY=local`): B01 replay → modal shows the 3 numbers of `ALERT_ALLOWED_NUMBERS`, default preselected; Other → typed "415 555 0100" → blur → "+1 (415) 555-0100"; picked the second number, confirmed, Send → alert `queued` with `targetPhoneMasked` "•••5907" (the picked one).
+
 ### Auto-open the console for an incoming call (human request, 2026-10-25 ~02:35 PT; landed ~05:45 PT)
 - Update ~02:50 PT (human: "not working" on :3000 under dev:fake): replays now count too (only mic calls are excluded); incoming calls reuse one tab named `lastwell-console`, or a separate tab while that tab shows a live call (`localStorage` `lastwell:console-tab-live`); Home's Replay buttons claim their call so it is not opened twice. Chrome blocks `window.open` without a click unless pop-ups are allowed for the origin: observed in the user's Chrome (B01 replay via `POST /api/calls/replay` → banner, no tab). One-time fix per laptop: allow pop-ups for the web origin.
 - Update ~02:52 PT: the banner is gone; when the new tab is blocked the console opens in the current tab (`router.push`). Observed in the user's Chrome (pop-ups still blocked for localhost:3000: `window.open` → null for both `_blank` and the named target): Home → C01 replay via `POST /api/calls/replay` → the same tab showed `/console/{id}` live within ~6 s. A real second tab was seen once (09:38 UTC, `_blank`) before pop-ups were blocked.

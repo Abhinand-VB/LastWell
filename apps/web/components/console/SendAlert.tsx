@@ -1,7 +1,8 @@
 "use client";
 // W-05: Send stroke pre-alert (docs/01 §7, D-30, D-35). Enabled at every level (D-53, W-13), also while
 // the 911 call is live (the target is the medical professional's phone, not the caller's). The modal
-// prefills ALERT_DEFAULT_TARGET_PHONE from /api/config and requires an explicit confirm; below possible
+// preselects ALERT_DEFAULT_TARGET_PHONE among the allowed numbers from /api/config, formatted (D-58), plus
+// "Other number" for a typed one, and requires an explicit confirm; below possible
 // it says LastWell has no signs and sends override: true. An optional note (≤ 200) is sent as `notes`.
 // W-12 (D-43): with alertDelivery "local" no call is placed; Play briefing plays the WAV here.
 // D-54: the test links are not on the console during a call; TestLinks lives on /preflight and ?debug.
@@ -18,14 +19,17 @@ import {
   canPlay,
   isActive,
   latestAlert,
+  phoneChoices,
   sendErrorText,
   statusLabel,
   statusSteps,
   stepIndex,
 } from "@/lib/alerts";
 import { useBriefingPlayer } from "@/hooks/useBriefingPlayer";
-import { toE164 } from "@/lib/format";
+import { formatPhone, toE164 } from "@/lib/format";
 import type { WebConfig } from "@/lib/config";
+
+const OTHER = "other";
 
 export function SendAlert({
   callId,
@@ -120,7 +124,10 @@ function SendModal({
   onClose: () => void;
   onSent: (a: AlertSummary) => void;
 }) {
-  const [phone, setPhone] = useState(config.alertDefaultTargetPhone ?? "");
+  // D-58: the allowed numbers are choices (default first, preselected); "other" keeps the typed field.
+  const choices = phoneChoices(config.alertDefaultTargetPhone, config.alertAllowedNumbers);
+  const [picked, setPicked] = useState<string>(choices[0] ?? OTHER);
+  const [phone, setPhone] = useState("");
   const [note, setNote] = useState("");
   const [confirmed, setConfirmed] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -130,10 +137,14 @@ function SendModal({
   const [forcedOverride, setForcedOverride] = useState(false);
   const override = belowPossible(level) || forcedOverride;
   const input = useRef<HTMLInputElement>(null);
-  const e164 = toE164(phone);
+  const typing = picked === OTHER;
+  const e164 = typing ? toE164(phone) : picked;
 
   useEffect(() => {
-    input.current?.focus();
+    if (typing) input.current?.focus();
+  }, [typing]);
+
+  useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && !busy && onClose();
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
@@ -195,25 +206,64 @@ function SendModal({
           </p>
         )}
 
-        <label className="mt-6 block text-base font-semibold text-lw-ink-2" htmlFor="target-phone">
-          Stroke team phone
-        </label>
-        <input
-          id="target-phone"
-          ref={input}
-          data-testid="target-phone"
-          type="tel"
-          inputMode="tel"
-          value={phone}
-          onChange={(e) => setPhone(e.target.value)}
-          placeholder="+1 415 555 0100"
-          className="mt-2 w-full rounded-xl bg-lw-surface px-4 py-3 font-mono text-2xl text-lw-ink ring-1 ring-lw-border-strong focus:outline-none focus:ring-2 focus:ring-lw-accent"
-        />
+        <fieldset className="mt-6">
+          <legend className="text-base font-semibold text-lw-ink-2">Stroke team phone</legend>
+          {choices.length > 0 && (
+            <div className="mt-2 flex flex-col gap-2" role="radiogroup">
+              {[...choices, OTHER].map((c) => (
+                <label
+                  key={c}
+                  data-testid="phone-choice"
+                  data-phone={c}
+                  className={`flex cursor-pointer items-center gap-3 rounded-xl px-4 py-3 ring-1 ${
+                    picked === c ? "bg-lw-accent-soft ring-2 ring-lw-accent" : "ring-lw-border-strong hover:bg-lw-subtle"
+                  }`}
+                >
+                  <input
+                    type="radio"
+                    name="target-phone-choice"
+                    value={c}
+                    checked={picked === c}
+                    onChange={() => setPicked(c)}
+                    className="h-5 w-5 accent-blue-700"
+                  />
+                  {c === OTHER ? (
+                    <span className="text-lg text-lw-ink">Other number</span>
+                  ) : (
+                    <span className="flex flex-wrap items-baseline gap-x-3">
+                      <span className="font-mono text-2xl text-lw-ink">{formatPhone(c)}</span>
+                      {c === config.alertDefaultTargetPhone && (
+                        <span className="text-sm text-lw-ink-3">On-call stroke team (default)</span>
+                      )}
+                    </span>
+                  )}
+                </label>
+              ))}
+            </div>
+          )}
+          {typing && (
+            <input
+              id="target-phone"
+              ref={input}
+              aria-label="Stroke team phone"
+              data-testid="target-phone"
+              type="tel"
+              inputMode="tel"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              onBlur={() => e164 && setPhone(formatPhone(e164))}
+              placeholder="+1 (415) 555-0100"
+              className="mt-2 w-full rounded-xl bg-lw-surface px-4 py-3 font-mono text-2xl text-lw-ink ring-1 ring-lw-border-strong focus:outline-none focus:ring-2 focus:ring-lw-accent"
+            />
+          )}
+        </fieldset>
         <p className="mt-1 text-sm text-lw-ink-3">
-          {config.alertDefaultTargetPhone
-            ? "Prefilled with the on-call stroke team number."
+          {choices.length > 0
+            ? typing
+              ? "Only numbers on the allowed list can be called."
+              : "Prefilled with the on-call stroke team number."
             : "No default number configured — type the stroke team's number."}
-          {phone && !e164 && <span className="ml-2 font-semibold text-amber-800">Not a valid phone number.</span>}
+          {typing && phone && !e164 && <span className="ml-2 font-semibold text-amber-800">Not a valid phone number.</span>}
         </p>
 
         <div className="mt-6 flex items-baseline justify-between">

@@ -146,6 +146,12 @@ export function toE164(input: string): string | null {
   return null;
 }
 
+/** "+19162338165" → "+1 (916) 233-8165"; other E.164 numbers come back unchanged. */
+export function formatPhone(e164: string): string {
+  const m = /^\+1(\d{3})(\d{3})(\d{4})$/.exec(e164);
+  return m ? `+1 (${m[1]}) ${m[2]}-${m[3]}` : e164;
+}
+
 export function speakerLabel(s: "caller" | "dispatcher" | "mixed"): string {
   return s === "caller" ? "Caller" : s === "dispatcher" ? "Dispatcher" : "Mic";
 }

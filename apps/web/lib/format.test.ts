@@ -7,6 +7,7 @@ import {
   minutesAgo,
   mmss,
   quoteSegments,
+  formatPhone,
   stateRefs,
   toE164,
   windowBar,
@@ -93,6 +94,12 @@ describe("format", () => {
     expect(toE164("415-555-0100")).toBe("+14155550100");
     expect(toE164("14155550100")).toBe("+14155550100");
     expect(toE164("555-0100")).toBeNull();
+  });
+
+  it("formatPhone groups US numbers and leaves the rest as E.164 (D-58)", () => {
+    expect(formatPhone("+19162338165")).toBe("+1 (916) 233-8165");
+    expect(toE164(formatPhone("+14086905907"))).toBe("+14086905907");
+    expect(formatPhone("+447700900123")).toBe("+447700900123");
     expect(toE164("+0123")).toBeNull();
   });
 });
