@@ -109,6 +109,7 @@ const CARDS = [
     "Address: 2041 Balboa Street." ] },
 ];
 
+const ANTIPLATELET = /aspirin|clopidogrel|plavix|ticagrelor|brilinta/i;
 const SIGN_LABEL = { balance: "B balance", eyes: "E eyes", face: "F face", arms: "A arms", speech: "S speech" };
 const ORDER = ["balance", "eyes", "face", "arms", "speech"];
 const esc = (s) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
@@ -130,7 +131,8 @@ function back(card, s) {
     ["LastWell should show", `Level: <b>${level}</b>`],
     ["BE-FAST chips", chips],
     ["Last known well", lkw],
-    ["Blood thinner", thinner],
+    // D-41(c): an antiplatelet is named as such, never called a blood thinner.
+    [ANTIPLATELET.test(t.bloodThinner ?? "") ? "Antiplatelet" : "Blood thinner", thinner],
   ];
   if (t.lookalike) rows.push(["Look-alike panel", `${t.lookalike}${s.type === "lookalike" ? " — named, not escalated" : ""}`]);
   if (t.isStroke && t.expectedLevel === "possible") {

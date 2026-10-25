@@ -85,7 +85,7 @@ pnpm --filter @lastwell/eval eval --mode text # scripted eval: LastWell vs keywo
 
 ## Results
 
-The scripted eval (20 calls written by the team: 12 strokes including chameleons, 5 stroke look-alikes, 3 other emergencies) compares LastWell with a keyword alert of the kind general 911 tools ship ("stroke", "droop", "slur", "numb", …). Numbers below are copied from the eval run's own output (E-03 run 1, `apps/eval/results/E-03-run1-table.md`), not typed by hand:
+The scripted eval (20 calls written by the team: 12 strokes including chameleons, 5 stroke look-alikes, 3 other emergencies) compares LastWell with a keyword alert of the kind general 911 tools ship ("stroke", "droop", "slur", "numb", …). Numbers below are copied from the eval run's own output (E-03 run 1, re-scored after the B08 truth change, `apps/eval/results/E-03-run1-table.md`), not typed by hand:
 
 | Metric | LastWell (Haiku 5.5 + Sonnet 5.5) | Keyword baseline |
 | --- | --- | --- |
