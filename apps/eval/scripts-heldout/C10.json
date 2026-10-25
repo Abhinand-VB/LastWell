@@ -1,0 +1,25 @@
+{
+  "id": "C10", "type": "lookalike", "title": "Coworker: man 31 breathing fast, tingling in both hands and lips, sure he's dying, has had panic attacks", "sourceId": null,
+  "callStartLocal": "2026-10-25T10:15:00",
+  "turns": [
+    { "speaker": "dispatcher", "atMs": 0,     "text": "911, what's the address?" },
+    { "speaker": "caller",     "atMs": 3000,  "text": "Pier 17, the Harbor Co-working space, second floor. My coworker can't catch his breath." },
+    { "speaker": "dispatcher", "atMs": 9000,  "text": "Tell me exactly what's happening." },
+    { "speaker": "caller",     "atMs": 12000, "text": "He's breathing super fast, like gasping, and he says both his hands are tingling and his lips feel buzzy. He keeps saying he's dying." },
+    { "speaker": "dispatcher", "atMs": 22000, "text": "Is he awake and talking?" },
+    { "speaker": "caller",     "atMs": 25000, "text": "Yes, he's talking a mile a minute, he's sweating and shaking. He's 31, he's normally really healthy." },
+    { "speaker": "dispatcher", "atMs": 32000, "text": "Has anything like this happened to him before?" },
+    { "speaker": "caller",     "atMs": 36000, "text": "He told me he gets panic attacks, he had a bad one last year before a presentation. He has a big pitch in ten minutes." },
+    { "speaker": "dispatcher", "atMs": 47000, "text": "Can he move both arms and speak clearly?" },
+    { "speaker": "caller",     "atMs": 51000, "text": "Yeah, both arms are fine, he's gripping the chair with both hands, and he's speaking clearly, just fast." },
+    { "speaker": "dispatcher", "atMs": 59000, "text": "Okay. Help is on the way. Have him sit and try to slow his breathing with you." }
+  ],
+  "truth": {
+    "isStroke": false, "expectedLevel": "none", "signs": [],
+    "lkw": null,
+    "bloodThinner": null, "lookalike": "panic attack",
+    "facts": [ { "kind": "age", "value": "31" },
+               { "kind": "sex", "value": "male" } ]
+  },
+  "audio": null, "group": "native"
+}

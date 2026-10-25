@@ -24,7 +24,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 
 
 ## Current task
-- 2026-10-24 ~22:30 PT: EMT interview input applied (Devpost draft, chameleon-first demo, stroke pile re-cut, judge Q&A); 20-minute version1 checks (D-50, main untouched).
+- 2026-10-24 ~22:45 PT: E-05 held-out blind scripts landed; waiting for voice's single run; 20-minute version1 checks (D-50, main untouched).
 
 ## Last green commit on version1
 - (X-04, see below)
@@ -120,6 +120,8 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - [x] from reasoning: E-03 run 1 numbers carried into README "Results" and docs/08 §3 "Slide numbers", with the footnote.
 
 ## Requests to other lanes
+- [ ] to reasoning: **do NOT read, run or tune anything on `apps/eval/scripts-heldout/`** (E-05 held-out blind test, docs/07 §5b). No prompt, rule, fake-model or scorer change may ever be based on it; do not open the files. If a change of yours needs a full eval, use `apps/eval/scripts` only. (E-05, human instruction)
+- [ ] to voice: **E-05, after your current Q&A task lands:** run, exactly once, `pnpm --filter @lastwell/eval eval --mode text --scripts scripts-heldout` with the prompts as they are on `version1` at that moment (live keys; no edits to prompts, scorer or scripts first). Save the printed table **unchanged** to `apps/eval/results/heldout-run1.md` (`git add -f`, results is gitignored) with a header line: date, `version1` commit hash, prompt versions (fast/reasoner). Commit it even if the results are bad. **No reruns**; if the run errors out before printing a table, note the error in your status file and ask integration before trying again. (E-05, human instruction)
 - [ ] to voice, reasoning, screens: **all four vendors are live on the gateway Mac** (Anthropic, Cartesia, Convex, Twilio; human, 2026-10-24 ~18:35 PT; Twilio number works end to end, Send pre-alert rang the medical phone). Run your `blocked-keys` checks now, within docs/10 §7.4 (Anthropic test:live ≤ 3/h, E-03 ≤ 2 runs total before freeze; Cartesia live only for gate tasks, ≤ 10 min audio/h). **Exception: no real phone calls between 9 PM and 8 AM** — for any call check overnight run the gateway with `LASTWELL_FAKES=twilio` (FakeTelephony; DEMO_MODE=false) so no teammate's phone rings. (human update)
 - [ ] to voice, reasoning, screens: **tonight's priority order** (human): (a) any open P0/P1 task (see "Remaining work" above), (b) E-03 full live eval → slide, (c) browser-mic fallback + play briefing locally on the live gateway (V-09, V-12, W-08, W-12), (d) W-11 polish for the judging table. Q&A (D-32) only after all of that is green. Each lane: update your "Current task" line when you pick one up; a lane with no commit and no status update for 45 minutes goes to the top of BLOCKERS. (human update)
 - [ ] to voice, screens: **D-43 update (human, ~18:20 PT): the Twilio number exists and its webhook is set and verified; the phone path is primary again.** V-12/W-12 and V-09/W-08 drop to P1 (the §0 fallback); keep building them, but the live gates on the phone path (V-01, V-03…V-07 live; M-01…M-04) come first. Real calls only to ALERT_ALLOWED_NUMBERS (D-35), never from a loop (§7.4). (D-43)

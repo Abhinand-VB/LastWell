@@ -236,6 +236,15 @@ WAV files: 16 kHz, mono, 16-bit PCM, named `{id}.wav` under `apps/eval/audio/`. 
 
 (The numbers above are placeholders to show the shape; real ones are filled in by the run and must never be typed by hand.)
 
+## 5b. Held-out blind test (task E-05, 2026-10-24)
+
+Answers "you graded your own homework". Protocol, fixed before any run:
+
+1. **Written by integration**, in `apps/eval/scripts-heldout/` (A11, B09, B10, B11, C09, C10, C11, D07): 4 strokes (1 classic; 3 chameleons: posterior balance/vision, a confusion-like aphasia, a caller who blames a pinched nerve), 3 look-alikes not in C01–C05 (urinary infection with confusion in an 86-year-old, a panic attack with tingling in both hands, a sedative overdose), 1 other emergency (a deep forearm cut). Caller styles not used in the 20 development scripts: rambling, interrupting, unsure of the time, non-family callers (coworker, neighbor, home aide, roommate), partial information. No caller phrase shares 5 consecutive words with the development scripts or docs/04 (checked at write time). Truth labels state what the caller means; they were not checked against the LKW parser, the fake model or any prompt.
+2. **Never seen by reasoning.** The reasoning lane does not read, run or tune anything on `scripts-heldout`, and no prompt or rule change is ever based on it.
+3. **Run once by voice**, after its current task, with the prompts as they are on `version1` at that moment: `pnpm --filter @lastwell/eval eval --mode text --scripts scripts-heldout`. The printed table is saved unchanged to `apps/eval/results/heldout-run1.md` with the commit hash and prompt versions, **even if the results are bad. No reruns.**
+4. The results slide shows it next to the development results: "20 development scripts" and "8 blind scripts", with the caveat that **all scripts are team-written**; blind means unseen by the people who tuned the prompts, not independent.
+
 ## 6. Acceptance for the eval lane (mirrors TASKS.md E-01…E-04)
 
 1. `--mode text --ids A01,B01,C01` completes in < 3 min and the summary table prints with no `NaN`.

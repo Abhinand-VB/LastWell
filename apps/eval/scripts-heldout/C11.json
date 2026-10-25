@@ -1,0 +1,27 @@
+{
+  "id": "C11", "type": "lookalike", "title": "Roommate, partial info: man 45 very drowsy, slurring, empty bottle of sleeping pills", "sourceId": null,
+  "callStartLocal": "2026-10-25T22:55:00",
+  "turns": [
+    { "speaker": "dispatcher", "atMs": 0,     "text": "911, what's the address of your emergency?" },
+    { "speaker": "caller",     "atMs": 4000,  "text": "3380 Mission Street, apartment 6. My roommate, Kevin, I can barely wake him up." },
+    { "speaker": "dispatcher", "atMs": 10000, "text": "Is he breathing?" },
+    { "speaker": "caller",     "atMs": 13000, "text": "Yes, but slow, like really slow and kind of snory. When I shake him he opens his eyes and mumbles and his words are all slurred, then he drifts off again." },
+    { "speaker": "dispatcher", "atMs": 26000, "text": "Did he take anything?" },
+    { "speaker": "caller",     "atMs": 29000, "text": "There's an empty bottle of his sleeping pills on the nightstand. It was half full yesterday, I think. Maybe he took some of his Xanax too, I'm not sure." },
+    { "speaker": "dispatcher", "atMs": 41000, "text": "How old is he?" },
+    { "speaker": "caller",     "atMs": 44000, "text": "He's 45." },
+    { "speaker": "dispatcher", "atMs": 47000, "text": "When did you last see him acting normal?" },
+    { "speaker": "caller",     "atMs": 51000, "text": "I talked to him at like eight, he was fine, a bit down, he said he was going to bed early." },
+    { "speaker": "dispatcher", "atMs": 60000, "text": "Okay. Help is on the way. Keep him on his side and keep checking his breathing." }
+  ],
+  "truth": {
+    "isStroke": false, "expectedLevel": "possible", "signs": ["speech"],
+    "lkw": { "localTime": "2026-10-25T20:00:00", "toleranceMin": 15 },
+    "bloodThinner": null, "lookalike": "overdose",
+    "facts": [ { "kind": "age", "value": "45" },
+               { "kind": "sex", "value": "male" },
+               { "kind": "alcohol_or_drugs", "value": "sleeping pills" },
+               { "kind": "address", "value": "3380 Mission Street, apartment 6" } ]
+  },
+  "audio": null, "group": "native"
+}

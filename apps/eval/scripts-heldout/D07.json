@@ -1,0 +1,26 @@
+{
+  "id": "D07", "type": "other", "title": "Coworker at a warehouse: deep box-cutter cut on the forearm, bleeding heavily", "sourceId": null,
+  "callStartLocal": "2026-10-25T14:20:00",
+  "turns": [
+    { "speaker": "dispatcher", "atMs": 0,     "text": "911, what's the address of your emergency?" },
+    { "speaker": "caller",     "atMs": 4000,  "text": "Westside Distribution, 1900 Evans Avenue, loading dock B. One of our guys cut himself bad." },
+    { "speaker": "dispatcher", "atMs": 11000, "text": "Tell me what happened." },
+    { "speaker": "caller",     "atMs": 14000, "text": "He slipped with a box cutter and opened up his forearm, it's deep, it's bleeding a lot, it's soaking through the towel." },
+    { "speaker": "dispatcher", "atMs": 23000, "text": "Is he awake and talking?" },
+    { "speaker": "caller",     "atMs": 26000, "text": "Yes, he's talking, he's pale and kind of shaky, he says he feels lightheaded." },
+    { "speaker": "dispatcher", "atMs": 32000, "text": "Press firmly on the wound with a clean cloth and don't lift it to look. Is the bleeding slowing?" },
+    { "speaker": "caller",     "atMs": 40000, "text": "I'm pressing. It's slowing a little. He can't close that hand all the way because it hurts so much." },
+    { "speaker": "dispatcher", "atMs": 48000, "text": "How old is he?" },
+    { "speaker": "caller",     "atMs": 51000, "text": "Forty-two, I think." },
+    { "speaker": "dispatcher", "atMs": 54000, "text": "Okay. Help is on the way. Keep the pressure on and keep him sitting." }
+  ],
+  "truth": {
+    "isStroke": false, "expectedLevel": "none", "signs": [],
+    "lkw": null,
+    "bloodThinner": null, "lookalike": null,
+    "facts": [ { "kind": "age", "value": "42" },
+               { "kind": "sex", "value": "male" },
+               { "kind": "address", "value": "1900 Evans Avenue, loading dock B" } ]
+  },
+  "audio": null, "group": "native"
+}

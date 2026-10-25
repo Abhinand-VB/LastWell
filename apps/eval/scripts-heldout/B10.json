@@ -1,0 +1,25 @@
+{
+  "id": "B10", "type": "chameleon", "title": "Neighbor, partial info: elderly woman 'confused', calls him by the wrong name, invented words", "sourceId": null,
+  "callStartLocal": "2026-10-25T13:50:00",
+  "turns": [
+    { "speaker": "dispatcher", "atMs": 0,     "text": "911, where is your emergency?" },
+    { "speaker": "caller",     "atMs": 3000,  "text": "Next door to me, 214 Hugo Street. The lady who lives there, Mrs. Okafor. I'm her neighbor, I just came over to bring her mail." },
+    { "speaker": "dispatcher", "atMs": 14000, "text": "What's happening with her?" },
+    { "speaker": "caller",     "atMs": 17000, "text": "She seems confused. She called me Teddy, that's not my name, and she's saying words I've never heard, like she's making them up, but she talks like she thinks they make sense." },
+    { "speaker": "dispatcher", "atMs": 30000, "text": "Is she awake and breathing okay?" },
+    { "speaker": "caller",     "atMs": 33000, "text": "Yes, she's sitting in her armchair, breathing fine, she just looks frustrated with me." },
+    { "speaker": "dispatcher", "atMs": 39000, "text": "When did you last see her acting normally?" },
+    { "speaker": "caller",     "atMs": 43000, "text": "I saw her at the mailbox around eleven this morning and she waved and chatted with me, totally like herself." },
+    { "speaker": "dispatcher", "atMs": 52000, "text": "Do you know how old she is or what medicines she takes?" },
+    { "speaker": "caller",     "atMs": 58000, "text": "Eighty-something? I really don't know her medicines. Her son would know but I don't have his number." },
+    { "speaker": "dispatcher", "atMs": 65000, "text": "Okay. Help is on the way. Stay with her if you can." }
+  ],
+  "truth": {
+    "isStroke": true, "expectedLevel": "possible", "signs": ["speech"],
+    "lkw": { "localTime": "2026-10-25T11:00:00", "toleranceMin": 15 },
+    "bloodThinner": null, "lookalike": null,
+    "facts": [ { "kind": "sex", "value": "female" },
+               { "kind": "address", "value": "214 Hugo Street" } ]
+  },
+  "audio": null, "group": "native"
+}

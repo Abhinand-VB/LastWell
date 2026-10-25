@@ -1,0 +1,27 @@
+{
+  "id": "A11", "type": "classic", "title": "Coworker, rambling: colleague's sentences fall apart mid-meeting, right arm drops, mouth sags", "sourceId": null,
+  "callStartLocal": "2026-10-25T15:32:00",
+  "turns": [
+    { "speaker": "dispatcher", "atMs": 0,     "text": "911, what's the address of the emergency?" },
+    { "speaker": "caller",     "atMs": 4000,  "text": "Hi, yes, sorry, we're at Bayline Logistics, 600 Townsend Street, fourth floor. It's my coworker, Diane. I'm not family, I just sit next to her." },
+    { "speaker": "dispatcher", "atMs": 15000, "text": "Okay. Tell me what's going on with Diane." },
+    { "speaker": "caller",     "atMs": 19000, "text": "So we were going over the quarterly numbers and halfway through a sentence she just started saying things that weren't real words, like a jumble, and then her right arm just slid off the keyboard and hung there." },
+    { "speaker": "dispatcher", "atMs": 34000, "text": "Is she awake? Can she talk to you now?" },
+    { "speaker": "caller",     "atMs": 38000, "text": "She's awake, she's looking at me, she's trying, but what comes out is nonsense. And the right corner of her mouth, it’s sagging down. I don't know if that's important." },
+    { "speaker": "dispatcher", "atMs": 50000, "text": "When did you last see her completely normal?" },
+    { "speaker": "caller",     "atMs": 54000, "text": "Um, she ran the whole meeting, she was totally sharp. The meeting ended at ten past three, I remember because I checked the clock. So she was fine at ten past three." },
+    { "speaker": "dispatcher", "atMs": 67000, "text": "Do you know if she takes any medications, like blood thinners?" },
+    { "speaker": "caller",     "atMs": 72000, "text": "I have no idea, honestly. I can ask HR for her emergency contact?" },
+    { "speaker": "dispatcher", "atMs": 78000, "text": "That's okay. How old is she, roughly?" },
+    { "speaker": "caller",     "atMs": 82000, "text": "Late fifties, I'd guess." },
+    { "speaker": "dispatcher", "atMs": 85000, "text": "Okay. Help is on the way. Keep her sitting and stay with her." }
+  ],
+  "truth": {
+    "isStroke": true, "expectedLevel": "likely", "signs": ["speech", "arms", "face"],
+    "lkw": { "localTime": "2026-10-25T15:10:00", "toleranceMin": 10 },
+    "bloodThinner": null, "lookalike": null,
+    "facts": [ { "kind": "sex", "value": "female" },
+               { "kind": "address", "value": "600 Townsend Street, fourth floor" } ]
+  },
+  "audio": null, "group": "native"
+}
