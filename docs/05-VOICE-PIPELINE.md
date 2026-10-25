@@ -148,7 +148,7 @@ On call end: stop the interval timer, wait for the fast-pass queue to drain, run
 
 `composeBriefing(snapshot, now, tz)` builds the text from the **validated** state only. Sentence rules (omit a sentence when its data is absent; never invent):
 
-1. `"Stroke pre-alert from nine one one, approved by the dispatcher."`
+1. `"Stroke pre-alert from nine one one, approved by the dispatcher."` — or, when the snapshot level is below `possible` (D-53), `"Dispatcher-initiated pre-alert. LastWell has not detected stroke signs on this call."`
 2. Patient: age and sex → `"{age}-year-old {man|woman}."`; age only → `"{age}-year-old patient."`; sex only → `"Adult {man|woman}."`; neither → `"Adult patient."`
 3. Signs: `"Signs heard: {labels joined with ' and '}."` — one label per **distinct kind**, in BE-FAST order: balance→"balance trouble", eyes→"vision change", face→"facial droop", arms→"one-sided weakness", speech→"speech trouble". Then up to two quotes: `"The caller said: '{quote1}' and '{quote2}'."` — the shortest quotes by word count, **distinct by text**, caller's words, ≤ 12 words each (longer quotes are cut at the last word boundary before 12 words, no ellipsis spoken).
 4. LKW (the same sentence feeds the Q&A `spokenLkw`): confidence exact/approx with no note or with note `clipped_to_now` → `"Last known well: {h:mm AM/PM}, {N} minutes ago."`; vague with `clipped_to_now` → the vague form below; vague → `"Last known well: between {start} and {end}, roughly {N} minutes ago."` where N uses the point estimate; note `ampm_assumed` or `yesterday_assumed` → `"Last known well: possibly {h:mm AM/PM}, unconfirmed."`; note `older_than_24h` → `"Last known well: {weekday} {h:mm AM/PM}, more than a day ago."`; unknown/null → `"Last known well time was not established on the call."` Then `"Caller's words: '{phrase}'."` when not unknown. Minutes > 180 → say `"{h} hours {m} minutes ago"`. Spoken times use `h:mm AM/PM` with no parentheses or dashes.
@@ -156,7 +156,9 @@ On call end: stop the interval timer, wait for the fast-pass queue to drain, run
 6. Look-alike (only if `lookalikes[0]` exists and level is `possible`): `"Could also be {name}; not yet ruled out."`
 7. Close: `"Not yet confirmed by paramedics. You can ask me about the call now."` when `opts.qaEnabled` (the gateway passes `FEATURE_QA_ENABLED`; core reads no env) else `"Not yet confirmed by paramedics. Goodbye."`
 
-Length control: target 45–70 words. If the text exceeds 70 words, drop in this order until it fits: quote 2 → the "Caller's words" sentence → the look-alike sentence. Sentences 1, 2, 3 (labels), 4 (time), 5 and 7 are never dropped. `compose.test.ts` asserts the word count for fixtures A/B/C, the trim order on an oversized fixture, and that no sentence contains text absent from the snapshot (every quoted fragment must be a substring of a validated quote).
+8. Dispatcher note (D-53), when the approve request has `notes`: `"The dispatcher adds: {notes}"`, the note read verbatim (trimmed, no model, no rewording), after sentence 7. Q&A answers anything that is only in the note as "the dispatcher said …", never as the caller.
+
+Length control: target 45–70 words, **not counting the dispatcher note** (≤ 200 characters, never dropped). If the text exceeds 70 words, drop in this order until it fits: quote 2 → the "Caller's words" sentence → the look-alike sentence. Sentences 1, 2, 3 (labels), 4 (time), 5 and 7 are never dropped. `compose.test.ts` asserts the word count for fixtures A/B/C, the trim order on an oversized fixture, and that no sentence contains text absent from the snapshot (every quoted fragment must be a substring of a validated quote).
 
 Approval snapshots both `state` (→ `alerts.caseSnapshot`) and the utterance list (→ `alerts.transcriptSnapshot`); the Q&A and the test-briefing path read from the alert, never from the live registry.
 

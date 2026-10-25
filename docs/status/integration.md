@@ -2,7 +2,7 @@
 
 Only the integration session edits this file.
 
-## Remaining work (snapshot 2026-10-25 01:13 PT; refreshed every 20-minute loop)
+## Remaining work (snapshot 2026-10-25 01:22 PT; refreshed every 20-minute loop)
 
 Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live eval on the 20 scripts, numbers on the slide → (c) browser-mic fallback + play-briefing-locally on the live gateway → (d) W-11 polish for the judging table. Q&A (D-32: R-08, V-08 live) only after all of that is green. No real phone calls 9 PM–8 AM (FakeTelephony overnight).
 
@@ -12,6 +12,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 | V-09 | browser mic live check (gateway side in, 998f166) | P1 | voice | needs a person at the laptop |
 | V-10 | live Ink kill/reconnect check | P1 | voice | no |
 | W-11 | polish list from Liang → screens; approved once it lands | P1 | screens | waits on the list |
+| V-13 / W-13 | D-53 dispatcher override + notes | P1 | voice (after LKW post-mortem), screens | land by 1:45 AM or hold until morning |
 | C-04 | print deck, slide, two timed pitch runs | P1 | humans | human |
 | LKW "N past H" | parser misses "ten past three" (blind set A11) — fix or leave is a human decision (BLOCKERS) | P1 | humans → reasoning | waits on the decision |
 | X-05 | final PR + `demo-ready` tag after the live gates | P1 | integration | waits on M-01…M-04 |
@@ -128,6 +129,9 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - [x] from reasoning: E-03 run 1 numbers carried into README "Results" and docs/08 §3 "Slide numbers", with the footnote.
 
 ## Requests to other lanes
+- [ ] to voice: **D-53 (Liang), task V-13, only after your LKW post-mortem lands; land by 1:45 AM PT or hold until the morning.** (1) Approve at every level: drop the 409 at `none`; below `possible` the briefing's first sentence is exactly "Dispatcher-initiated pre-alert. LastWell has not detected stroke signs on this call."; the audit records the send as an override. (2) Optional `notes` (≤ 200 chars, trimmed, 400 above) on `POST /api/calls/:callId/alert`: append "The dispatcher adds: {notes}" verbatim (no model), not counted in the 45–70-word budget and never dropped (docs/05 §7 rule 8); store on the alert and in the audit. (3) Q&A: anything only in the note is attributed to the dispatcher ("the dispatcher said …"), never to the caller. Liang OKs your edit of `packages/core/src/briefing` (composer) and the `AlertApproveBody` contract in core for this; if Q&A attribution changes prompt wording, change docs/04 and `prompts/qa.ts` in the same commit (client.test.ts compares them). docs/03 §6, docs/05 §7 and docs/09 D-53 are already updated. Acceptance in docs/TASKS.md V-13. (D-53)
+- [ ] to screens: **D-53 (Liang), task W-13, land by 1:45 AM PT or hold until the morning:** Send pre-alert enabled at every level, including `none` (tooltip: "LastWell has not detected stroke signs; the briefing will say this is a dispatcher-initiated pre-alert"); one optional notes textarea in the Send modal, ≤ 200 characters with a live counter, sent as `notes`. Coordinate with voice (V-13) for the contract field; keep X-03 green. (D-53)
+- [ ] to reasoning: FYI D-53 adds `notes?` to the alert-approve body and an override opener to the composer; Liang OK'd voice editing `packages/core/src/briefing` and that contract for it. Nothing for you to do unless voice asks. (D-53)
 - [ ] to voice, reasoning, screens: **feature freeze at 2:00 AM PT (M-05, docs/10 §11).** After it: bug fixes only, each with a test; no new features, prompt changes or contract changes. Land anything you want in the demo before 2 AM. Exceptions only by a human decision. Voice: E-05 (the one blind run) is an eval run, not a feature, and may run after the freeze. (M-05)
 - [ ] to voice, screens, reasoning: **Liang's decisions (~23:05 PT):** D-49 and D-51 approved; **live Test 1 passed** (M-01…M-04, V-01, V-03…V-08 done, D-52); `FEATURE_QA_ENABLED=true` on the gateway Mac until the morning keep/kill; Sonic voice frozen (S-05); V-02's Card A recording closed. Morning tests after 8 AM: chameleon, look-alike, Q&A rerun. Screens: Liang sends you a W-11 polish list; W-11 is approved once it lands. Voice: E-05 (one blind run) is still yours. (human update)
 - [ ] to reasoning: **do NOT read, run or tune anything on `apps/eval/scripts-heldout/`** (E-05 held-out blind test, docs/07 §5b). No prompt, rule, fake-model or scorer change may ever be based on it; do not open the files. If a change of yours needs a full eval, use `apps/eval/scripts` only. (E-05, human instruction)

@@ -10,7 +10,7 @@ Integration copies open blockers from the four lane files here at each merge, ne
 
 ## Open (newest first)
 
-- [ ] **IDLE · all lanes (expected)** · No commits since 00:16 PT (checked 01:13 PT). No P0/P1 code work is open: voice waits for the 8 AM tests, screens for Liang's W-11 list, reasoning for the parser-gap decision (if approved). Nothing to nudge unless a human assigns work.
+- [ ] **voice + screens · D-53 assigned at ~01:20 PT** · V-13/W-13 (dispatcher override + notes); deadline 1:45 AM PT, otherwise held until the morning. Integration checks at the next loop whether either lane picked it up.
 
 - [ ] **humans · LKW parser gap found by the blind set (decision needed)** · The parser has no "N past H" form: "fine at ten past three" → **10:00 AM** shown as a confident time (truth 3:10 PM, script A11); "twenty past twelve" → "yesterday 8:00 PM? · confirm day" (B11). "quarter past" and "half past" work (docs/06 §3 R7). A live caller can say this. The E-05 protocol says no rule change based on the blind set, so: (a) **fix it** (reasoning adds "N past H" / "N to H" to docs/06 §3 R7 with new docs/06 §7 rows and tests; the blind run 1 numbers stay as reported, and the blind set is no longer blind for LKW), or (b) **leave it** and keep the slide line as is. Note: this is a post-freeze bug fix with a test if done after 2 AM.
 
