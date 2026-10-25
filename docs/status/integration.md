@@ -2,7 +2,7 @@
 
 Only the integration session edits this file.
 
-## Remaining work (snapshot 2026-10-24 23:44 PT; refreshed every 20-minute loop)
+## Remaining work (snapshot 2026-10-25 00:06 PT; refreshed every 20-minute loop)
 
 Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live eval on the 20 scripts, numbers on the slide → (c) browser-mic fallback + play-briefing-locally on the live gateway → (d) W-11 polish for the judging table. Q&A (D-32: R-08, V-08 live) only after all of that is green. No real phone calls 9 PM–8 AM (FakeTelephony overnight).
 
@@ -81,6 +81,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - `pnpm dev:fake` replays A01 through `POST /api/calls/replay`; it logs a 404 until V-11 lands, and the gateway runs without fakes until X-01b lands (it ignores `LASTWELL_FAKES` today).
 
 ## Periodic version1 checks (newest first)
+- 2026-10-25 00:06 PT · version1 f6ee57a · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50). No lane activity since 22:03. Freeze reminder posted (2 AM).
 - 2026-10-24 23:44 PT · version1 50010bb · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50). No lane activity since 22:03 (voice 1 h 41, E-05 waits).
 - 2026-10-24 23:22 PT · version1 0ee6467 · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50, 11 behind). Idle: voice 1 h 19 (E-05 waits), reasoning 3 h, screens 4 h 12 (W-11 waits on Liang's list).
 - 2026-10-24 22:59 PT · version1 cd65916 · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50, 9 behind). Idle: voice 57 min → BLOCKERS (E-05 waits on it), reasoning 2 h 37, screens 3 h 49.
@@ -123,6 +124,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - [x] from reasoning: E-03 run 1 numbers carried into README "Results" and docs/08 §3 "Slide numbers", with the footnote.
 
 ## Requests to other lanes
+- [ ] to voice, reasoning, screens: **feature freeze at 2:00 AM PT (M-05, docs/10 §11).** After it: bug fixes only, each with a test; no new features, prompt changes or contract changes. Land anything you want in the demo before 2 AM. Exceptions only by a human decision. Voice: E-05 (the one blind run) is an eval run, not a feature, and may run after the freeze. (M-05)
 - [ ] to voice, screens, reasoning: **Liang's decisions (~23:05 PT):** D-49 and D-51 approved; **live Test 1 passed** (M-01…M-04, V-01, V-03…V-08 done, D-52); `FEATURE_QA_ENABLED=true` on the gateway Mac until the morning keep/kill; Sonic voice frozen (S-05); V-02's Card A recording closed. Morning tests after 8 AM: chameleon, look-alike, Q&A rerun. Screens: Liang sends you a W-11 polish list; W-11 is approved once it lands. Voice: E-05 (one blind run) is still yours. (human update)
 - [ ] to reasoning: **do NOT read, run or tune anything on `apps/eval/scripts-heldout/`** (E-05 held-out blind test, docs/07 §5b). No prompt, rule, fake-model or scorer change may ever be based on it; do not open the files. If a change of yours needs a full eval, use `apps/eval/scripts` only. (E-05, human instruction)
 - [ ] to voice: **E-05, after your current Q&A task lands:** run, exactly once, `pnpm --filter @lastwell/eval eval --mode text --scripts scripts-heldout` with the prompts as they are on `version1` at that moment (live keys; no edits to prompts, scorer or scripts first). Save the printed table **unchanged** to `apps/eval/results/heldout-run1.md` (`git add -f`, results is gitignored) with a header line: date, `version1` commit hash, prompt versions (fast/reasoner). Commit it even if the results are bad. **No reruns**; if the run errors out before printing a table, note the error in your status file and ask integration before trying again. (E-05, human instruction)
