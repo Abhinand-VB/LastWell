@@ -2,7 +2,7 @@
 
 Only the integration session edits this file.
 
-## Remaining work (snapshot 2026-10-24 22:15 PT; refreshed every 20-minute loop)
+## Remaining work (snapshot 2026-10-24 22:37 PT; refreshed every 20-minute loop)
 
 Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live eval on the 20 scripts, numbers on the slide → (c) browser-mic fallback + play-briefing-locally on the live gateway → (d) W-11 polish for the judging table. Q&A (D-32: R-08, V-08 live) only after all of that is green. No real phone calls 9 PM–8 AM (FakeTelephony overnight).
 
@@ -15,6 +15,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 | V-10 | live Ink kill/reconnect check | P1 | voice | no |
 | W-11 | presenter approval of the look (screens has nothing else open) | P1 | presenter | human |
 | C-04 | print deck, slide, two timed pitch runs | P1 | humans | human |
+| E-05 | held-out blind run (once, by voice) → heldout-run1.md → slide | P1 | voice → integration | waits on voice's current Q&A task |
 | X-05 | final PR + `demo-ready` tag after the live gates | P1 | integration | waits on M-01…M-04 |
 | S-05 | Cartesia credits check + voice pick | — | humans | human |
 | M-01…M-04, M-06 | live gates, ten rehearsals | — | humans + voice | tomorrow morning |
@@ -24,7 +25,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 
 
 ## Current task
-- 2026-10-24 ~22:45 PT: E-05 held-out blind scripts landed; waiting for voice's single run; 20-minute version1 checks (D-50, main untouched).
+- 2026-10-24 ~22:35 PT: E-05 held-out blind scripts landed (5541b71) and Path to production (08d1551); waiting for voice's single run; 20-minute version1 checks (D-50, main untouched).
 
 ## Last green commit on version1
 - (X-04, see below)
@@ -84,6 +85,8 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - `pnpm dev:fake` replays A01 through `POST /api/calls/replay`; it logs a 404 until V-11 lands, and the gateway runs without fakes until X-01b lands (it ignores `LASTWELL_FAKES` today).
 
 ## Periodic version1 checks (newest first)
+- 2026-10-24 22:37 PT · version1 08d1551 · verify exit 0 (now also validates scripts-heldout: 8 valid) · e2e 23/0/0 (strict) · GREEN; main untouched (D-50, 8 behind). Idle: reasoning 2 h 15, screens 3 h 27 (flagged); voice 34 min ok. heldout-run1.md not yet.
+- Note: I wrote "~22:45" for the E-05 landing at ~22:35; corrected. Times only from `date`.
 - 2026-10-24 22:15 PT · version1 7d1f870 (voice Q&A latency) · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50). Idle: reasoning 1 h 53, screens 3 h 05; voice active 22:03 (Q&A is P2, but voice's P1 live checks need real calls, which are off 9 PM–8 AM).
 - 2026-10-24 21:53 PT · version1 5e55cd7 (no new commits) · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50). Idle: reasoning 1 h 31 → BLOCKERS, screens 2 h 43 (nothing P0/P1 open); voice 34 min ok.
 - 2026-10-24 ~21:40 PT · D-50: per-loop main syncs stopped (last: PR #5, dcc4d93). main stays behind version1 until the final merge.
