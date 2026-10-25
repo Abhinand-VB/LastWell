@@ -1,0 +1,26 @@
+{
+  "id": "D04", "type": "other", "title": "Friend, woman 40: ate shrimp, lips and face swelling, itchy", "sourceId": null,
+  "callStartLocal": "2026-10-25T19:05:00",
+  "turns": [
+    { "speaker": "dispatcher", "atMs": 0,     "text": "911, what is the address of your emergency?" },
+    { "speaker": "caller",     "atMs": 4000,  "text": "We're at a restaurant, Golden Wave, 520 Clement Street. It's my friend, she's 40." },
+    { "speaker": "dispatcher", "atMs": 10000, "text": "Okay. Tell me exactly what happened." },
+    { "speaker": "caller",     "atMs": 13000, "text": "She ate some shrimp and now her lips and face are swelling up and she's really itchy all over." },
+    { "speaker": "dispatcher", "atMs": 21000, "text": "Is she breathing okay?" },
+    { "speaker": "caller",     "atMs": 24000, "text": "She says her throat feels a little tight, but she's breathing." },
+    { "speaker": "dispatcher", "atMs": 29000, "text": "Is she awake and talking normally?" },
+    { "speaker": "caller",     "atMs": 32000, "text": "Yes, she's awake and talking, she's just scared." },
+    { "speaker": "dispatcher", "atMs": 36000, "text": "Does she have any allergies?" },
+    { "speaker": "caller",     "atMs": 39000, "text": "She didn't know she was allergic to shellfish. This never happened before." },
+    { "speaker": "dispatcher", "atMs": 45000, "text": "Okay. Help is on the way. Keep her sitting upright." }
+  ],
+  "truth": {
+    "isStroke": false, "expectedLevel": "none", "signs": [],
+    "lkw": null,
+    "bloodThinner": null, "lookalike": null,
+    "facts": [ { "kind": "age", "value": "40" },
+               { "kind": "sex", "value": "female" },
+               { "kind": "address", "value": "520 Clement Street" } ]
+  },
+  "audio": null, "group": "native"
+}

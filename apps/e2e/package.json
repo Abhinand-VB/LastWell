@@ -1,0 +1,25 @@
+{
+  "name": "@lastwell/e2e",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "e2e": "tsx src/run.ts",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "ui": "playwright test"
+  },
+  "dependencies": {
+    "@lastwell/core": "workspace:*",
+    "luxon": "^3.5.0",
+    "ws": "^8.18.0",
+    "zod": "^3.25.0"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.48.0",
+    "@types/luxon": "^3.4.2",
+    "@types/node": "^22.0.0",
+    "@types/ws": "^8.5.12",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

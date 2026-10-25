@@ -1,0 +1,27 @@
+{
+  "id": "B02", "type": "chameleon", "title": "Son, father 70: 'sounds drunk', words mixed up, doesn't drink", "sourceId": null,
+  "callStartLocal": "2026-10-25T17:15:00",
+  "turns": [
+    { "speaker": "dispatcher", "atMs": 0,     "text": "911, what is the address of your emergency?" },
+    { "speaker": "caller",     "atMs": 4000,  "text": "742 Lincoln Way. It's my father, he's 70." },
+    { "speaker": "dispatcher", "atMs": 8000,  "text": "Okay. Tell me exactly what happened." },
+    { "speaker": "caller",     "atMs": 11000, "text": "He sounds drunk. His words are all mixed up, he's saying things that don't make sense." },
+    { "speaker": "dispatcher", "atMs": 18000, "text": "Has he been drinking?" },
+    { "speaker": "caller",     "atMs": 21000, "text": "No, he doesn't drink at all. That's why it's so weird." },
+    { "speaker": "dispatcher", "atMs": 26000, "text": "Is he awake and breathing normally?" },
+    { "speaker": "caller",     "atMs": 29000, "text": "Yeah, he's awake, he's sitting in the living room." },
+    { "speaker": "dispatcher", "atMs": 33000, "text": "When was he last seen completely normal?" },
+    { "speaker": "caller",     "atMs": 37000, "text": "About an hour ago. He called me and he sounded totally normal." },
+    { "speaker": "dispatcher", "atMs": 43000, "text": "Okay. Help is on the way. Stay with him." }
+  ],
+  "truth": {
+    "isStroke": true, "expectedLevel": "possible", "signs": ["speech"],
+    "lkw": { "localTime": "2026-10-25T16:15:00", "toleranceMin": 15 },
+    "bloodThinner": null, "lookalike": null,
+    "facts": [ { "kind": "age", "value": "70" },
+               { "kind": "sex", "value": "male" },
+               { "kind": "alcohol_or_drugs", "value": "doesn't drink" },
+               { "kind": "address", "value": "742 Lincoln Way" } ]
+  },
+  "audio": null, "group": "native"
+}

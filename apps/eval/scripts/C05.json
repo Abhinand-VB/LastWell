@@ -1,0 +1,27 @@
+{
+  "id": "C05", "type": "lookalike", "title": "Daughter, father 60: face droopy since yesterday, ear pain, otherwise fine", "sourceId": null,
+  "callStartLocal": "2026-10-25T10:15:00",
+  "turns": [
+    { "speaker": "dispatcher", "atMs": 0,     "text": "911, what is the address of your emergency?" },
+    { "speaker": "caller",     "atMs": 4000,  "text": "2041 Balboa Street. It's my dad, he's 60." },
+    { "speaker": "dispatcher", "atMs": 8000,  "text": "Okay. Tell me exactly what happened." },
+    { "speaker": "caller",     "atMs": 11000, "text": "The right side of his face is droopy. He can't close his right eye all the way, and his ear hurts." },
+    { "speaker": "dispatcher", "atMs": 20000, "text": "When did that start?" },
+    { "speaker": "caller",     "atMs": 23000, "text": "Since yesterday. He was fine yesterday morning, then last night his face started looking off." },
+    { "speaker": "dispatcher", "atMs": 30000, "text": "Can he lift both arms and talk normally?" },
+    { "speaker": "caller",     "atMs": 34000, "text": "Yes, his arms are fine and he's talking fine, he's walking around normally." },
+    { "speaker": "dispatcher", "atMs": 40000, "text": "Anything else different?" },
+    { "speaker": "caller",     "atMs": 43000, "text": "No, nothing else. Just the face and the ear." },
+    { "speaker": "dispatcher", "atMs": 47000, "text": "Okay. Help is on the way. Stay with him." }
+  ],
+  "truth": {
+    "isStroke": false, "expectedLevel": "possible", "signs": ["face"],
+    "lkw": { "localTime": "2026-10-24T09:00:00", "toleranceMin": 60 },
+    "bloodThinner": null, "lookalike": "Bell's palsy",
+    "facts": [ { "kind": "age", "value": "60" },
+               { "kind": "sex", "value": "male" },
+               { "kind": "onset", "value": "since yesterday" },
+               { "kind": "address", "value": "2041 Balboa Street" } ]
+  },
+  "audio": null, "group": "native"
+}

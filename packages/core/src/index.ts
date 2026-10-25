@@ -38,6 +38,7 @@ export {
 export {
   MAX_BRIEFING_WORDS,
   composeBriefing,
+  isAntiplatelet,
   countWords,
   spokenLkwSentence,
   type Briefing,
@@ -47,3 +48,26 @@ export { BASELINE_PATTERNS, keywordBaseline, type BaselineResult, type BaselineT
 export { parseLkw } from "./lkw/parser.js";
 export { formatLkw, formatRange, UNKNOWN_DISPLAY } from "./lkw/format.js";
 export { loadScripts, type RawScript, type ScriptError, type LoadedScripts } from "./eval/loadScripts.js";
+export type { FastPassInput, ModelClient, ModelResult, QaInput, ReasonerInput } from "./claude/types.js";
+export { createFakeModel, fakeFastPass, fakeReason, fakeAnswer, type FakeModelOptions } from "./claude/fake.js";
+export {
+  runScript,
+  type ModelCallRecord,
+  type ScriptedRunOptions,
+  type ScriptedRunResult,
+  type TurnRecord,
+} from "./eval/scriptedRunner.js";
+export {
+  DEFAULT_CLAUDE_CONFIG,
+  MAX_TOKENS,
+  createAnthropic,
+  createClaudeClient,
+  parseJson,
+  warmup,
+  type ClaudeConfig,
+  type ResponseInfo,
+  type Effort,
+} from "./claude/client.js";
+export { FAST_PASS_PROMPT_VERSION } from "./prompts/fastPass.js";
+export { REASONER_PROMPT_VERSION } from "./prompts/reasoner.js";
+export { QA_FALLBACK, QA_PROMPT_VERSION, spokenLkw } from "./prompts/qa.js";

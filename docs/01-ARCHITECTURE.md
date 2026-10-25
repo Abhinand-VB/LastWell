@@ -7,7 +7,7 @@ Everything below was checked against the vendors' current documentation on 2026-
 ```
                       ┌─────────────────────────────────────────────────────────────┐
   Caller phone ──────►│ Twilio Voice                                                │
-  (judge)             │  number → POST /twilio/voice → TwiML                        │
+  (teammate, D-31)    │  number → POST /twilio/voice → TwiML                        │
                       │  <Start><Stream track=both_tracks> + <Dial> dispatcher phone│──► Dispatcher phone
                       └───────────────┬─────────────────────────────────────────────┘    (teammate, headset)
                                       │ wss  media frames (µ-law 8 kHz, inbound+outbound)
@@ -80,8 +80,10 @@ lastwell/
 │       ├── board/                stroke-team board
 │       ├── mic/                  browser-microphone fallback page
 │       └── api/gateway/[...path] server-side proxy adding x-internal-key
+├── apps/e2e/                     @lastwell/e2e: `pnpm e2e`, black-box offline test of the demo path against a gateway with `LASTWELL_FAKES=all` (docs/10 X-02)
+├── scripts/                      root Node scripts: scan-secrets.mjs (`pnpm scan:secrets`), dev-fake.mjs (`pnpm dev:fake`)
 └── apps/eval/                    @lastwell/eval
-    ├── scripts/                  38 scripted calls (JSON, docs/07 §3)
+    ├── scripts/                  scripted calls (JSON, docs/07 §3; 20 in the text eval per D-33)
     ├── audio/                    recordings (WAV 16 kHz mono) — gitignored if > 50 MB total
     ├── results/                  run outputs (gitignored except the Saturday-evening summary)
     └── src/                      run.ts, scriptedRunner.ts, score.ts, report.ts, validate.ts
@@ -216,7 +218,7 @@ One gateway process serves Twilio, the UI and the alert calls. There is no queue
 Routes:
 
 - `/` — recent calls (from `GET /api/calls`), link to each console; "Start browser-mic call" button; "Replay B01" / "Replay C01" buttons (docs/05 §13). There is no `/console` index route.
-- `/console/[callId]` — the dispatcher console. Layout (desktop, dark theme, 1440 px): left 55 % live transcript (speaker-labelled, mm:ss, partial line in grey italics, validated quotes underlined in amber); right 45 % stacked: **Stroke card** (level pill none/possible/likely; BE-FAST chips B E F A S T — a chip lights when a validated sign of that kind exists, T lights when LKW is established in the docs/03 §9 sense and is outlined (half-lit) when a phrase exists but is vague or unconfirmed; under the chips, one line per sign: chip label + quote + mm:ss, click → scroll/highlight the utterance), **Next question** banner (one sentence, large), **Look-alike check** (name + "Ask: …"), **Critical facts** (LKW clock time + range + quote; blood thinner; age; sex; diabetes; seizure history; medications; address), latency readout (`fast 820 ms · reason 3.1 s`), and the **Send stroke pre-alert** button (enabled when level ≠ none; confirm modal with target phone prefilled with the caller number when `DEMO_ALERT_TO_CALLER=true`).
+- `/console/[callId]` — the dispatcher console. Layout (desktop, dark theme, 1440 px): left 55 % live transcript (speaker-labelled, mm:ss, partial line in grey italics, validated quotes underlined in amber); right 45 % stacked: **Stroke card** (level pill none/possible/likely; BE-FAST chips B E F A S T — a chip lights when a validated sign of that kind exists, T lights when LKW is established in the docs/03 §9 sense and is outlined (half-lit) when a phrase exists but is vague or unconfirmed; under the chips, one line per sign: chip label + quote + mm:ss, click → scroll/highlight the utterance), **Next question** banner (one sentence, large), **Look-alike check** (name + "Ask: …"), **Critical facts** (LKW clock time + range + quote; blood thinner; age; sex; diabetes; seizure history; medications; address), latency readout (`fast 820 ms · reason 3.1 s`), and the **Send stroke pre-alert** button (enabled when level ≠ none; confirm modal with the target phone prefilled from `ALERT_DEFAULT_TARGET_PHONE` (the medical professional, D-30), or with the caller number only when `DEMO_ALERT_TO_CALLER=true`; Send is enabled while the call is live; a 409 for a number outside `ALERT_ALLOWED_NUMBERS` (D-35) is shown clearly).
 - `/board` — one card per alert: level, age/sex, signs with quotes, LKW + countdown to 4.5 h ("3 h 42 m left in the 4.5 h window from LKW 2:00 PM"; "LKW unknown"; "window passed"), blood thinner, status pill ("Dispatcher pre-alert" / "Paramedic-confirmed" toggle), call status (calling/ringing/answered/briefed/Q&A/completed), footnote "The treating team makes every treatment decision."
 - `/mic` — browser microphone fallback: start button, level meter, opens the console for the created call in a new tab.
 
@@ -265,9 +267,12 @@ Each process reads its own variables once at boot and validates them with zod (`
 | `GATEWAY_URL` | web server (req) | `http://localhost:8787` | proxy target |
 | `NEXT_PUBLIC_GATEWAY_WS_URL` | web browser (req) | `ws://localhost:8787/ws/ui` or `wss://…ngrok…/ws/ui` | |
 | `ALERT_SMS_ENABLED` | gateway (opt) | `false` | needs 10DLC-registered number |
-| `DEMO_ALERT_TO_CALLER` | gateway (opt) → `/api/config` | `true` | prefill target with caller number |
-| `ALERT_DEFAULT_TARGET_PHONE` | gateway (opt) | empty or E.164 | prefill when no caller number |
-| `FEATURE_QA_ENABLED` | gateway (opt) → `/api/config` | `true` | `false` = one-way briefing then hang up |
+| `DEMO_ALERT_TO_CALLER` | gateway (opt) → `/api/config` | `false` | `true` prefills the target with the caller number; off since D-30 |
+| `ALERT_DEFAULT_TARGET_PHONE` | gateway (opt) | E.164 | the medical professional's phone; prefills the Send modal (D-30) |
+| `ALERT_ALLOWED_NUMBERS` | gateway (req when `twilio` is not faked) | `+1415…,+1408…` | comma-separated E.164; outbound calls to any other number get 409 (D-35) |
+| `FEATURE_QA_ENABLED` | gateway (opt) → `/api/config` | `false` | `false` = one-way briefing then hang up; Q&A is built last (D-32) |
+| `LASTWELL_FAKES` | gateway (opt) | empty | comma-separated from `claude, stt, tts, twilio, store`, or `all` (D-34, docs/10 §4); never read by core |
+| `DEMO_MODE` | gateway (opt) | `false` | `true` refuses to boot with any fake active and disables the `/api/dev/*` routes (D-34) |
 | `FEATURE_BROWSER_MIC` | gateway (opt) → `/api/config` | `true` | |
 | `EVAL_CONCURRENCY` | eval (opt) | `2` | |
 | `LOG_LEVEL` | gateway (opt) | `info` | |

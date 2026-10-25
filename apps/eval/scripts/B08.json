@@ -1,0 +1,27 @@
+{
+  "id": "B08", "type": "chameleon", "title": "Roommate, woman 61: sudden bad headache, numb face, slurred speech, 'she gets migraines'", "sourceId": null,
+  "callStartLocal": "2026-10-25T22:10:00",
+  "turns": [
+    { "speaker": "dispatcher", "atMs": 0,     "text": "911, what is the address of your emergency?" },
+    { "speaker": "caller",     "atMs": 4000,  "text": "1475 Haight Street, apartment 2. It's my roommate, she's 61." },
+    { "speaker": "dispatcher", "atMs": 9000,  "text": "Okay. Tell me exactly what happened." },
+    { "speaker": "caller",     "atMs": 12000, "text": "She got a really bad headache all of a sudden, and now she says her face is numb and her speech is slurred." },
+    { "speaker": "dispatcher", "atMs": 22000, "text": "Does her face look different to you?" },
+    { "speaker": "caller",     "atMs": 26000, "text": "The left side of her face looks kind of slack. She does get migraines, though." },
+    { "speaker": "dispatcher", "atMs": 33000, "text": "When was she last seen completely normal?" },
+    { "speaker": "caller",     "atMs": 37000, "text": "About 45 minutes ago, before the headache started." },
+    { "speaker": "dispatcher", "atMs": 41000, "text": "Is she awake and breathing normally?" },
+    { "speaker": "caller",     "atMs": 44000, "text": "Yes, she's lying on the couch with the lights off." },
+    { "speaker": "dispatcher", "atMs": 49000, "text": "Okay. Help is on the way. Stay with her." }
+  ],
+  "truth": {
+    "isStroke": true, "expectedLevel": "likely", "signs": ["face", "speech"],
+    "lkw": { "localTime": "2026-10-25T21:25:00", "toleranceMin": 10 },
+    "bloodThinner": null, "lookalike": null,
+    "facts": [ { "kind": "age", "value": "61" },
+               { "kind": "sex", "value": "female" },
+               { "kind": "migraine_history", "value": "yes" },
+               { "kind": "address", "value": "1475 Haight Street, apartment 2" } ]
+  },
+  "audio": null, "group": "native"
+}

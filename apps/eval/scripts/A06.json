@@ -1,0 +1,27 @@
+{
+  "id": "A06", "type": "classic", "title": "Caregiver, resident 88: can't say words, right arm limp", "sourceId": null,
+  "callStartLocal": "2026-10-25T10:30:00",
+  "turns": [
+    { "speaker": "dispatcher", "atMs": 0,     "text": "911, what is the address of your emergency?" },
+    { "speaker": "caller",     "atMs": 4000,  "text": "Sunset Care Home, 2650 Great Highway, room 12. I'm her caregiver." },
+    { "speaker": "dispatcher", "atMs": 9000,  "text": "Okay. Tell me exactly what happened." },
+    { "speaker": "caller",     "atMs": 12000, "text": "Mrs. Lee is 88. She understands me, she nods, but she can't say any words. Nothing comes out." },
+    { "speaker": "dispatcher", "atMs": 20000, "text": "Is anything else different?" },
+    { "speaker": "caller",     "atMs": 23000, "text": "Her right arm is limp, she can't hold her cup with it at all." },
+    { "speaker": "dispatcher", "atMs": 29000, "text": "When was she last seen completely normal?" },
+    { "speaker": "caller",     "atMs": 33000, "text": "She was fine at breakfast. She ate and chatted with everyone." },
+    { "speaker": "dispatcher", "atMs": 38000, "text": "Does she take any blood thinners?" },
+    { "speaker": "caller",     "atMs": 41000, "text": "Yes, she's on Xarelto." },
+    { "speaker": "dispatcher", "atMs": 44000, "text": "Okay. Help is on the way. Stay with her." }
+  ],
+  "truth": {
+    "isStroke": true, "expectedLevel": "likely", "signs": ["speech", "arms"],
+    "lkw": { "localTime": "2026-10-25T08:00:00", "toleranceMin": 60 },
+    "bloodThinner": "Xarelto", "lookalike": null,
+    "facts": [ { "kind": "age", "value": "88" },
+               { "kind": "sex", "value": "female" },
+               { "kind": "blood_thinner", "value": "Xarelto" },
+               { "kind": "address", "value": "2650 Great Highway, room 12" } ]
+  },
+  "audio": null, "group": "native"
+}

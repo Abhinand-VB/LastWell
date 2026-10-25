@@ -1,0 +1,28 @@
+{
+  "id": "A04", "type": "classic", "title": "Neighbor found man 69 on the floor: garbled speech, mouth hanging on the right", "sourceId": null,
+  "callStartLocal": "2026-10-25T12:05:00",
+  "turns": [
+    { "speaker": "dispatcher", "atMs": 0,     "text": "911, what is the address of your emergency?" },
+    { "speaker": "caller",     "atMs": 4000,  "text": "It's 37 Kirkham Street, the downstairs unit. I'm his neighbor." },
+    { "speaker": "dispatcher", "atMs": 9000,  "text": "Okay. Tell me exactly what happened." },
+    { "speaker": "caller",     "atMs": 12000, "text": "I just found him on the kitchen floor. He's awake but his speech is all garbled, I can't understand a word." },
+    { "speaker": "dispatcher", "atMs": 21000, "text": "How old is he?" },
+    { "speaker": "caller",     "atMs": 24000, "text": "He's 69, I think." },
+    { "speaker": "dispatcher", "atMs": 27000, "text": "What does his face look like?" },
+    { "speaker": "caller",     "atMs": 30000, "text": "The right side of his mouth is hanging down, like it's melting." },
+    { "speaker": "dispatcher", "atMs": 36000, "text": "When was he last seen completely normal?" },
+    { "speaker": "caller",     "atMs": 40000, "text": "I don't know. I just found him like this. I haven't seen him since the weekend." },
+    { "speaker": "dispatcher", "atMs": 47000, "text": "Do you know if he takes any medications?" },
+    { "speaker": "caller",     "atMs": 51000, "text": "No idea, sorry. I don't know what he takes." },
+    { "speaker": "dispatcher", "atMs": 55000, "text": "Okay. Help is on the way. Stay with him and don't move him." }
+  ],
+  "truth": {
+    "isStroke": true, "expectedLevel": "likely", "signs": ["speech", "face"],
+    "lkw": null,
+    "bloodThinner": null, "lookalike": null,
+    "facts": [ { "kind": "age", "value": "69" },
+               { "kind": "sex", "value": "male" },
+               { "kind": "address", "value": "37 Kirkham Street, the downstairs unit" } ]
+  },
+  "audio": null, "group": "native"
+}

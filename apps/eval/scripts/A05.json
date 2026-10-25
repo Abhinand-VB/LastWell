@@ -1,0 +1,27 @@
+{
+  "id": "A05", "type": "classic", "title": "Husband, wife 75: lost vision in one eye, left hand numb", "sourceId": null,
+  "callStartLocal": "2026-10-25T09:12:00",
+  "turns": [
+    { "speaker": "dispatcher", "atMs": 0,     "text": "911, what is the address of your emergency?" },
+    { "speaker": "caller",     "atMs": 4000,  "text": "3301 Irving Street. My wife is 75, something's wrong with her." },
+    { "speaker": "dispatcher", "atMs": 9000,  "text": "Okay. Tell me exactly what happened." },
+    { "speaker": "caller",     "atMs": 12000, "text": "All of a sudden she can't see out of her right eye, it just went dark, and her left hand is numb." },
+    { "speaker": "dispatcher", "atMs": 21000, "text": "Can she squeeze your hand with her left hand?" },
+    { "speaker": "caller",     "atMs": 25000, "text": "She's trying, but it's weak, she can barely hold my fingers." },
+    { "speaker": "dispatcher", "atMs": 30000, "text": "When was she last seen completely normal?" },
+    { "speaker": "caller",     "atMs": 34000, "text": "Ten minutes ago. We were having breakfast and she was fine." },
+    { "speaker": "dispatcher", "atMs": 39000, "text": "Does she take any blood thinners?" },
+    { "speaker": "caller",     "atMs": 42000, "text": "She takes a baby aspirin every day." },
+    { "speaker": "dispatcher", "atMs": 46000, "text": "Okay. Help is on the way. Stay on the line with me." }
+  ],
+  "truth": {
+    "isStroke": true, "expectedLevel": "likely", "signs": ["eyes", "arms"],
+    "lkw": { "localTime": "2026-10-25T09:02:00", "toleranceMin": 5 },
+    "bloodThinner": "aspirin", "lookalike": null,
+    "facts": [ { "kind": "age", "value": "75" },
+               { "kind": "sex", "value": "female" },
+               { "kind": "blood_thinner", "value": "aspirin" },
+               { "kind": "address", "value": "3301 Irving Street" } ]
+  },
+  "audio": null, "group": "native"
+}

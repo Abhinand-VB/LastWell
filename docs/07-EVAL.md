@@ -18,9 +18,9 @@ Owner: Reasoning lane (runner, scoring, baseline) + Clinical lane (scripts, reco
 | Wrong facts | shown facts whose value contradicts the truth table | ✔ | n/a |
 | Level agreement | scripts whose final level equals `truth.expectedLevel` (informational; not on the slide) | ✔ | n/a |
 
-Also reported per `group` (native / non_native / panicked / tv_background) for the hard-audio scripts, and the wall-clock latency medians (`fastPassMs`, `reasonerMs`) from the run.
+Also reported per `group` (native / non_native / panicked / tv_background) for the hard-audio scripts (deferred by D-33), and the wall-clock latency medians (`fastPassMs`, `reasonerMs`) from the run.
 
-The slide shows: sensitivity @possible and @likely, precision @possible and @likely, seconds to first flag, LKW correct, blood thinner correct, invented facts, for LastWell vs baseline, with the footnote "32 scripted calls (+6 hard-audio re-reads), written and recorded by the team; real-world precision will be lower — the Copenhagen model was right about one time in four (63.0 % recall, 24.9 % precision)."
+The slide shows: sensitivity @possible and @likely, precision @possible and @likely, seconds to first flag, LKW correct, blood thinner correct, invented facts, for LastWell vs baseline, with the footnote "20 scripted calls (text mode), written by the team; real-world precision will be lower — the Copenhagen model was right about one time in four (63.0 % recall, 24.9 % precision)."
 
 ## 2. The keyword baseline — `packages/core/src/baseline/keywordBaseline.ts`
 
@@ -36,6 +36,8 @@ export const BASELINE_PATTERNS = [
 That is the whole baseline. It is deliberately what a keyword-alert feature in a general 911 tool does. If LastWell loses to it on any script type, the slide says so and names the scripts.
 
 ## 3. Script format and the 38 scripts
+
+> **D-33 (2026-10-24): the eval runs in text mode on 20 scripts only:** A01–A07, B01, B02, B04, B06, B08, C01–C05, D01, D02, D04. The other 18 seeds below (A08–A10, B03, B05, B07, C06–C08, D03, D05, D06, E01–E06) are **backlog**: keep the seeds, do not write them before the 20 are done and P1 is merged. Audio mode (§5 "Audio mode", E-02, E-04, §6 item 3) is deferred.
 
 Contract: docs/03 §14. Files: `apps/eval/scripts/{id}.json`. The Clinical lane writes dialogues from the seeds below (task C-02), each 8–14 turns, dispatcher and caller alternating, realistic 911 phrasing (address first, then "tell me exactly what happened", then protocol questions). Every stroke script must contain at least the signs listed in its truth, stated by the caller in lay words, and must avoid the word "stroke" unless the seed says otherwise. Every script sets `callStartLocal` so that the LKW arithmetic is testable.
 
@@ -54,7 +56,7 @@ Contract: docs/03 §14. Files: `apps/eval/scripts/{id}.json`. The Clinical lane 
 | A09 | Friend, woman 73: dropped a glass, can't lift her arm, mouth drooping; "a little after three"; none | arms, face | 15:10 ±10 (call 15:40) | none | |
 | A10 | Granddaughter, grandmother 90: suddenly using wrong words, left face droop; "this morning around nine"; "the blood thinner, Eliquis" | speech, face | 09:00 ±15 (call 10:50) | Eliquis | |
 
-### 3.2 Stroke chameleons (B01–B08) — truth `isStroke:true`, `expectedLevel:"possible"` (B07 `likely`: it has a focal sign)
+### 3.2 Stroke chameleons (B01–B08) — truth `isStroke:true`, `expectedLevel:"possible"` (B07 and B08 `likely`: two kinds including a focal sign, D-41)
 
 | id | Seed | signs | LKW | blood thinner | lookalike the model may raise |
 | --- | --- | --- | --- | --- | --- |
@@ -65,9 +67,9 @@ Contract: docs/03 §14. Files: `apps/eval/scripts/{id}.json`. The Clinical lane 
 | B05 | Daughter, mother 79: sudden spinning dizziness and vomiting, can't sit up; "half an hour ago" | balance | call−30 ±5 | null | infection (vomiting) |
 | B06 | Husband, wife 72: suddenly can't see anything on her left, bumps into furniture, "maybe her glasses"; "ten minutes ago" | eyes, balance | call−10 ±5 | none | — (no focal sign → `possible`, next question = face/arm check) |
 | B07 | Grandson, grandfather 85: "acting strange", can't button his shirt with his right hand, drooling from one side; "fine at breakfast" | arms, face | 08:00 ±60 (call 11:15) | Eliquis | expectedLevel `likely` |
-| B08 | Roommate, woman 61: sudden bad headache, numb face, slurred speech, "she gets migraines" | face, speech | call−45 ±10 | null | migraine (raised, not resolved) |
+| B08 | Roommate, woman 61: sudden bad headache, numb face, slurred speech, "she gets migraines" | face, speech | call−45 ±10 | null | migraine (raised, not resolved); expectedLevel `likely` (D-41: two kinds incl. a focal sign) |
 
-### 3.3 Look-alikes, not stroke (C01–C08) — truth `isStroke:false`; expected level ≤ `possible`; truth `lookalike` set
+### 3.3 Look-alikes, not stroke (C01–C08) — truth `isStroke:false`; expected level ≤ `possible`; truth `lookalike` set. Signs the caller describes still count (C02 "not talking", C03 slurring + stumbling); a `likely` from LastWell on any look-alike is a real false positive in precision @likely (D-41).
 
 | id | Seed | lookalike | key facts |
 | --- | --- | --- | --- |

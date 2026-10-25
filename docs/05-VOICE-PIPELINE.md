@@ -39,6 +39,8 @@ All audio on the phone paths is **µ-law, 8 kHz, mono** end to end (Twilio ↔ C
 
 Twilio Console configuration (task S-04): number → Voice → "A call comes in" → Webhook `POST {PUBLIC_BASE_URL}/twilio/voice`. Nothing else.
 
+Demo note (D-31): the caller is a teammate dialing from their own phone; the judge only draws the card. The path above is unchanged. With `LASTWELL_FAKES` containing `twilio` or `stt`, the dev route `POST /api/dev/calls` creates a call as if this webhook had run, and `POST /api/dev/calls/:callId/utterances` injects finals where the utterance assembler would (docs/10 §4.1).
+
 ## 3. Media stream handler — `twilio/mediaStream.ts`
 
 Route `WS /twilio/media`. State per socket: `{callId, streamSid, sessions: {inbound?: InkSession, outbound?: InkSession}, lastTs: {inbound: 0, outbound: 0}, framesIn: 0}`.
@@ -150,7 +152,7 @@ On call end: stop the interval timer, wait for the fast-pass queue to drain, run
 2. Patient: age and sex → `"{age}-year-old {man|woman}."`; age only → `"{age}-year-old patient."`; sex only → `"Adult {man|woman}."`; neither → `"Adult patient."`
 3. Signs: `"Signs heard: {labels joined with ' and '}."` — one label per **distinct kind**, in BE-FAST order: balance→"balance trouble", eyes→"vision change", face→"facial droop", arms→"one-sided weakness", speech→"speech trouble". Then up to two quotes: `"The caller said: '{quote1}' and '{quote2}'."` — the shortest quotes by word count, **distinct by text**, caller's words, ≤ 12 words each (longer quotes are cut at the last word boundary before 12 words, no ellipsis spoken).
 4. LKW (the same sentence feeds the Q&A `spokenLkw`): confidence exact/approx with no note or with note `clipped_to_now` → `"Last known well: {h:mm AM/PM}, {N} minutes ago."`; vague with `clipped_to_now` → the vague form below; vague → `"Last known well: between {start} and {end}, roughly {N} minutes ago."` where N uses the point estimate; note `ampm_assumed` or `yesterday_assumed` → `"Last known well: possibly {h:mm AM/PM}, unconfirmed."`; note `older_than_24h` → `"Last known well: {weekday} {h:mm AM/PM}, more than a day ago."`; unknown/null → `"Last known well time was not established on the call."` Then `"Caller's words: '{phrase}'."` when not unknown. Minutes > 180 → say `"{h} hours {m} minutes ago"`. Spoken times use `h:mm AM/PM` with no parentheses or dashes.
-5. Blood thinner: fact present and value ≠ "none" → `"Blood thinner: {value}, per the caller."`; value "none" → `"The caller says no blood thinners."`; absent → `"Blood thinners were not mentioned."`
+5. Blood thinner: fact present and value ≠ "none" → `"Blood thinner: {value}, per the caller."`, except when the value names an antiplatelet (aspirin, clopidogrel/Plavix, ticagrelor/Brilinta; D-41) → `"Takes {value}, per the caller."` (e.g. "Takes daily aspirin, per the caller."), never "Blood thinner"; value "none" → `"The caller says no blood thinners."`; absent → `"Blood thinners were not mentioned."`
 6. Look-alike (only if `lookalikes[0]` exists and level is `possible`): `"Could also be {name}; not yet ruled out."`
 7. Close: `"Not yet confirmed by paramedics. You can ask me about the call now."` when `opts.qaEnabled` (the gateway passes `FEATURE_QA_ENABLED`; core reads no env) else `"Not yet confirmed by paramedics. Goodbye."`
 
@@ -159,6 +161,8 @@ Length control: target 45–70 words. If the text exceeds 70 words, drop in this
 Approval snapshots both `state` (→ `alerts.caseSnapshot`) and the utterance list (→ `alerts.transcriptSnapshot`); the Q&A and the test-briefing path read from the alert, never from the live registry.
 
 Pre-synthesis: `POST https://api.cartesia.ai/tts/bytes` with `{model_id: CARTESIA_TTS_MODEL, transcript, voice: CARTESIA_VOICE_ID, language: "en", output_format: {container:"raw", encoding:"pcm_mulaw", sample_rate: 8000}}`, headers `Authorization: Bearer`, `Cartesia-Version`, `Content-Type: application/json`. Store the bytes on the alert record in memory (`alert.audio`; re-synthesized from `alerts.briefingText` on retry after a restart). Expected: ~8 KB per second of speech; a 20 s briefing ≈ 160 KB, ~1 s to generate. Timeout 10 s; failure → alert `failed`, `lastError`, UI shows "Briefing synthesis failed — retry".
+
+Target number (D-30, D-35): `targetPhone` must be in `ALERT_ALLOWED_NUMBERS`, otherwise the approve route returns 409 and places no call; the web modal prefills `ALERT_DEFAULT_TARGET_PHONE` (the medical professional's phone). Approval is allowed while the 911 call is still live, because the target is a different phone (D-18 relaxed). `opts.qaEnabled` follows `FEATURE_QA_ENABLED`, `false` by default (D-32), so the default close is "Goodbye." With `twilio` faked, `FakeTelephony` drives the same status transitions without dialing (docs/10 §4).
 
 Then `twilio.calls.create({ to: targetPhone, from: TWILIO_PHONE_NUMBER, timeout: 25, twiml: "<Response><Connect><Stream url=\"wss://{host}/twilio/alert-media\"><Parameter name=\"alertId\" value=\"{alertId}\"/></Stream></Connect></Response>", statusCallback: PUBLIC_BASE_URL + "/twilio/alert-status", statusCallbackEvent: ["initiated","ringing","answered","completed"], statusCallbackMethod: "POST" })`. Status → `calling`; `ringing` and `completed` come from the status callback; `answered` is set when the media stream's `start` arrives (more precise than the callback).
 

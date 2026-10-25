@@ -1,0 +1,27 @@
+{
+  "id": "C02", "type": "lookalike", "title": "Mother, son 34: shaking and jerking, now confused, has epilepsy", "sourceId": null,
+  "callStartLocal": "2026-10-25T15:20:00",
+  "turns": [
+    { "speaker": "dispatcher", "atMs": 0,     "text": "911, what is the address of your emergency?" },
+    { "speaker": "caller",     "atMs": 4000,  "text": "250 Ocean Avenue. It's my son, he's 34." },
+    { "speaker": "dispatcher", "atMs": 8000,  "text": "Okay. Tell me exactly what happened." },
+    { "speaker": "caller",     "atMs": 11000, "text": "He was shaking and jerking all over for about a minute. Now he's stopped but he's confused and he's not talking." },
+    { "speaker": "dispatcher", "atMs": 20000, "text": "Is he breathing normally?" },
+    { "speaker": "caller",     "atMs": 23000, "text": "Yes, he's breathing, he's lying on his side on the floor." },
+    { "speaker": "dispatcher", "atMs": 28000, "text": "Has this happened before?" },
+    { "speaker": "caller",     "atMs": 31000, "text": "Yes, he has epilepsy. He's had seizures since he was a kid." },
+    { "speaker": "dispatcher", "atMs": 37000, "text": "When was he last acting normally?" },
+    { "speaker": "caller",     "atMs": 40000, "text": "Ten minutes ago, right before the shaking started." },
+    { "speaker": "dispatcher", "atMs": 44000, "text": "Okay. Help is on the way. Don't put anything in his mouth." }
+  ],
+  "truth": {
+    "isStroke": false, "expectedLevel": "possible", "signs": ["speech"],
+    "lkw": { "localTime": "2026-10-25T15:10:00", "toleranceMin": 5 },
+    "bloodThinner": null, "lookalike": "seizure",
+    "facts": [ { "kind": "age", "value": "34" },
+               { "kind": "sex", "value": "male" },
+               { "kind": "seizure_history", "value": "epilepsy" },
+               { "kind": "address", "value": "250 Ocean Avenue" } ]
+  },
+  "audio": null, "group": "native"
+}

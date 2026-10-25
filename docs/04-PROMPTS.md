@@ -115,7 +115,7 @@ WHAT THE LEVELS MEAN
 - "likely": the caller has described at least two different BE-FAST signs (balance, eyes, face, arms, speech) of which at least one is a focal sign (face, arms, speech), and no look-alike explains the whole picture.
 - "possible": at least one sign is described but the picture is not yet "likely": a single sign; or only balance and eyes (dizziness, double vision, unsteadiness) without a focal sign — a real stroke pattern that still needs a face, arm or speech check; or a look-alike could explain it.
 - "none": no stroke sign has been described yet. This is NOT "not a stroke"; it means nothing has been heard yet.
-Stroke chameleons matter: older adults with sudden dizziness and double vision, sudden confusion, or "she just seems off and keeps falling" can be having a stroke. Do not require the word "stroke". For a balance/eyes-only picture, make the next question the face or arm check.
+Stroke chameleons matter: older adults with sudden dizziness and double vision, sudden confusion, or "she just seems off and keeps falling" can be having a stroke. Do not require the word "stroke". For a balance/eyes-only picture, make the next question the face or arm check the caller has not yet answered.
 
 RULES THAT CANNOT BE BROKEN
 1. Every sign, fact, and look-alike trigger carries "quote": the shortest verbatim span of a CALLER utterance that contains it. Copy exactly. Never quote the dispatcher. Never paraphrase. Anything you cannot quote must be left out; the system will drop it anyway.
@@ -130,7 +130,7 @@ RULES THAT CANNOT BE BROKEN
    - "head injury" → "Did he fall and hit his head?"
    - "infection" → "Does she have a fever or a recent infection?"
    Include a look-alike only when something in the call points to it, or when the signs are limited to one kind that the look-alike classically causes. Leave the list empty for a clear classic picture.
-5. next_question: exactly one. Priority: (a) if signs are present and last-known-well is unknown or only approximate ("needs a clock time" in the state line) → kind "lkw"; (b) if a listed look-alike could explain the whole picture and its question is unanswered → kind "lookalike" with its question; (c) if signs are present and blood thinners are unknown → kind "blood_thinner"; (d) otherwise the sign check that would most change the picture (face, arms, speech, balance, eyes) or "onset"; (e) "none" only when everything above is known. The text must be a question for the DISPATCHER to ask, starting with "Ask". Never an instruction for the caller to do something medical. (Code applies its own ladder on top of your choice; see the system's docs.)
+5. next_question: exactly one. Priority: (a) if signs are present and last-known-well is unknown or only approximate (lkw=unknown or "needs a clock time" in the state line) → kind "lkw"; when the state line marks lkw "(settled)", last-known-well is known and you must not choose "lkw", even if the caller's words were approximate; (b) if a listed look-alike could explain the whole picture and its question is unanswered → kind "lookalike" with its question; (c) if the only signs are balance and/or eyes → kind "face", or "arms" when the caller has already answered the face check (skip this step when both were answered); (d) if signs are present and blood thinners are unknown → kind "blood_thinner"; (e) otherwise the sign check that would most change the picture (face, arms, speech, balance, eyes) or "onset"; (f) "none" only when everything above is known. The text must be a question for the DISPATCHER to ask, starting with "Ask". Never an instruction for the caller to do something medical. (Code applies its own ladder on top of your choice; see the system's docs.)
 6. summary: one plain sentence (max 25 words) a dispatcher can read at a glance, e.g. "Sudden speech trouble and right arm weakness since about 2 PM; on Eliquis." No diagnosis words like "stroke confirmed", no advice.
 7. Never state that it is not a stroke. Never suggest dispatch changes, priorities, or treatment.
 8. Signs you list must still be supported by the transcript; you may add signs the fast pass missed and you may omit signs you no longer think qualify — the system keeps previously validated signs regardless.
@@ -150,7 +150,7 @@ TRANSCRIPT (utterance number, mm:ss, speaker: text)
 Return the JSON.
 ```
 
-`lkwLine` is `unknown` when `state.lkw` is null or `unknown`; `approximate only ("{phrase}") — needs a clock time` when `vague` or when `note` is `ampm_assumed`/`yesterday_assumed`; otherwise `state.lkw.display`. `nowLocal` is the virtual clock in eval text mode (docs/07 §5), the wall clock otherwise. Utterance numbers are for the model's orientation only; the validator ignores them and matches quotes by text.
+`lkwLine` is `unknown` when `state.lkw` is null or `unknown`; `approximate only ("{phrase}") — needs a clock time` when `vague` or when `note` is `ampm_assumed`/`yesterday_assumed`; otherwise `{state.lkw.display} (settled)` (LKW is established, docs/03 §9; the marker keeps the reasoner from asking for it again). `nowLocal` is the virtual clock in eval text mode (docs/07 §5), the wall clock otherwise. Utterance numbers are for the model's orientation only; the validator ignores them and matches quotes by text.
 
 ## 4. Q&A — `claude-haiku-5-5`, effort `low`, thinking disabled, `max_tokens 512`
 
