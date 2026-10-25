@@ -104,6 +104,7 @@ The scripted eval (20 calls written by the team: 12 strokes including chameleons
 ## Honest limits
 
 - **Scripted calls, not real 911 audio.** The test calls were written by us, so our numbers will look better than reality. For a real-world reference: in a Copenhagen study, an AI model recognized 63.0% of strokes with 24.9% precision, against 52.7% / 17.1% for human call handlers.
+- **Our Twilio number is pending carrier verification.** Until it clears, the live demo feeds the caller through the browser microphone and plays the Sonic briefing from the laptop speaker (`ALERT_DELIVERY=local`). The phone path, inbound bridge and outbound briefing call, is built and covered by the offline end-to-end test.
 - **The demo phones belong to teammates.** At the judging table, teammates play the caller, the dispatcher and the on-call clinician. The judge draws the case card and checks the sealed answer.
 - **Browser-microphone fallback is one mixed track.** One laptop mic hears both people, so that mode has no speaker labels.
 - **No SMS.** US carriers block SMS from unregistered 10DLC numbers, so the alert is a voice call. The SMS path exists behind `ALERT_SMS_ENABLED=false`.

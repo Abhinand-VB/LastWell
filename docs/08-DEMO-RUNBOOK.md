@@ -4,6 +4,32 @@ Owner: Clinical & pitch lane, with the Voice lane on standby. The judging table 
 
 Since D-30/D-31 (docs/09): **teammates play every phone role.** The judge draws a card, watches LastWell decide, then flips the card to check it. No judge's phone is ever dialed, and the judge never has to perform a script.
 
+## 0. Primary flow while there is no Twilio number (D-43)
+
+**Use this section, not §3, until a Twilio number is confirmed** (the account owns none; Trust Hub verification is pending). Everything after the microphone is the same pipeline: Ink 2 transcription, Haiku/Sonnet with quote-or-drop, the LKW parser, code-composed briefing, Sonic voice. When a number exists, switch back to §3 by setting `ALERT_DELIVERY=phone` and the Twilio variables; nothing else changes.
+
+Setup (gateway Mac, port 8787; no ngrok needed in this mode):
+- [ ] `.env`: `DEMO_MODE=true`, `LASTWELL_FAKES=` (empty), `ALERT_DELIVERY=local`, `FEATURE_BROWSER_MIC=true`, `FEATURE_QA_ENABLED=false`. Gateway: `pnpm --filter @lastwell/gateway start`; `curl -s localhost:8787/healthz` → `{"ok":true,…}` with no `fakes`.
+- [ ] Web on the same Mac (`pnpm --filter @lastwell/web dev`); `/` loads; `/api/config` shows `alertDelivery: "local"`.
+- [ ] Laptop speaker volume up; a USB/table mic (or the laptop mic) placed between the caller and the dispatcher; the room is as quiet as you can make it.
+- [ ] Smoke test: open `/mic`, press Start, say "test one two three" → the console shows the utterance within 3 s. Then "Test briefing call" → a `TEST` alert appears → **Play briefing** plays the canned briefing from the speaker; "Clear test alerts" removes it.
+
+Roles: **Presenter** (deck, slide). **Caller** (teammate, sits at the mic and acts the drawn card). **Dispatcher** (teammate, at the console, asks the questions aloud into the same mic). **Medical professional / Runner** (teammate, runs `/board` and the fallback switches; "receives" the briefing from the speaker).
+
+| Time | What happens | Who | Cue / fallback |
+| --- | --- | --- | --- |
+| 0:00 | Copenhagen hook (same words as §3). | Presenter | — |
+| 0:10 | The judge draws from the **full deck**; for a stroke card the presenter writes the LKW time in the blank (D-20) and hands it to the caller. | Presenter + judge | — |
+| 0:15 | Runner opens `/mic` → **Start** (a new browser call opens on the console). "Our phone line is pending carrier verification, so tonight the call comes through this microphone — the pipeline after it is identical." | Runner + presenter | No transcript within 4 s → check the mic level meter, then restart `/mic`. |
+| 0:20 | Dispatcher: "911, what is the address of your emergency?" … "Tell me exactly what happened." The caller acts the card. Console: transcript (speaker `mixed`), quotes underline, Possible → Likely, the "what time exactly" banner. | Caller + dispatcher | The dispatcher asks open questions so the caller's own words carry the signs. |
+| 0:50 | Dispatcher follows the banner (LKW, blood thinners, face/arm check). If the card shows Possible or Likely and the dispatcher judges it a stroke: **Send stroke pre-alert** → confirm. | Dispatcher | Never send at None. |
+| 1:00 | The alert status shows the briefing is ready → Runner (as the medical professional) clicks **Play briefing**: Sonic reads the briefing from the laptop speaker. "This is what the on-call stroke neurologist hears when they pick up." | Runner | No audio → check volume; replay once; else backup video from 1:00. |
+| 1:15 | The judge flips the card; presenter points at the board (quotes, countdown, "Dispatcher pre-alert"). | Judge + presenter | — |
+| 1:25 | Not a stroke on the first card → one draw from the **stroke pile**, short form; otherwise the B01/C01 replays (`/`). | Presenter | — |
+| 1:45 | Slide (§3 numbers). | Presenter | — |
+
+Honest line for judges who ask: "In production the briefing is a phone call to the stroke team — that path is built and tested, it is waiting on our carrier verification."
+
 ## 1. Roles at the table
 
 | Role | Person | Has |

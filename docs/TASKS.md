@@ -39,9 +39,10 @@ Lanes: **X** integration (docs/10, session 4) · **S** setup (shared) · **R** r
 | V-06 | Alert approve: compose → Sonic bytes → outbound call | V | voice | blocked | P0 | V-05, R-07 | 2 | 3 | Offline done, landed bfa43ca + tests 90936d4 (gateway 39 tests; evidence docs/status/voice.md). Live criteria wait on a human: ngrok + Twilio webhook (S-04), then a real call. |
 | V-07 | Alert media stream: play briefing, marks, hang-up | V | voice | blocked | P0 | V-06 | 2 | 3 | Offline done, landed bfa43ca + tests 90936d4 (gateway 39 tests; evidence docs/status/voice.md). Live criteria wait on a human: ngrok + Twilio webhook (S-04), then a real call. |
 | V-08 | Q&A loop with barge-in | V | voice | doing | P2 | V-07, R-08 | 3 | — | Landed 63555e3 behind `FEATURE_QA_ENABLED` (default false, D-32): Sonic WS, quote-or-drop answers, barge-in, idle hang-up. Live check needs the briefing call (after S-04). |
-| V-09 | Browser-mic fallback (gateway) | V | voice | doing | P1 | V-03 | 1.5 | — | Gateway side landed (browser call + mic WS, tests 998f166); live check with W-08 pending. |
+| V-09 | Browser-mic fallback (gateway) | V | voice | doing | P0 | V-03 | 1.5 | — | Gateway side landed (browser call + mic WS, tests 998f166); live check with W-08 pending. · P0 since D-43 (no Twilio number: browser mic is the primary inbound path). |
 | V-10 | Degrade/reconnect, test-briefing endpoint, call-again | V | voice | doing | P1 | V-07 | 1.5 | — | Landed 998f166 (retry after restart rehydrates from the store); live Ink kill test pending. |
 | V-11 | Replay endpoint for scripted calls | V | voice | done | P0 | V-05 | 1 | — | Landed bfa43ca. Replay B01 at speed 50 → possible, balance + eyes, face/arm banner, LKW 20–40 min before now, call.ended (ui.test.ts); A01 replay renders on console and board in X-03. |
+| V-12 | Local briefing delivery: `ALERT_DELIVERY=local`, `GET /api/alerts/:id/audio` (PCM WAV), `POST /api/alerts/:id/played` (D-43) | V | voice | todo | P0 | V-06 | 1 | 3 | |
 | W-01 | Web scaffold, proxy, WS hook, polling fallback | W | screens | done | P0 | S-02 | 2 | 1 | Landed 9bf85d1. Proxy + WS hook + polling fallback; `grep INTERNAL_API_KEY .next/static` empty. Checked against apps/web/scripts/mock-gateway.ts until V-04 lands. Evidence: docs/status/screens.md. |
 | W-02 | Console: live transcript pane | W | screens | done | P0 | W-01, R-01 | 2 | 1 | Landed 49ac7fc (one commit for W-02…W-04). A01/B01/C01 replays render via the mock gateway; quote click scrolls + flashes. Evidence: docs/status/screens.md. |
 | W-03 | Console: stroke card | W | screens | done | P0 | W-02 | 2 | 2 | Landed 49ac7fc (one commit for W-02…W-04). A01/B01/C01 replays render via the mock gateway; quote click scrolls + flashes. Evidence: docs/status/screens.md. |
@@ -49,10 +50,11 @@ Lanes: **X** integration (docs/10, session 4) · **S** setup (shared) · **R** r
 | W-05 | Console: Send pre-alert modal + alert status | W | screens | done | P0 | W-04, V-06, V-10 | 1.5 | 3 | Landed aeb6e77. Prefill from `alertDefaultTargetPhone` (D-39), Send enabled while live (D-30), allowlist 409 shown in red. Evidence: docs/status/screens.md. |
 | W-06 | Board page | W | screens | done | P1 | W-01, V-06 | 2.5 | — | Landed c5a5748. Board: countdown, quotes, EMS toggle, live removal. Evidence: docs/status/screens.md. |
 | W-07 | Home: call list, start browser call | W | screens | done | P1 | W-01 | 0.5 | — | Landed 74acdd4 (with W-10). |
-| W-08 | Mic page (AudioWorklet) | W | screens | done | P1 | W-07, V-09 | 2 | — | Landed 009fe54. AudioWorklet downsampler, 640-byte 16 kHz s16le frames; live speech check waits on V-09. |
+| W-08 | Mic page (AudioWorklet) | W | screens | done | P0 | W-07, V-09 | 2 | — | Landed 009fe54. AudioWorklet downsampler, 640-byte 16 kHz s16le frames; live speech check waits on V-09. · P0 since D-43 (no Twilio number: browser mic is the primary inbound path). |
 | W-09 | Mic page: record to WAV | W |  | todo | P2 | W-08 | 1 | — | P2 |
 | W-10 | Replay buttons (B01/C01) | W | screens | done | P1 | W-07, V-11 | 0.5 | — | Landed 74acdd4 (with W-07). Replay buttons call POST /api/gateway/calls/replay; live check waits on V-11. |
 | W-11 | Visual polish | W | screens | done | P1 | W-05, W-06 | 2 | — | Landed 2eb2cb6. Screenshots in apps/web/screenshots/; presenter approval pending (BLOCKERS). |
+| W-12 | "Play briefing" button on the alert status (console; board optional), plays the briefing audio in the browser (D-43) | W | screens | todo | P0 | W-05, V-12 | 1 | 3 | |
 | E-01 | Runner: text mode + scoring + table | E | reasoning | done | P0 | R-03…R-09, C-02 | 3 | — | Landed 7c6bf02, c03967e. Live `--ids A01,B01,C01` → 1 m 12 s, no NaN, 0 model errors, level agreement 3/3; `--model fake` offline. Evidence: docs/status/reasoning.md. |
 | E-02 | Runner: audio mode (uses @lastwell/stt) | E |  | cut | — | E-01, V-02 | 2 | — | deferred by D-33 (text-mode eval only) |
 | E-03 | Full text run → slide | E | reasoning | doing | P1 | E-01 | 0.5 | — | Run 1 of 2 landed a9225cc (20 scripts, 4 m 16 s, 0 model errors): sens@possible 12/12 vs baseline 3/12, sens@likely 6/12, precision@possible 12/17, precision@likely 6/7, LKW 16/16, blood thinner 8/8, invented 0, level agreement 18/20. Run 2 held for after any prompt change. |
@@ -298,6 +300,12 @@ Runbook §7; the latency table from run 10 in Notes.
 `npx convex run store:wipe '{"secret":"…"}'` until `remaining` is 0 (or delete the Convex project); rotate Twilio auth token, Cartesia and Anthropic keys; confirm the public repo has no secrets (`git log -p | grep -iE "sk_car|sk-ant|AC[0-9a-f]{32}"` empty).
 
 ---
+
+### V-12 Local briefing delivery (D-43)
+**Acceptance.** With `ALERT_DELIVERY=local` and real keys: approving a live browser-mic Card A call composes the R-07 briefing and synthesizes it with Sonic (log `alert.created` with `ms`), places **no** Twilio call, and `GET /api/alerts/:id/audio` returns a playable 8 kHz mono 16-bit WAV of exactly the cached briefing; `POST /api/alerts/:id/played` moves the alert to `briefed` then `completed` (broadcast `alert.updated`); with `ALERT_DELIVERY=phone` behavior is unchanged and `pnpm e2e` stays green; unit tests for both modes; `GET /api/config` returns `alertDelivery`.
+
+### W-12 Play briefing button (D-43)
+**Acceptance.** When `alertDelivery` is `local`, the console's alert status shows **Play briefing** once the alert has audio; clicking plays it through the speaker (an `<audio>` element on the proxied `/api/gateway/alerts/:id/audio`), then posts `played`; the pill reaches `briefed`/`completed`; "Call again" is hidden in local mode; a Playwright smoke step (X-03) clicks it under `pnpm dev:fake`.
 
 ### X-00 Docs alignment
 **Goal.** docs/10 §2 decisions D-30…D-38 in docs/09; docs/00 (rows 5–7), docs/05 §2/§7 notes, docs/08 (§1, §3, §6, §9), `.env.example`, CLAUDE.md, this file.

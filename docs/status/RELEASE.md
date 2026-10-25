@@ -24,6 +24,10 @@ The whole demo path, built during Cal Hacks 13.0 by four parallel lanes landing 
 - `pnpm e2e:ui`: **4 passed** (Playwright against `pnpm dev:fake`): home, console, board and the empty "No stroke signs heard yet." state. Screenshots: `docs/status/screens/`.
 - Scripted eval, live Claude (E-03 run 1, 20 calls): sensitivity @possible 12/12 vs keyword baseline 3/12; precision @likely 6/7; LKW correct 16/16; blood thinner correct 8/8; invented facts 0.
 
+### No Twilio number yet (D-43)
+
+The account owns no number (Trust Hub pending). The primary demo is phone-free: browser mic in, briefing played from the laptop speaker (`ALERT_DELIVERY=local`, tasks V-12/W-12, docs/08 §0). The phone path stays intact behind its flags.
+
 ### Not yet verified live (needs people, phones or ngrok)
 
 | What | Command / step once unblocked |
