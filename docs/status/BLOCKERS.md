@@ -3,16 +3,18 @@
 Integration copies open blockers from the four lane files here at each merge, newest first, so humans have one place to look. Answer by editing the relevant doc or `.env`, then tick the line in the lane file.
 
 
-## Shift note (integration, 2026-10-24 ~16:40 PT)
-- Answered by a human: keys and phone numbers in ~/lw-voice/.env, Convex project healthy-chipmunk-255; R-03 sex-evidence wording approved (D-40); script truth calls (D-41). Voice was started at 4:05 PM (never stalled).
-- Still open: R-06 reasoner wording, the Card A recording, W-11 look approval, card print; Twilio webhook + ngrok after V-01 lands.
-- Watch: Voice's gateway tasks (X-01b, V-01, V-03…V-07, V-11), the critical path.
+## Shift note (integration, 2026-10-24 ~18:20 PT)
+- Answered: Twilio number + webhook (phone path primary again, D-43 updated); PR #1 merged to main as a checkpoint (d341ae5).
+- Still open: the live gates (real calls: M-01…M-04) now that the number exists; Card A recording (V-02 spike); card print; W-11 look approval; D-40 prompt landing by reasoning.
+- Watch: the first real call through the gateway on the Mac; keep docs/08 §0 ready as the fallback.
 
 ## Open (newest first)
 
-- [ ] **humans · Twilio number (D-43)** · The upgraded Twilio account owns no number; buying one is blocked by Trust Hub verification (pending, may take days); the +1 737 number belongs to another account being located. Meanwhile the demo is phone-free (docs/08 §0: browser mic + briefing from the laptop speaker, `ALERT_DELIVERY=local`). When a number exists: set `TWILIO_PHONE_NUMBER`, its voice webhook → `{PUBLIC_BASE_URL}/twilio/voice`, start ngrok, `ALERT_DELIVERY=phone`, and switch back to docs/08 §3. Live gates M-01/M-02 wait on this.
+- [ ] voice + humans · M-01…M-04 · Run the live gates on the phone path now: call the number from an unverified phone (dispatcher answers), read Card A, approve to ALERT_DEFAULT_TARGET_PHONE. Real calls only to ALERT_ALLOWED_NUMBERS.
 
-- [ ] humans · S-04 · (needs the Twilio number above) After Voice lands V-01: start `ngrok http 8787 --domain $NGROK_DOMAIN` on the gateway Mac and set the Twilio number's voice webhook to `{PUBLIC_BASE_URL}/twilio/voice`.
+- [x] humans · Twilio number (D-43) · **Done 2026-10-24 ~18:20 PT:** a number exists on the .env account, webhook set to `{PUBLIC_BASE_URL}/twilio/voice` and verified; phone path (docs/08 §3) is primary again, §0 is the fallback. ~~The upgraded Twilio account owns no number; buying one is blocked by Trust Hub verification (pending, may take days); the +1 737 number belongs to another account being located. Meanwhile the demo is phone-free (docs/08 §0: browser mic + briefing from the laptop speaker, `ALERT_DELIVERY=local`). When a number exists: set `TWILIO_PHONE_NUMBER`, its voice webhook → `{PUBLIC_BASE_URL}/twilio/voice`, start ngrok, `ALERT_DELIVERY=phone`, and switch back to docs/08 §3. Live gates M-01/M-02 wait on this.~~
+
+- [x] humans · S-04 · Done (webhook set and verified, 2026-10-24 ~18:20 PT). ~~After Voice lands V-01: start `ngrok http 8787 --domain $NGROK_DOMAIN` on the gateway Mac and set the Twilio number's voice webhook to `{PUBLIC_BASE_URL}/twilio/voice`.~~
 
 - [ ] voice · V-02 · Record a ~20 s 16 kHz mono WAV of someone reading Card A's caller lines → `apps/eval/audio/A01.wav` (gitignored; `ffmpeg -i in.m4a -ar 16000 -ac 1 -sample_fmt s16 A01.wav`) for the live Ink 2 spike; also needs the Cartesia key.
 - [x] reasoning · R-06 · **Approved by BM (D-42)**, `reasoner-2` landed eb5e836: B01 now asks for the face check. ~~Reasoner prompt: on B01 it asks for an exact LKW clock time or a speech check instead of the face/arm check. Proposed docs/04 §3 wording (`reasoner-2`) in docs/status/reasoning.md. → approve/reject by editing docs/04.~~

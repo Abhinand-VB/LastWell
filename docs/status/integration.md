@@ -3,7 +3,7 @@
 Only the integration session edits this file.
 
 ## Current task
-- 2026-10-24 ~18:10 PT: PR #1 merged to main (d341ae5) as a checkpoint; 20-minute version1 checks; X-05 final PR after the live demo flow.
+- 2026-10-24 ~18:20 PT: D-43 update (phone primary again); 20-minute version1 checks; final PR after the live gates.
 
 ## Last green commit on version1
 - (X-04, see below)
@@ -78,6 +78,7 @@ Only the integration session edits this file.
 - [x] from reasoning: E-03 run 1 numbers carried into README "Results" and docs/08 §3 "Slide numbers", with the footnote.
 
 ## Requests to other lanes
+- [ ] to voice, screens: **D-43 update (human, ~18:20 PT): the Twilio number exists and its webhook is set and verified; the phone path is primary again.** V-12/W-12 and V-09/W-08 drop to P1 (the §0 fallback); keep building them, but the live gates on the phone path (V-01, V-03…V-07 live; M-01…M-04) come first. Real calls only to ALERT_ALLOWED_NUMBERS (D-35), never from a loop (§7.4). (D-43)
 - [ ] to voice: **D-43, P0 now** (human, 2026-10-24 ~18:00 PT): there is no Twilio number (Trust Hub pending), so the demo runs phone-free on the live gateway on the Mac (:8787). (1) **V-09 browser mic is P0**: make the `/mic` → `POST /api/calls/browser` → `WS /browser/media/:callId` path work end to end on the live gateway (real Ink 2, real Claude), and note the live evidence. (2) **New V-12, P0**: `ALERT_DELIVERY=phone|local` in env.ts (default `phone`, so nothing changes for Twilio or e2e); in `local`, approve composes + synthesizes exactly as now but places no call; `GET /api/alerts/:alertId/audio` returns the cached briefing as a 16-bit PCM WAV (8 kHz mono, decoded from µ-law, re-synthesized from `briefingText` if the cache is gone); `POST /api/alerts/:alertId/played` → `briefed` → `completed` with `alert.updated`; the test-briefing endpoint works the same way in local mode; `GET /api/config` returns `alertDelivery`. Acceptance in docs/TASKS.md V-12. Keep the Twilio path and its flags untouched so it works the moment a number exists. (D-43)
 - [ ] to screens: **D-43, P0 now**: (1) **W-08 mic page is P0**: verify it against the live gateway on :8787 (a browser call, transcript on the console). (2) **New W-12, P0**: when `/api/config` says `alertDelivery: "local"`, the alert status on the console shows **Play briefing** once the alert exists: play `/api/gateway/alerts/:id/audio` in an `<audio>` element (allow `alerts/:id/audio` and `alerts/:id/played` in the proxy allowlist and pass the binary body through), then `POST …/played`; hide "Call again" in local mode; the "Test briefing call" footer link must also get a Play button. Acceptance in docs/TASKS.md W-12. (D-43)
 - [ ] to reasoning: D-43 contract additions (producer voice, consumer screens): `ConfigResponse.alertDelivery: z.enum(["phone","local"])`; docs/03 §6 rows `GET /api/alerts/:alertId/audio` → `audio/wav` (16-bit PCM, 8 kHz mono) and `POST /api/alerts/:alertId/played` `{}` → `{alert}` (status `briefed` → `completed`); D-43 is already in docs/09, add your contract line to it or a follow-up D. (D-43)
