@@ -2,25 +2,21 @@
 
 Only the integration session edits this file.
 
-## Remaining work (snapshot 2026-10-24 22:59 PT; refreshed every 20-minute loop)
+## Remaining work (snapshot 2026-10-24 23:10 PT; refreshed every 20-minute loop)
 
 Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live eval on the 20 scripts, numbers on the slide → (c) browser-mic fallback + play-briefing-locally on the live gateway → (d) W-11 polish for the judging table. Q&A (D-32: R-08, V-08 live) only after all of that is green. No real phone calls 9 PM–8 AM (FakeTelephony overnight).
 
 | Task | What is left | Pri | Owner | Blocked? |
 | --- | --- | --- | --- | --- |
-| V-06 / V-07 | live evidence from the log (alert.created ms, ring ≤ 20 s, speech ≤ 1.5 s, `briefed`) | P0 | voice | no (ring observed by human) |
-| V-01, V-03, V-04, V-05 | live inbound call (Gates 0–2) | P0 | voice + humans | **yes: inbound test call tomorrow morning (no calls 9 PM–8 AM)** |
-| V-02 | live Ink 2 spike | P0 | voice | **yes: Card A recording at apps/eval/audio/A01.wav (human)** |
+| Morning tests | chameleon card, look-alike card, Q&A rerun (D-49/D-51) → Q&A keep/kill | P1 | humans + voice | after 8 AM |
 | V-09 | browser mic live check (gateway side in, 998f166) | P1 | voice | needs a person at the laptop |
 | V-10 | live Ink kill/reconnect check | P1 | voice | no |
-| W-11 | presenter approval of the look (screens has nothing else open) | P1 | presenter | human |
+| W-11 | polish list from Liang → screens; approved once it lands | P1 | screens | waits on the list |
 | C-04 | print deck, slide, two timed pitch runs | P1 | humans | human |
 | E-05 | held-out blind run (once, by voice) → heldout-run1.md → slide | P1 | voice → integration | waits on voice's current Q&A task |
 | X-05 | final PR + `demo-ready` tag after the live gates | P1 | integration | waits on M-01…M-04 |
-| S-05 | Cartesia credits check + voice pick | — | humans | human |
-| M-01…M-04, M-06 | live gates, ten rehearsals | — | humans + voice | tomorrow morning |
+| M-06 | ten rehearsals (Test 1 passed: M-01…M-04 done) | — | humans + voice | morning |
 | C-01, C-05, C-07, C-08 | interview quote, Devpost, backup video, submission | — | humans | human |
-| V-08 (live) | Q&A on a real briefing call (R-08 done) | P2 | voice | after the voice P1 checks; no real calls 9 PM–8 AM; FEATURE_QA_ENABLED stays false until two clean rehearsals (D-32) |
 | W-09 | mic record to WAV | P2 | screens | deferred (D-33) |
 
 
@@ -125,6 +121,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - [x] from reasoning: E-03 run 1 numbers carried into README "Results" and docs/08 §3 "Slide numbers", with the footnote.
 
 ## Requests to other lanes
+- [ ] to voice, screens, reasoning: **Liang's decisions (~23:05 PT):** D-49 and D-51 approved; **live Test 1 passed** (M-01…M-04, V-01, V-03…V-08 done, D-52); `FEATURE_QA_ENABLED=true` on the gateway Mac until the morning keep/kill; Sonic voice frozen (S-05); V-02's Card A recording closed. Morning tests after 8 AM: chameleon, look-alike, Q&A rerun. Screens: Liang sends you a W-11 polish list; W-11 is approved once it lands. Voice: E-05 (one blind run) is still yours. (human update)
 - [ ] to reasoning: **do NOT read, run or tune anything on `apps/eval/scripts-heldout/`** (E-05 held-out blind test, docs/07 §5b). No prompt, rule, fake-model or scorer change may ever be based on it; do not open the files. If a change of yours needs a full eval, use `apps/eval/scripts` only. (E-05, human instruction)
 - [ ] to voice: **E-05, after your current Q&A task lands:** run, exactly once, `pnpm --filter @lastwell/eval eval --mode text --scripts scripts-heldout` with the prompts as they are on `version1` at that moment (live keys; no edits to prompts, scorer or scripts first). Save the printed table **unchanged** to `apps/eval/results/heldout-run1.md` (`git add -f`, results is gitignored) with a header line: date, `version1` commit hash, prompt versions (fast/reasoner). Commit it even if the results are bad. **No reruns**; if the run errors out before printing a table, note the error in your status file and ask integration before trying again. (E-05, human instruction)
 - [ ] to voice, reasoning, screens: **all four vendors are live on the gateway Mac** (Anthropic, Cartesia, Convex, Twilio; human, 2026-10-24 ~18:35 PT; Twilio number works end to end, Send pre-alert rang the medical phone). Run your `blocked-keys` checks now, within docs/10 §7.4 (Anthropic test:live ≤ 3/h, E-03 ≤ 2 runs total before freeze; Cartesia live only for gate tasks, ≤ 10 min audio/h). **Exception: no real phone calls between 9 PM and 8 AM** — for any call check overnight run the gateway with `LASTWELL_FAKES=twilio` (FakeTelephony; DEMO_MODE=false) so no teammate's phone rings. (human update)

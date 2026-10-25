@@ -42,7 +42,11 @@ The whole demo path, built during Cal Hacks 13.0 by four parallel lanes landing 
 
 The account owns no number (Trust Hub pending). The primary demo is phone-free: browser mic in, briefing played from the laptop speaker (`ALERT_DELIVERY=local`, tasks V-12/W-12, docs/08 §0). The phone path stays intact behind its flags.
 
-### Not yet verified live (needs people, phones or ngrok)
+### Live gates (D-52)
+
+Test 1 passed on real phones, 2026-10-24 ~21:30–22:00 PT: inbound call → transcript → Likely with quotes → LKW + Eliquis → Send pre-alert → briefing call rang the medical phone → Q&A answered and handled an interruption (M-01…M-04). Morning tests: chameleon, look-alike, Q&A rerun.
+
+### Originally not verified live (now covered by Test 1 except where noted)
 
 | What | Command / step once unblocked |
 | --- | --- |
@@ -54,7 +58,7 @@ The account owns no number (Trust Hub pending). The primary demo is phone-free: 
 
 ### Deliberately not in v1
 
-- Spoken Q&A on the briefing call is built (V-08, 63555e3) but ships off: `FEATURE_QA_ENABLED=false` by default until two clean rehearsals with it on (D-32).
+- Spoken Q&A on the briefing call (V-08, D-49, D-51) is on for the demo (D-52) after the live Test 1; off by default in code; keep/kill after the morning rehearsals.
 - Audio-mode eval (D-33).
 - SMS (D-03).
 

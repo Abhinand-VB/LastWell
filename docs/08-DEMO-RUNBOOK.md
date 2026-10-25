@@ -9,7 +9,7 @@ Since D-30/D-31 (docs/09): **teammates play every phone role.** The judge draws 
 **§3 (the phone call) is the primary script** now that the Twilio number exists (2026-10-24 ~18:20 PT). Use this section only when the phone path fails at the table (no inbound transcript, no briefing call, ngrok or carrier down): set `ALERT_DELIVERY=local` and restart the gateway with `start`, then run the script below. Everything after the microphone is the same pipeline: Ink 2 transcription, Haiku/Sonnet with quote-or-drop, the LKW parser, code-composed briefing, Sonic voice.
 
 Setup (gateway Mac, port 8787; no ngrok needed in this mode):
-- [ ] `.env`: `DEMO_MODE=true`, `LASTWELL_FAKES=` (empty), `ALERT_DELIVERY=local`, `FEATURE_BROWSER_MIC=true`, `FEATURE_QA_ENABLED=false`. Gateway: `pnpm --filter @lastwell/gateway start`; `curl -s localhost:8787/healthz` → `{"ok":true,…}` with no `fakes`.
+- [ ] `.env`: `DEMO_MODE=true`, `LASTWELL_FAKES=` (empty), `ALERT_DELIVERY=local`, `FEATURE_BROWSER_MIC=true`, `FEATURE_QA_ENABLED=true` (D-52). Gateway: `pnpm --filter @lastwell/gateway start`; `curl -s localhost:8787/healthz` → `{"ok":true,…}` with no `fakes`.
 - [ ] Web on the same Mac (`pnpm --filter @lastwell/web dev`); `/` loads; `/api/config` shows `alertDelivery: "local"`.
 - [ ] Laptop speaker volume up; a USB/table mic (or the laptop mic) placed between the caller and the dispatcher; the room is as quiet as you can make it.
 - [ ] Smoke test: open `/mic`, press Start, say "test one two three" → the console shows the utterance within 3 s. Then "Test briefing call" → a `TEST` alert appears → **Play briefing** plays the canned briefing from the speaker; "Clear test alerts" removes it.
@@ -57,7 +57,7 @@ Infrastructure
 - [ ] Web app running on laptop 1 (`pnpm --filter @lastwell/web dev`); `/` lists calls. Laptop 2 runs its **own** web app pointed at the public gateway (`GATEWAY_URL=https://<ngrok>`, `NEXT_PUBLIC_GATEWAY_WS_URL=wss://<ngrok>/ws/ui`, docs/01 §7) and shows `/board`; the web app is never served through ngrok.
 - [ ] Dispatcher phone charged, on Do Not Disturb exceptions for the Twilio number, ringer on, headset paired.
 - [ ] Medical professional's phone charged, ringer on, Do Not Disturb off, "Silence Unknown Callers" off, the Twilio number saved as a contact.
-- [ ] `.env` on the gateway laptop: `DEMO_MODE=true`, `LASTWELL_FAKES=` (empty), and the gateway log shows **no red fakes banner**; `FEATURE_QA_ENABLED=false` unless Q&A passed two clean rehearsals (D-32).
+- [ ] `.env` on the gateway laptop: `DEMO_MODE=true`, `LASTWELL_FAKES=` (empty), and the gateway log shows **no red fakes banner**; `FEATURE_QA_ENABLED=true` (D-52: on since the live Test 1; the keep/kill decision follows the morning rehearsals — set `false` and restart with `start` if they say kill). Sonic voice frozen (S-05).
 - [ ] Hotspot phone charged; backup battery on the table.
 - [ ] Backup video (`demo-backup.mp4`, 90 s) open in a player, paused at 0:00, volume checked.
 
@@ -130,6 +130,8 @@ The **full deck** has 12 cards (strokes, chameleons, look-alikes); the **stroke 
 The caller acts the front in their own words; the dispatcher asks questions as on a real call.
 
 ## 7. Rehearsal protocol (Sunday morning, ten runs)
+
+**Status (D-52):** Test 1 passed on real phones on Saturday ~21:30–22:00 PT (Card A style: transcript, Likely with quotes, LKW, Eliquis, Send, briefing call, Q&A with an interruption). The morning tests add: a **chameleon** card (B01 or B06), a **look-alike** card (C01, C02, C04 or C05), and a **Q&A rerun** with D-49/D-51 ("thank you" ends the call; common questions answered fast; an unknown question gets a "not mentioned" phrasing). After them, decide Q&A keep or kill.
 
 1. Runs 1–3: a team member draws the cards as the judge, phone on venue Wi-Fi off, hotspot on. Fix anything that fails before continuing.
 2. Runs 4–7: a stranger from another team draws the cards and flips them (buy them coffee). Ask whether the flip convinced them; note every card where LastWell disagreed with the sealed answer.
