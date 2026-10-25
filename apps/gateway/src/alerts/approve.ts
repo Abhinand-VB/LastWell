@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import type { Logger } from "pino";
 import { CaseState, composeBriefing, type AlertStatus, type AlertSummary, type ModelClient } from "@lastwell/core";
 import { finalizeQa, type QaFinal } from "./qaAnswer.js";
+import { answerFromState } from "./qaFast.js";
 import type { CallService } from "../pipeline/calls.js";
 import { maskNumber } from "../pipeline/callRegistry.js";
 import type { AuditEvent, DispatcherAction } from "../audit/auditTrail.js";
@@ -297,9 +298,17 @@ export class AlertService {
     this.setStatus(a, "qa");
   }
 
-  /** One neurologist question → validated answer text (docs/04 §4). Never throws: errors → fallback. */
-  async answerQuestion(a: AlertRecord, question: string): Promise<QaFinal & { modelMs: number }> {
+  /**
+   * One neurologist question → validated answer text (docs/04 §4). The fast path answers common
+   * questions from the case state with no model call; the rest go to the model. Never throws.
+   */
+  async answerQuestion(a: AlertRecord, question: string): Promise<QaFinal & { modelMs: number; path: "fast" | "model" }> {
     const now = this.now();
+    const fast = answerFromState(question, a.caseSnapshot, a.transcriptSnapshot, now, this.deps.timezone);
+    if (fast !== null) {
+      this.deps.log.info({ event: "qa.fast", alertId: a.id, topics: fast.topics }, "answered from the case state");
+      return { answer: fast.answer, known: fast.known, evidence: fast.evidence, evidenceDropped: false, modelMs: 0, path: "fast" };
+    }
     let out = null;
     let modelMs = 0;
     try {
@@ -312,7 +321,7 @@ export class AlertService {
     }
     const final = finalizeQa(question, out, { state: a.caseSnapshot, transcript: a.transcriptSnapshot }, now, this.deps.timezone);
     if (final.evidenceDropped) this.deps.log.info({ event: "qa.evidence_dropped", alertId: a.id }, "qa evidence did not validate");
-    return { ...final, modelMs };
+    return { ...final, modelMs, path: "model" };
   }
 
   /** Record an answered turn (store + board/console via alert.updated). */

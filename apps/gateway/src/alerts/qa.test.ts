@@ -2,10 +2,12 @@ import { afterEach, describe, expect, it } from "vitest";
 import { EventEmitter } from "node:events";
 import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
-import { QA_FALLBACK, type CaseState, type Utterance } from "@lastwell/core";
+import { createFakeModel, QA_FALLBACK, type CaseState, type ModelClient, type Utterance } from "@lastwell/core";
+import type { Logger } from "pino";
+import { captureLog } from "../testkit.js";
 import type { InkSessionEvents } from "@lastwell/stt";
 import { finalizeQa, LKW_NOT_ESTABLISHED } from "./qaAnswer.js";
-import { QA_CLOSING, QA_NOT_MENTIONED, QA_SYSTEM, QA_UNCLEAR } from "./qaIntent.js";
+import { QA_CLOSING, QA_FILLERS, QA_NOT_MENTIONED, QA_SYSTEM, QA_UNCLEAR } from "./qaIntent.js";
 import { AlertStreamSession } from "../twilio/alertStream.js";
 import { FakeTtsStream, type TtsStream } from "../tts/sonicWs.js";
 import type { SttSession, SttSessionOptions } from "../stt/sessions.js";
@@ -75,8 +77,8 @@ afterEach(async () => {
 });
 
 describe("Q&A loop on the briefing call (V-08)", () => {
-  async function setup(qaIdleMs = 60_000, ttsFactory?: () => TtsStream) {
-    gw = testGateway({ env: { FEATURE_QA_ENABLED: "true" }, telephonySpeed: 0.0001 });
+  async function setup(qaIdleMs = 60_000, ttsFactory?: () => TtsStream, extra: { model?: ModelClient; log?: Logger; fillerAfterMs?: number; fragmentHoldMs?: number } = {}) {
+    gw = testGateway({ env: { FEATURE_QA_ENABLED: "true" }, telephonySpeed: 0.0001, ...(extra.model ? { model: extra.model } : {}) });
     const call = gw.calls.create({ mode: "phone", label: "dev", streamStartedNow: true });
     gw.calls.addFinal(call, { speaker: "caller", text: "It's my father, he's 78.", tStartMs: 0, tEndMs: 900 });
     gw.calls.addFinal(call, { speaker: "caller", text: "His words come out all mixed up and he can't lift his coffee cup.", tStartMs: 1000, tEndMs: 2000 });
@@ -91,9 +93,11 @@ describe("Q&A loop on the briefing call (V-08)", () => {
     const s = new AlertStreamSession(
       {
         alerts: gw.alerts,
-        log: createLogger("silent"),
+        log: extra.log ?? createLogger("silent"),
         expectedAccountSid: "ACx",
         qaIdleMs,
+        ...(extra.fillerAfterMs !== undefined ? { fillerAfterMs: extra.fillerAfterMs } : {}),
+        ...(extra.fragmentHoldMs !== undefined ? { fragmentHoldMs: extra.fragmentHoldMs } : {}),
         ttsStream: ttsFactory ?? (() => tts),
         stt: (o) => {
           const x = new ScriptedStt(o);
@@ -110,6 +114,12 @@ describe("Q&A loop on the briefing call (V-08)", () => {
     s.handle({ event: "mark", streamSid: "MZ1", mark: { name: "briefing" } });
     expect(alert.status).toBe("qa");
     expect(stts[0]!.opts).toMatchObject({ profile: "qa", encoding: "pcm_mulaw", sampleRate: 8000 });
+    if (!ttsFactory) {
+      // Q&A open synthesizes the two fillers once into a cache; nothing is sent to the caller.
+      await until(() => tts.spoken.length === QA_FILLERS.length);
+      expect(tts.spoken).toEqual([...QA_FILLERS]);
+      tts.spoken.length = 0;
+    }
     sent.length = 0;
     return { s, alert, sent, stt: stts[0]!, tts };
   }
@@ -210,6 +220,108 @@ describe("Q&A loop on the briefing call (V-08)", () => {
     await until(() => alert.status === "completed");
     expect(tts.spoken).toHaveLength(1);
     expect(alert.qaTurns).toHaveLength(0);
+  });
+
+  /** The fake model, with Q&A calls counted and optionally delayed (a slow model answer). */
+  function countingModel(delayMs = 0) {
+    const base = createFakeModel();
+    const calls: string[] = [];
+    const model: ModelClient = {
+      ...base,
+      answer: async (i) => {
+        calls.push(i.questionText);
+        if (delayMs > 0) await new Promise((r) => setTimeout(r, delayMs));
+        return base.answer(i);
+      },
+    };
+    return { model, calls };
+  }
+
+  it("fast path: common questions are answered from the case state with no model call; timing is logged", async () => {
+    const { model, calls } = countingModel();
+    const { log, events } = captureLog();
+    const { s, alert, stt, tts } = await setup(60_000, undefined, { model, log });
+    stt.emit("final", { text: "Is he on blood thinners?", tStartMs: 0, tEndMs: 900, sttMs: 420 });
+    await until(() => alert.qaTurns.length === 1);
+    s.handle({ event: "mark", streamSid: "MZ1", mark: { name: "answer-1" } });
+    stt.emit("final", { text: "How old is he?", tStartMs: 0, tEndMs: 900, sttMs: 380 });
+    await until(() => alert.qaTurns.length === 2);
+    expect(calls).toEqual([]);
+    expect(tts.spoken[0]).toBe("Blood thinner: Eliquis, per the caller. The caller said 'he takes Eliquis'.");
+    expect(tts.spoken[1]).toMatch(/^78-year-old man, per the caller\./);
+    const t = events.filter((e) => e.event === "qa.timing");
+    expect(t).toHaveLength(2);
+    expect(t[0]).toMatchObject({ path: "fast", speculative: false, eotMs: 420, modelMs: 0, fillerMs: null, ms: expect.any(Number), ttsFirstMs: expect.any(Number) });
+    expect(t[0]!.prepMs as number).toBeLessThan(100);
+  });
+
+  it("model path slower than 700 ms: a cached filler plays first, then the answer; no filler when it is fast", async () => {
+    const { model, calls } = countingModel(900);
+    const { log, events } = captureLog();
+    const { alert, stt, sent } = await setup(60_000, undefined, { model, log });
+    stt.emit("final", { text: "Any seizure before this?", tStartMs: 0, tEndMs: 900, sttMs: 300 });
+    await until(() => alert.qaTurns.length === 1, 4000);
+    expect(calls).toEqual(["Any seizure before this?"]);
+    const timing = events.find((e) => e.event === "qa.timing")!;
+    expect(timing).toMatchObject({ path: "model", fillerMs: expect.any(Number) });
+    expect(timing.fillerMs as number).toBeGreaterThanOrEqual(650);
+    expect(timing.fillerMs as number).toBeLessThan(900);
+    // Media starts before the answer is ready (the filler), and the answer mark comes last.
+    expect(sent[0]!.event).toBe("media");
+    expect(sent.at(-1)).toEqual({ event: "mark", streamSid: "MZ1", mark: { name: "answer-1" } });
+  });
+
+  it("eager end-of-turn starts the answer early and the final reuses it; a resume discards it", async () => {
+    const { model, calls } = countingModel(200);
+    const { log, events } = captureLog();
+    const { s, alert, stt } = await setup(60_000, undefined, { model, log });
+    stt.emit("eager", { text: "Any seizure before this", tStartMs: 0 });
+    stt.emit("final", { text: "Any seizure before this?", tStartMs: 0, tEndMs: 900, sttMs: 300 });
+    await until(() => alert.qaTurns.length === 1);
+    expect(calls).toHaveLength(1);
+    expect(events.find((e) => e.event === "qa.timing")).toMatchObject({ speculative: true });
+    s.handle({ event: "mark", streamSid: "MZ1", mark: { name: "answer-1" } });
+    stt.emit("eager", { text: "Any history of", tStartMs: 0 });
+    stt.emit("resume");
+    stt.emit("final", { text: "Any history of migraines?", tStartMs: 0, tEndMs: 900, sttMs: 300 });
+    await until(() => alert.qaTurns.length === 2);
+    expect(calls).toEqual(["Any seizure before this", "Any history of", "Any history of migraines?"]);
+    expect(events.filter((e) => e.event === "qa.timing")[1]).toMatchObject({ speculative: false });
+  });
+
+  it("gibberish and noise get the reprompt, never 'not mentioned', and never reach the model", async () => {
+    const { model, calls } = countingModel();
+    const { s, alert, stt, tts } = await setup(60_000, undefined, { model });
+    stt.emit("final", { text: "Oogabooga.", tStartMs: 0, tEndMs: 900, sttMs: 100 });
+    await until(() => tts.spoken.length === 1);
+    s.handle({ event: "mark", streamSid: "MZ1", mark: { name: "answer-1" } });
+    stt.emit("final", { text: "Is he on blood thinners?", tStartMs: 0, tEndMs: 900, sttMs: 100, confidence: 0.2 });
+    await until(() => tts.spoken.length === 2);
+    expect(tts.spoken).toEqual([QA_UNCLEAR, QA_UNCLEAR]);
+    expect(calls).toEqual([]);
+    expect(alert.qaTurns).toHaveLength(0);
+  });
+
+  it("a question split by a pause ('Is he on?' … 'any blood thinners?') is joined and answered once", async () => {
+    const { model, calls } = countingModel();
+    const { alert, stt, tts } = await setup(60_000, undefined, { model });
+    stt.emit("final", { text: "Is he on?", tStartMs: 0, tEndMs: 600, sttMs: 300 });
+    await new Promise((r) => setTimeout(r, 150));
+    stt.emit("turn.start", { tStartMs: 1200 });
+    stt.emit("final", { text: "Any blood thinners?", tStartMs: 1200, tEndMs: 2000, sttMs: 300 });
+    await until(() => alert.qaTurns.length === 1);
+    expect(alert.qaTurns[0]).toMatchObject({ question: "Is he on? Any blood thinners?", known: true });
+    expect(tts.spoken).toEqual(["Blood thinner: Eliquis, per the caller. The caller said 'he takes Eliquis'."]);
+    expect(calls).toEqual([]);
+  });
+
+  it("a fragment nobody continues is handled after the hold (here: the reprompt)", async () => {
+    const { stt, tts, sent } = await setup(60_000, undefined, { fragmentHoldMs: 200 });
+    stt.emit("final", { text: "When was he?", tStartMs: 0, tEndMs: 600, sttMs: 300 });
+    await new Promise((r) => setTimeout(r, 100));
+    expect(sent).toEqual([]); // still held
+    await until(() => tts.spoken.length === 1);
+    expect(tts.spoken).toEqual([QA_UNCLEAR]);
   });
 
   it("silence after an answer hangs up", async () => {

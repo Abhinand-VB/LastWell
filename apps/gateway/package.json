@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "tsx watch src/server.ts | pino-pretty",
     "start": "tsx src/server.ts",
+    "qa:bench": "tsx scripts/qaBench.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p convex/tsconfig.json",
     "test": "vitest run",
     "convex:dev": "convex dev",

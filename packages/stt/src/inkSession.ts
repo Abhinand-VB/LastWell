@@ -25,6 +25,15 @@ export interface InkSessionOptions {
   reconnectDelayMs?: number;
   /** Max time close() waits for the server to drain. Default 2000. */
   closeTimeoutMs?: number;
+  /** Override the profile's turn settings (tuning and benchmarks). */
+  turn?: Partial<TurnSettings>;
+}
+
+export interface TurnSettings {
+  start: number;
+  eager: number;
+  end: number;
+  timeoutMs: number;
 }
 
 export interface InkPartial {
@@ -36,6 +45,13 @@ export interface InkFinal {
   tStartMs: number;
   tEndMs: number;
   sttMs: number;
+  /** Ink's confidence for the turn, when the server sends one (it is not documented today). */
+  confidence?: number;
+}
+/** `turn.eager_end`: Ink thinks the turn is probably over; the final may still change or resume. */
+export interface InkEager {
+  text: string;
+  tStartMs: number;
 }
 export interface InkError {
   message: string;
@@ -46,6 +62,9 @@ export interface InkSessionEvents {
   partial: [InkPartial];
   final: [InkFinal];
   "turn.start": [{ tStartMs: number }];
+  eager: [InkEager];
+  /** The speaker kept talking after an eager end. */
+  resume: [];
   error: [InkError];
   /** Reconnected after one failure. */
   reconnected: [];
@@ -54,9 +73,10 @@ export interface InkSessionEvents {
   closed: [];
 }
 
-const PROFILES: Record<InkProfile, { start: number; eager: number; end: number; timeoutMs: number }> = {
+export const PROFILES: Record<InkProfile, TurnSettings> = {
   call: { start: 0.8, eager: 0.6, end: 0.3, timeoutMs: 2400 },
-  qa: { start: 0.8, eager: 0.5, end: 0.2, timeoutMs: 1600 },
+  // end 0.2 → 0.3 (qa:bench 2026-10-24: ~150 ms sooner on 3 of 8 questions, never later, no extra splits).
+  qa: { start: 0.8, eager: 0.5, end: 0.3, timeoutMs: 1600 },
 };
 
 /** Bytes buffered in the socket above which audio frames are dropped (docs/05 §3). */
@@ -64,8 +84,8 @@ export const BACKPRESSURE_BYTES = 64 * 1024;
 /** Audio queued while the first connection opens; beyond this the oldest frames are dropped. */
 const PENDING_MAX_BYTES = 64 * 1024;
 
-export function inkUrl(o: Pick<InkSessionOptions, "baseUrl" | "model" | "encoding" | "sampleRate" | "cartesiaVersion" | "profile" | "keyterms">): string {
-  const p = PROFILES[o.profile];
+export function inkUrl(o: Pick<InkSessionOptions, "baseUrl" | "model" | "encoding" | "sampleRate" | "cartesiaVersion" | "profile" | "keyterms" | "turn">): string {
+  const p = { ...PROFILES[o.profile], ...o.turn };
   const q = new URLSearchParams({
     model: o.model,
     encoding: o.encoding,
@@ -213,8 +233,12 @@ export class InkSession extends EventEmitter<InkSessionEvents> {
           this.lastChangeWall = Date.now();
         }
         if (text !== "") this.emit("partial", { text, tStartMs: Math.round(this.turnStartTs) });
+        if (ev.type === "turn.eager_end" && text !== "") this.emit("eager", { text, tStartMs: Math.round(this.turnStartTs) });
         break;
       }
+      case "turn.resume":
+        this.emit("resume");
+        break;
       case "turn.end": {
         const text = ev.transcript.trim();
         const tStartMs = Math.round(this.turnStartTs ?? this.opts.getTs());
@@ -222,7 +246,9 @@ export class InkSession extends EventEmitter<InkSessionEvents> {
         const sttMs = Math.max(0, Date.now() - this.lastChangeWall);
         this.resetTurn();
         if (text === "") break;
-        this.emit("final", { text, tStartMs, tEndMs: Math.max(tStartMs, Math.round(this.opts.getTs())), sttMs });
+        const c = ev.confidence;
+        const confidence = typeof c === "number" ? c : undefined;
+        this.emit("final", { text, tStartMs, tEndMs: Math.max(tStartMs, Math.round(this.opts.getTs())), sttMs, ...(confidence !== undefined ? { confidence } : {}) });
         break;
       }
       case "error": {
