@@ -2,13 +2,12 @@
 
 Only the integration session edits this file.
 
-## Remaining work (snapshot 2026-10-24 20:00 PT; refreshed every 20-minute loop)
+## Remaining work (snapshot 2026-10-24 20:25 PT; refreshed every 20-minute loop)
 
 Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live eval on the 20 scripts, numbers on the slide → (c) browser-mic fallback + play-briefing-locally on the live gateway → (d) W-11 polish for the judging table. Q&A (D-32: R-08, V-08 live) only after all of that is green. No real phone calls 9 PM–8 AM (FakeTelephony overnight).
 
 | Task | What is left | Pri | Owner | Blocked? |
 | --- | --- | --- | --- | --- |
-| R-03 | land D-40 fast-pass sex-evidence wording in the next fast-pass version (two `fast-2` attempts regressed row 2; prompt stays fast-1 for that line, fast-3 carries D-44) | P0 | reasoning | no |
 | V-06 / V-07 | live evidence from the log (alert.created ms, ring ≤ 20 s, speech ≤ 1.5 s, `briefed`) | P0 | voice | no (ring observed by human) |
 | V-01, V-03, V-04, V-05 | live inbound call (Gates 0–2) | P0 | voice + humans | **yes: inbound test call tomorrow morning (no calls 9 PM–8 AM)** |
 | V-02 | live Ink 2 spike | P0 | voice | **yes: Card A recording at apps/eval/audio/A01.wav (human)** |
@@ -20,7 +19,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 | S-05 | Cartesia credits check + voice pick | — | humans | human |
 | M-01…M-04, M-06 | live gates, ten rehearsals | — | humans + voice | tomorrow morning |
 | C-01, C-05, C-07, C-08 | interview quote, Devpost, backup video, submission | — | humans | human |
-| R-08, V-08 (live) | Q&A live acceptance (voice asked reasoning to run R-08 live) | P2 | reasoning, voice | after (a)–(d) green (D-32) |
+| V-08 (live) | Q&A on a real briefing call (R-08 done) | P2 | voice | after the voice P1 checks; no real calls 9 PM–8 AM; FEATURE_QA_ENABLED stays false until two clean rehearsals (D-32) |
 | W-09 | mic record to WAV | P2 | screens | deferred (D-33) |
 
 
@@ -85,6 +84,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - `pnpm dev:fake` replays A01 through `POST /api/calls/replay`; it logs a 404 until V-11 lands, and the gateway runs without fakes until X-01b lands (it ignores `LASTWELL_FAKES` today).
 
 ## Periodic version1 checks (newest first)
+- 2026-10-24 20:23 PT · version1 32fe31a (D-46 compact guardrails, R-08, D-47 human decisions, fast-5/reasoner-5) · verify exit 0 · e2e 23/0/0 (strict). Idle: reasoning active (20:20) and its build work is done; voice 96 min; screens 73 min (nothing P0/P1 open).
 - 2026-10-24 20:00 PT · version1 e6d3aff (no new commits) · verify exit 0 · e2e 23/0/0 (strict). Idle: voice 73 min, reasoning 48 min, screens 50 min → all three in BLOCKERS (screens likely just finished).
 - 2026-10-24 19:38 PT · version1 aabbe6f (no new commits) · verify exit 0 · e2e 23/0/0 (strict). Idle: **voice 51 min (18:47) → BLOCKERS**; reasoning 19:12, screens 19:10 ok.
 - 2026-10-24 19:14 PT · version1 3389497 (D-44 prompts, E-03 run 2, D-45 contract, W-12, W-08, W-11 labels, fake phrase table) · verify exit 0 · e2e 23/0/0 (strict). Idle check: all three lanes active (voice 18:47, reasoning 19:12, screens 19:10).
@@ -99,6 +99,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - 2026-10-24 15:58 PT · df3e7a7 · verify exit 0 · e2e 2 pending.
 
 ## Handled requests from other lanes
+- [x] from reasoning (D-47): README "Honest limits" gains append-only signs and no sex from a bare pronoun; D-40 marked not adopted in docs/09; slide/README footnote names the prompt versions of E-03 run 2 and the fast-5/reasoner-5 spot check.
 - [x] from screens (W-12): X-03 now runs dev:fake with `ALERT_DELIVERY=local` and clicks send-button → confirm-checkbox → modal-send → play-briefing until `alert-status[data-status=completed]` (A02 replay); the phone path stays covered by `pnpm e2e`.
 - [x] from reasoning: E-03 run 2 (slide numbers) → README Results + docs/08 §3; all 16 card scripts still match truth (final and peak) in run 2.
 - [x] from voice (README check): (1) the "pending carrier verification" limit → "fallback without the phone line"; (2) Ink `call`/`qa` profiles, reconnect-once-then-degrade banner, local-delivery WAV from the same Sonic bytes; (3) keyterms on by default; (4) the unmeasured "1.5 s" claim dropped (re-add from `alert.briefing_sent` `ms` after the first real briefing call); (5) Q&A ships off (D-32).

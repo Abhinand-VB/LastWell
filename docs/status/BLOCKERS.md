@@ -3,17 +3,17 @@
 Integration copies open blockers from the four lane files here at each merge, newest first, so humans have one place to look. Answer by editing the relevant doc or `.env`, then tick the line in the lane file.
 
 
-## Shift note (integration, 2026-10-24 19:15 PT)
-- Both idle lanes resumed (screens 19:00, reasoning 18:55). E-03 run 2 (the last allowed full run) is on the slide and README: sens@likely 7/12, precision@likely 7/7, level agreement 20/20.
-- Still open: D-40 fast-pass wording (reasoning: next fast-pass version), Card A recording, card print, W-11 approval, S-05 credits/voice pick, live inbound test call tomorrow morning.
-- Watch: no real calls 9 PM–8 AM.
+## Shift note (integration, 2026-10-24 20:25 PT)
+- Answered (D-47, BM): D-40 not adopted; append-only signs and pronoun-only sex are documented limits; R24 wake-up clause dropped from the compact guardrails. Reasoning's build work is done (R-03, R-08 done).
+- Still open: voice idle 96 min (log evidence for the briefing call, V-10 live); W-11 approval; Card A recording; card print; S-05; inbound test call after 8 AM.
+- Watch: nothing P0 is open in code; remaining risk is the live inbound call tomorrow.
 
 ## Open (newest first)
 
-- [ ] **IDLE · reasoning** · No commit since 19:12, status since 19:03 (checked 20:00 PT: 48 min). Still open: **D-40 fast-pass sex-evidence wording (R-03, P0)**, which two attempts regressed. → nudge lw-reasoning: "land D-40 in the next fast-pass version within the §7.4 budget (test:live ≤ 3/h; no more full E-03 runs, use --ids for a spot check), or write in your status why it should wait". R-08 (Q&A) only after the voice P1 checks are green (D-32).
-- [ ] **IDLE · screens (maybe done)** · No commit or status since 19:10 (checked 20:00 PT: 50 min). Nothing P0/P1 open in the lane: W-11 waits on the presenter's approval (human), W-09 is P2/deferred. → a human can approve W-11 from docs/status/screens/ and apps/web/screenshots/, or give screens a polish list for the judging table.
+- [x] ~~IDLE · reasoning~~ resumed 20:13 PT; D-40 closed by D-47 (not adopted); lane build work done.
+- [ ] **IDLE · screens (maybe done)** · No commit or status since 19:10 (re-checked 20:23 PT: 73 min). Nothing P0/P1 open in the lane: W-11 waits on the presenter's approval (human), W-09 is P2/deferred. → a human can approve W-11 from docs/status/screens/ and apps/web/screenshots/, or give screens a polish list for the judging table.
 
-- [ ] **IDLE · voice** · No commit and no status update since 18:47 PT (re-checked 20:00 PT: 73 min). Open voice work: V-06/V-07 live evidence from the gateway log (alert.created ms, ring time, `briefed`); V-10 live Ink reconnect check; V-09 browser-mic live check (needs a person at the laptop). → nudge the lw-voice session: "read docs/status/integration.md Remaining work; post the V-06/V-07 log evidence, then V-10 live; tell integration if anything needs a person". Reminder: no real calls 9 PM–8 AM (`LASTWELL_FAKES=twilio`).
+- [ ] **IDLE · voice** · No commit and no status update since 18:47 PT (re-checked 20:23 PT: 96 min). Open voice work: V-06/V-07 live evidence from the gateway log (alert.created ms, ring time, `briefed`); V-10 live Ink reconnect check; V-09 browser-mic live check (needs a person at the laptop). → nudge the lw-voice session: "read docs/status/integration.md Remaining work; post the V-06/V-07 log evidence, then V-10 live; tell integration if anything needs a person". Reminder: no real calls 9 PM–8 AM (`LASTWELL_FAKES=twilio`).
 
 - [x] ~~IDLE · screens~~ resumed 19:00 PT (W-12, W-08 live check, W-11).
 - [x] ~~IDLE · reasoning~~ resumed 18:55 PT (D-44, E-03 run 2, D-45, fake phrase table).

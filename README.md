@@ -99,7 +99,7 @@ The scripted eval (20 calls written by the team: 12 strokes including chameleons
 | Invented facts shown | 0 | — |
 | Dropped by the quote validator | 0 items | — |
 
-20 scripted calls (text mode), written by the team; real-world precision will be lower. The 5 non-stroke flags at Possible are the 5 look-alike scripts, each shown with its look-alike panel (e.g. "low blood sugar"); the 3 other emergencies stayed at None. The keyword baseline caught only 3 of 12 strokes, which is why its time to first flag ties ours. Every script ended at its expected level (20/20). Median model latency in the run: fast pass 1.3 s, reasoner 2.9 s.
+20 scripted calls (text mode), written by the team; real-world precision will be lower. The 5 non-stroke flags at Possible are the 5 look-alike scripts, each shown with its look-alike panel (e.g. "low blood sugar"); the 3 other emergencies stayed at None. The keyword baseline caught only 3 of 12 strokes, which is why its time to first flag ties ours. Every script ended at its expected level (20/20). Run 2 used prompt versions `fast-3`/`reasoner-3`; the later guardrail revisions (`fast-5`/`reasoner-5`) were spot-checked live on fixture calls and 5 scripts with the same results. Median model latency in the run: fast pass 1.3 s, reasoner 2.9 s.
 
 ## Honest limits
 
@@ -110,6 +110,8 @@ The scripted eval (20 calls written by the team: 12 strokes including chameleons
 - **No SMS.** US carriers block SMS from unregistered 10DLC numbers, so the alert is a voice call. The SMS path exists behind `ALERT_SMS_ENABLED=false`.
 - **Demo-grade auth.** A single shared internal key, short-lived WebSocket tokens, signature-checked Twilio webhooks. Do not deploy this publicly as is.
 - **Not a medical device.** LastWell suggests and quotes; the dispatcher decides whether to send, and the treating team makes every treatment decision. The time-savings estimate (7–23 minutes earlier than a scene pre-alert) comes from national EMS chest-pain medians.
+- **Signs are append-only.** If the caller corrects themselves after a sign was quoted ("no wait, his arm is fine"), the earlier sign stays on the card with its quote; the dispatcher sees both sentences in the transcript.
+- **Sex from a bare pronoun is not extracted.** "He" or "she" alone does not set the patient's sex; words like "my father" or "my wife" do.
 - No audio is stored in phone mode. Transcripts live in the demo database only for the event and are wiped afterwards.
 
 ## For contributors and coding agents
