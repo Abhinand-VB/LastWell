@@ -1,5 +1,5 @@
 // Alert status helpers for the console (W-05) and the board (W-06). Pure; unit-tested.
-import type { AlertStatus, AlertSummary } from "@lastwell/core";
+import type { AlertStatus, AlertSummary, Level } from "@lastwell/core";
 import { GatewayError } from "./gateway";
 
 /** docs/03 §6: a call may not get a second alert while one is in queued..qa. */
@@ -46,6 +46,7 @@ export function isActive(a: AlertSummary | null): boolean {
 /** Human message for a failed send; the allowlist 409 (D-35) gets its own clear wording. */
 export function sendErrorText(err: unknown): string {
   if (err instanceof GatewayError) {
+    if (err.code === "override_required") return OVERRIDE_REQUIRED_TEXT;
     const blob = `${err.code} ${err.message}`.toLowerCase();
     if (err.status === 409 && /allow/.test(blob)) {
       return `Not sent: this number is not on the allowed list (ALERT_ALLOWED_NUMBERS). No call was placed. (${err.message})`;
@@ -57,6 +58,28 @@ export function sendErrorText(err: unknown): string {
     return `Not sent: ${err.message}`;
   }
   return "Not sent: unexpected error.";
+}
+
+/** D-53: the dispatcher's note on a pre-alert is at most this many characters (docs/03 §6). */
+export const NOTE_MAX = 200;
+
+/** D-53: below `possible` a send is a dispatcher override (the gateway's rule, apps/gateway/src/alerts/dispatcherNote.ts). */
+export const belowPossible = (level: Level): boolean => level === "none";
+
+export const OVERRIDE_TOOLTIP =
+  "LastWell has not detected stroke signs; the briefing will say this is a dispatcher-initiated pre-alert";
+
+/** 409 override_required: the gateway has no signs on this call though the console showed some (stale level). */
+export const OVERRIDE_REQUIRED_TEXT =
+  "Not sent: LastWell has not detected stroke signs on this call. Confirm a dispatcher-initiated pre-alert and send again.";
+
+/**
+ * Extra fields of POST /api/calls/:id/alert (D-53): the note trimmed (empty = absent, never over NOTE_MAX),
+ * and override only when the dispatcher confirmed a send below possible.
+ */
+export function alertExtras(note: string, override: boolean): { notes?: string; override?: true } {
+  const notes = note.trim().slice(0, NOTE_MAX);
+  return { ...(notes ? { notes } : {}), ...(override ? { override: true as const } : {}) };
 }
 
 /** Status wording: in local delivery `queued` means the audio is ready to play. */

@@ -69,8 +69,9 @@ export const gateway = {
   getCall: (callId: string) => request(CallSnapshotResponse, "GET", `calls/${id(callId)}`),
   startBrowserCall: () => request(BrowserCallResponse, "POST", "calls/browser", {}),
   endCall: (callId: string) => request(OkResponse, "POST", `calls/${id(callId)}/end`, {}),
-  sendAlert: (callId: string, targetPhone: string) =>
-    request(AlertResponse, "POST", `calls/${id(callId)}/alert`, { targetPhone, confirm: true }),
+  /** D-53 extras (`notes`, `override`) are not in core's CreateAlertBody yet; docs/03 §6 has them. */
+  sendAlert: (callId: string, targetPhone: string, extras: { notes?: string; override?: true } = {}) =>
+    request(AlertResponse, "POST", `calls/${id(callId)}/alert`, { targetPhone, confirm: true, ...extras }),
   emsConfirm: (alertId: string, confirmed: boolean) =>
     request(AlertResponse, "POST", `alerts/${id(alertId)}/ems-confirm`, { confirmed }),
   hangup: (alertId: string) => request(OkResponse, "POST", `alerts/${id(alertId)}/hangup`, {}),

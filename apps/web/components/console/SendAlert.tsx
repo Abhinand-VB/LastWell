@@ -1,15 +1,20 @@
 "use client";
-// W-05: Send stroke pre-alert (docs/01 §7, D-30, D-35). Enabled at level ≠ none, also while the
-// 911 call is live (the target is the medical professional's phone, not the caller's). The modal
-// prefills ALERT_DEFAULT_TARGET_PHONE from /api/config and requires an explicit confirm.
+// W-05: Send stroke pre-alert (docs/01 §7, D-30, D-35). Enabled at every level (D-53, W-13), also while
+// the 911 call is live (the target is the medical professional's phone, not the caller's). The modal
+// prefills ALERT_DEFAULT_TARGET_PHONE from /api/config and requires an explicit confirm; below possible
+// it says LastWell has no signs and sends override: true. An optional note (≤ 200) is sent as `notes`.
 // W-12 (D-43): with alertDelivery "local" no call is placed; Play briefing plays the WAV here.
 // D-54: the test links are not on the console during a call; TestLinks lives on /preflight and ?debug.
 import { useEffect, useRef, useState } from "react";
-import type { AlertSummary, CallInfo, CaseState } from "@lastwell/core";
-import { gateway } from "@/lib/gateway";
+import type { AlertSummary, CallInfo, CaseState, Level } from "@lastwell/core";
+import { GatewayError, gateway } from "@/lib/gateway";
 import {
   HANGUP_STATUSES,
+  NOTE_MAX,
+  OVERRIDE_TOOLTIP,
   RETRY_STATUSES,
+  alertExtras,
+  belowPossible,
   canPlay,
   isActive,
   latestAlert,
@@ -41,15 +46,16 @@ export function SendAlert({
   const level = state?.level ?? "none";
   const current = latestAlert(alerts);
   const active = isActive(current);
-  const disabled = level === "none" || active || !call;
-  const reason =
-    level === "none"
-      ? "Enabled once a stroke sign is heard"
-      : active
-        ? "A pre-alert for this call is already in progress"
-        : !call
-          ? "Loading the call…"
-          : "Send a stroke pre-alert to the stroke team";
+  // D-53: enabled at every level; below possible the send is a dispatcher override.
+  const override = belowPossible(level);
+  const disabled = active || !call;
+  const reason = active
+    ? "A pre-alert for this call is already in progress"
+    : !call
+      ? "Loading the call…"
+      : override
+        ? OVERRIDE_TOOLTIP
+        : "Send a stroke pre-alert to the stroke team";
   const target = config.alertDefaultTargetPhone;
 
   return (
@@ -74,7 +80,11 @@ export function SendAlert({
           Send stroke pre-alert
         </button>
       </div>
-      {level === "none" && <p className="mt-2 text-right text-base text-lw-ink-3">{reason}</p>}
+      {override && !active && call && (
+        <p data-testid="override-hint" className="mt-2 text-right text-base text-lw-ink-3">
+          {OVERRIDE_TOOLTIP}.
+        </p>
+      )}
 
       {current && <AlertStatusPanel alert={current} config={config} onAlert={onAlert} divider={!active} />}
 
@@ -82,6 +92,7 @@ export function SendAlert({
         <SendModal
           callId={callId}
           call={call}
+          level={level}
           config={config}
           onClose={() => setOpen(false)}
           onSent={(a) => {
@@ -97,20 +108,27 @@ export function SendAlert({
 function SendModal({
   callId,
   call,
+  level,
   config,
   onClose,
   onSent,
 }: {
   callId: string;
   call: CallInfo;
+  level: Level;
   config: WebConfig;
   onClose: () => void;
   onSent: (a: AlertSummary) => void;
 }) {
   const [phone, setPhone] = useState(config.alertDefaultTargetPhone ?? "");
+  const [note, setNote] = useState("");
   const [confirmed, setConfirmed] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  // D-53: a send below possible is an override; a 409 override_required (the gateway has no signs though
+  // the console showed some) turns the override notice on for this modal too.
+  const [forcedOverride, setForcedOverride] = useState(false);
+  const override = belowPossible(level) || forcedOverride;
   const input = useRef<HTMLInputElement>(null);
   const e164 = toE164(phone);
 
@@ -127,9 +145,13 @@ function SendModal({
     setBusy(true);
     setError(null);
     try {
-      const res = await gateway.sendAlert(callId, e164);
+      const res = await gateway.sendAlert(callId, e164, alertExtras(note, override));
       onSent(res.alert);
     } catch (err) {
+      if (err instanceof GatewayError && err.code === "override_required") {
+        setForcedOverride(true);
+        setConfirmed(false);
+      }
       setError(sendErrorText(err));
       setBusy(false);
     }
@@ -163,6 +185,15 @@ function SendModal({
             Caller still on the line — this does not end or change the 911 call.
           </p>
         )}
+        {override && (
+          <p
+            data-testid="override-notice"
+            className="mt-4 rounded-lg bg-amber-50 px-4 py-3 text-base text-amber-900 ring-1 ring-amber-300"
+          >
+            <strong>LastWell has not detected stroke signs on this call.</strong> The briefing will open: “Dispatcher-initiated
+            pre-alert. LastWell has not detected stroke signs on this call.”
+          </p>
+        )}
 
         <label className="mt-6 block text-base font-semibold text-lw-ink-2" htmlFor="target-phone">
           Stroke team phone
@@ -185,6 +216,30 @@ function SendModal({
           {phone && !e164 && <span className="ml-2 font-semibold text-amber-800">Not a valid phone number.</span>}
         </p>
 
+        <div className="mt-6 flex items-baseline justify-between">
+          <label className="text-base font-semibold text-lw-ink-2" htmlFor="dispatcher-note">
+            Dispatcher note <span className="font-normal text-lw-ink-3">(optional)</span>
+          </label>
+          <span
+            data-testid="note-counter"
+            aria-live="polite"
+            className={`font-mono text-sm ${note.length >= NOTE_MAX ? "font-semibold text-amber-800" : "text-lw-ink-3"}`}
+          >
+            {note.length}/{NOTE_MAX}
+          </span>
+        </div>
+        <textarea
+          id="dispatcher-note"
+          data-testid="dispatcher-note"
+          value={note}
+          maxLength={NOTE_MAX}
+          rows={3}
+          onChange={(e) => setNote(e.target.value.slice(0, NOTE_MAX))}
+          placeholder="What you know that the transcript does not, e.g. “Wife says he slurred his words at breakfast.”"
+          className="mt-2 w-full resize-none rounded-xl bg-lw-surface px-4 py-3 text-lg text-lw-ink ring-1 ring-lw-border-strong focus:outline-none focus:ring-2 focus:ring-lw-accent"
+        />
+        <p className="mt-1 text-sm text-lw-ink-3">Read word for word at the end of the briefing, after “The dispatcher adds:”.</p>
+
         <label className="mt-6 flex cursor-pointer items-start gap-3 text-lg text-lw-ink">
           <input
             type="checkbox"
@@ -193,7 +248,9 @@ function SendModal({
             onChange={(e) => setConfirmed(e.target.checked)}
             className="mt-1 h-6 w-6 accent-red-600"
           />
-          I confirm sending a dispatcher pre-alert to this number.
+          {override
+            ? "I confirm sending a dispatcher-initiated pre-alert to this number without LastWell stroke signs."
+            : "I confirm sending a dispatcher pre-alert to this number."}
         </label>
 
         {error && (

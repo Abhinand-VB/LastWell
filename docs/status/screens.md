@@ -10,6 +10,12 @@ Only the screens session edits this file.
 
 ## Acceptance evidence (pasted command output per task)
 
+### W-13 Send at every level + notes field (D-53) — built 2026-10-25 ~02:20 PT (after the 02:00 freeze; not landed)
+- `components/console/SendAlert.tsx`: Send enabled at every level; at `none` the tooltip and a hint line read "LastWell has not detected stroke signs; the briefing will say this is a dispatcher-initiated pre-alert". Modal: amber override notice quoting the opening sentence, optional "Dispatcher note" textarea (`maxLength` 200 + slice, live `n/200` counter), confirm text "…dispatcher-initiated pre-alert … without LastWell stroke signs" below possible. A 409 `override_required` (stale console level) switches the modal into override mode and unticks confirm. `lib/alerts.ts`: `NOTE_MAX`, `belowPossible`, `alertExtras(note, override)` (trimmed, empty = absent), wording for `override_required`; `lib/gateway.ts` `sendAlert(callId, phone, extras)` (core's `CreateAlertBody` has no `notes`/`override` yet → wired-to-fake below).
+- `pnpm --filter @lastwell/web test` → 50 passed (adds 3 D-53 tests). `pnpm verify` exit 0; `pnpm e2e` 23 passed, 0 failed.
+- `pnpm dev:fake` (GATEWAY_PORT=28787 WEB_PORT=23000), D01 replay at speed 4, 1920×1080: level None, `send-button` enabled with the tooltip; typed 223 chars → textarea 200, counter "200/200"; ticked confirm → `POST …/alert` 200; pill Completed. Audit: approve `override: true`, detail "level none (dispatcher override: below possible) … with a dispatcher note", `dispatcherNote` = the 200 chars with quote marks intact; `briefingText` starts "Dispatcher-initiated pre-alert. LastWell has not detected stroke signs on this call." and ends "Goodbye. The dispatcher adds: Wife says \"he slurred his words at breakfast\", …".
+- X-03 (`pnpm e2e:ui`) not run here.
+
 ### W-11 light redesign (D-54, D-55, D-56) — 2026-10-25 ~01:20 PT
 - Design and theme in Figma: [LastWell — Screens](https://www.figma.com/design/uijhd1gyfCg693qBeXo1zs) (pages Home, Console, Board, Mic, Components; variables "LastWell light" = the `--color-lw-*` tokens in `apps/web/app/globals.css`).
 - Every page light with one nav (Calls / Pre-alert board; mic tab hidden; link badge only when not live). Console sized for 1920×1080: Ask next while live → code-built Summary after the call; Signs grouped by kind; Facts with LKW large and age · sex on one row; send bar "Calls the on-call stroke team (phone ending 0100)". Latency + test links only on `?debug`; test links also on `/preflight`. Home = recent-calls table (source icon, duration, level, pre-alert, status; live pinned) + replay strip A01/B01/C01/D01. Board: light cards, window bar, briefing steps.
@@ -91,6 +97,7 @@ Only the screens session edits this file.
 - W-12 real audio: same gateway with `ALERT_DELIVERY=local`, Send on a Likely call, ▶ Play briefing → Sonic voice from the laptop speaker, pill Completed.
 
 ## wired-to-fake (replace when the named task lands)
+- `apps/web/lib/gateway.ts`: `sendAlert` sends `notes`/`override` (D-53) outside core's `CreateAlertBody` until reasoning adds them there.
 - `apps/web/lib/config.ts`: `alertDelivery` (D-43) is read as an optional field (default `phone`) until reasoning adds it to core's `ConfigResponse`.
 
 ## Requests to other lanes
