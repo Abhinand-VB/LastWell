@@ -42,12 +42,12 @@ caller phone ──Twilio──► <Start><Stream both_tracks> ──wss──�
 
 ## Cartesia features used
 
-- **Ink 2 streaming STT with turn detection** (`/stt/turns/websocket`): `turn.start` / `turn.update` / `turn.end` drive the live transcript and the per-utterance reasoning, with no VAD of our own.
-- **Keyterms**: drug names (Eliquis, Xarelto, warfarin, Plavix…) and stroke vocabulary are passed as `keyterm=`, because a misheard blood thinner is the costliest error in a briefing.
+- **Ink 2 streaming STT with turn detection** (`/stt/turns/websocket`): `turn.start` / `turn.update` / `turn.end` drive the live transcript and the per-utterance reasoning, with no VAD of our own. Turn detection is tuned per use: a `call` profile on the 911 call and a `qa` profile on the briefing call. A dropped Ink socket reconnects once; a second drop puts a "transcription degraded" banner on the console.
+- **Keyterms**: drug names (Eliquis, Xarelto, warfarin, Plavix…) and stroke vocabulary are passed as `keyterm=` on every session by default (`STT_KEYTERMS`), because a misheard blood thinner is the costliest error in a briefing.
 - **Native telephony audio**: Ink 2 takes Twilio's µ-law 8 kHz frames as is (`encoding=pcm_mulaw&sample_rate=8000`). There is no resampling code in the repo.
 - **Two concurrent Ink sessions per call**, one per Twilio track, so the transcript is speaker-labelled (caller / dispatcher) without diarization.
-- **Sonic 3.6 TTS Bytes**: the briefing is synthesized as raw `pcm_mulaw` 8 kHz when the alert is approved and streamed into a Twilio bidirectional media stream, so speech starts within about 1.5 s of the stroke team answering.
-- **Sonic WebSocket** with per-answer `context_id` and cancel for barge-in, for spoken Q&A on the briefing call. Q&A is behind `FEATURE_QA_ENABLED` and was built last.
+- **Sonic 3.6 TTS Bytes**: the briefing is synthesized as raw `pcm_mulaw` 8 kHz when the alert is approved and streamed into a Twilio bidirectional media stream as soon as the stroke team answers, so no synthesis happens while they wait. The same cached bytes, decoded to a WAV, feed the laptop-speaker fallback (`ALERT_DELIVERY=local`).
+- **Sonic WebSocket** with per-answer `context_id` and cancel for barge-in, for spoken Q&A on the briefing call. Q&A ships **off** (`FEATURE_QA_ENABLED=false`, decision D-32) until it passes rehearsals.
 
 ## Claude models
 
@@ -85,31 +85,33 @@ pnpm --filter @lastwell/eval eval --mode text # scripted eval: LastWell vs keywo
 
 ## Results
 
-The scripted eval (20 calls written by the team: 12 strokes including chameleons, 5 stroke look-alikes, 3 other emergencies) compares LastWell with a keyword alert of the kind general 911 tools ship ("stroke", "droop", "slur", "numb", …). Numbers below are copied from the eval run's own output (E-03 run 1, re-scored after the B08 truth change, `apps/eval/results/E-03-run1-table.md`), not typed by hand:
+The scripted eval (20 calls written by the team: 12 strokes including chameleons, 5 stroke look-alikes, 3 other emergencies) compares LastWell with a keyword alert of the kind general 911 tools ship ("stroke", "droop", "slur", "numb", …). Numbers below are copied from the eval run's own output (E-03 run 2, the final allowed full run, `apps/eval/results/E-03-run2-table.md`), not typed by hand:
 
 | Metric | LastWell (Haiku 5.5 + Sonnet 5.5) | Keyword baseline |
 | --- | --- | --- |
 | Sensitivity @possible (n=12 strokes) | 12/12 (100%) | 3/12 (25%) |
-| Sensitivity @likely | 6/12 (50%) | — |
+| Sensitivity @likely | 7/12 (58%) | — |
 | Precision @possible (flags=17) | 12/17 (71%) | 3/6 (50%) |
-| Precision @likely | 6/7 (86%) | — |
+| Precision @likely | 7/7 (100%) | — |
 | Median seconds to first flag | 12 s | 12 s |
 | Last-known-well correct (n=16) | 16/16 | — |
 | Blood thinner correct (n=8) | 8/8 | — |
 | Invented facts shown | 0 | — |
-| Dropped by the quote validator | 1 item | — |
+| Dropped by the quote validator | 0 items | — |
 
-20 scripted calls (text mode), written by the team; real-world precision will be lower. The 5 non-stroke flags at Possible are the 5 look-alike scripts, each shown with its look-alike panel (e.g. "low blood sugar"); the 3 other emergencies stayed at None. The keyword baseline caught only 3 of 12 strokes, which is why its time to first flag ties ours. Median model latency in the run: fast pass 1.2 s, reasoner 2.9 s.
+20 scripted calls (text mode), written by the team; real-world precision will be lower. The 5 non-stroke flags at Possible are the 5 look-alike scripts, each shown with its look-alike panel (e.g. "low blood sugar"); the 3 other emergencies stayed at None. The keyword baseline caught only 3 of 12 strokes, which is why its time to first flag ties ours. Every script ended at its expected level (20/20). Run 2 used prompt versions `fast-3`/`reasoner-3`; the later guardrail revisions (`fast-5`/`reasoner-5`) were spot-checked live on fixture calls and 5 scripts with the same results. Median model latency in the run: fast pass 1.3 s, reasoner 2.9 s.
 
 ## Honest limits
 
 - **Scripted calls, not real 911 audio.** The test calls were written by us, so our numbers will look better than reality. For a real-world reference: in a Copenhagen study, an AI model recognized 63.0% of strokes with 24.9% precision, against 52.7% / 17.1% for human call handlers.
-- **Our Twilio number is pending carrier verification.** Until it clears, the live demo feeds the caller through the browser microphone and plays the Sonic briefing from the laptop speaker (`ALERT_DELIVERY=local`). The phone path, inbound bridge and outbound briefing call, is built and covered by the offline end-to-end test.
+- **Fallback without the phone line.** If the phone path fails at the table, the caller speaks into the browser microphone and the Sonic briefing plays from the laptop speaker (`ALERT_DELIVERY=local`); the rest of the pipeline is identical.
 - **The demo phones belong to teammates.** At the judging table, teammates play the caller, the dispatcher and the on-call clinician. The judge draws the case card and checks the sealed answer.
 - **Browser-microphone fallback is one mixed track.** One laptop mic hears both people, so that mode has no speaker labels.
 - **No SMS.** US carriers block SMS from unregistered 10DLC numbers, so the alert is a voice call. The SMS path exists behind `ALERT_SMS_ENABLED=false`.
 - **Demo-grade auth.** A single shared internal key, short-lived WebSocket tokens, signature-checked Twilio webhooks. Do not deploy this publicly as is.
 - **Not a medical device.** LastWell suggests and quotes; the dispatcher decides whether to send, and the treating team makes every treatment decision. The time-savings estimate (7–23 minutes earlier than a scene pre-alert) comes from national EMS chest-pain medians.
+- **Signs are append-only.** If the caller corrects themselves after a sign was quoted ("no wait, his arm is fine"), the earlier sign stays on the card with its quote; the dispatcher sees both sentences in the transcript.
+- **Sex from a bare pronoun is not extracted.** "He" or "she" alone does not set the patient's sex; words like "my father" or "my wife" do.
 - No audio is stored in phone mode. Transcripts live in the demo database only for the event and are wiped afterwards.
 
 ## For contributors and coding agents

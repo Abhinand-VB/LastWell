@@ -40,7 +40,7 @@ const POLAR: ReadonlySet<FactKind> = new Set([
 const TEXTUAL: ReadonlySet<FactKind> = new Set(["age", "sex", "address", "blood_thinner"]);
 
 function negative(v: string): boolean {
-  return /\b(no|not|never|none|nothing|denies|doesnt|dont|didnt|isnt|hasnt|wasnt)\b/.test(norm(v));
+  return /\b(no|not|never|none|nothing|denies|denied|doesnt|dont|didnt|isnt|hasnt|wasnt)\b/.test(norm(v));
 }
 
 /** Shown value contradicts truth: opposite polarity for yes/no facts, else neither text contains the other. */

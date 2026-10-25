@@ -6,7 +6,7 @@ import { QA_FALLBACK, type CaseState, type Utterance } from "@lastwell/core";
 import type { InkSessionEvents } from "@lastwell/stt";
 import { finalizeQa, LKW_NOT_ESTABLISHED } from "./qaAnswer.js";
 import { AlertStreamSession } from "../twilio/alertStream.js";
-import { FakeTtsStream } from "../tts/sonicWs.js";
+import { FakeTtsStream, type TtsStream } from "../tts/sonicWs.js";
 import type { SttSession, SttSessionOptions } from "../stt/sessions.js";
 import type { TwilioOutMessage } from "../tts/audioChunks.js";
 import { createLogger } from "../log.js";
@@ -74,7 +74,7 @@ afterEach(async () => {
 });
 
 describe("Q&A loop on the briefing call (V-08)", () => {
-  async function setup(qaIdleMs = 60_000) {
+  async function setup(qaIdleMs = 60_000, ttsFactory?: () => TtsStream) {
     gw = testGateway({ env: { FEATURE_QA_ENABLED: "true" }, telephonySpeed: 0.0001 });
     const call = gw.calls.create({ mode: "phone", label: "dev", streamStartedNow: true });
     gw.calls.addFinal(call, { speaker: "caller", text: "It's my father, he's 78.", tStartMs: 0, tEndMs: 900 });
@@ -93,7 +93,7 @@ describe("Q&A loop on the briefing call (V-08)", () => {
         log: createLogger("silent"),
         expectedAccountSid: "ACx",
         qaIdleMs,
-        ttsStream: () => tts,
+        ttsStream: ttsFactory ?? (() => tts),
         stt: (o) => {
           const x = new ScriptedStt(o);
           stts.push(x);
@@ -136,6 +136,30 @@ describe("Q&A loop on the briefing call (V-08)", () => {
     stt.emit("turn.start", { tStartMs: 0 });
     expect(sent.some((m) => m.event === "clear")).toBe(true);
     expect(tts.cancelled).toEqual(["a-1"]);
+  });
+
+  it("Sonic socket fails during an answer: nothing is spoken, no turn recorded, the next question gets a fresh socket (docs/05 §9)", async () => {
+    const opened: TtsStream[] = [];
+    let n = 0;
+    const factory = (): TtsStream => {
+      n++;
+      const s: TtsStream =
+        n <= 1
+          ? { speak: async () => Promise.reject(new Error("socket closed")), cancel: () => {}, close: () => {} }
+          : new FakeTtsStream();
+      opened.push(s);
+      return s;
+    };
+    const { alert, sent, stt } = await setup(60_000, factory);
+    stt.emit("final", { text: "Is he on blood thinners?", tStartMs: 0, tEndMs: 900, sttMs: 100 });
+    await until(() => opened.length === 2);
+    expect(sent).toEqual([]);
+    expect(alert.qaTurns).toHaveLength(0);
+    expect(alert.status).toBe("qa");
+    stt.emit("final", { text: "Is he on blood thinners?", tStartMs: 0, tEndMs: 900, sttMs: 100 });
+    await until(() => alert.qaTurns.length === 1);
+    expect((opened[1] as FakeTtsStream).spoken[0]).toMatch(/Eliquis/);
+    expect(sent.at(-1)).toEqual({ event: "mark", streamSid: "MZ1", mark: { name: "answer-2" } });
   });
 
   it("silence after an answer hangs up", async () => {

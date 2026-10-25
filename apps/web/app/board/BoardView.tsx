@@ -9,6 +9,7 @@ import { ConnectionBadge } from "@/components/ConnectionBadge";
 import { LevelPill } from "@/components/console/StrokeCard";
 import { gateway } from "@/lib/gateway";
 import { STATUS_LABEL, sendErrorText } from "@/lib/alerts";
+import { bloodThinnerLabel } from "@/lib/consoleText";
 import { SIGN_LABEL, mmss, windowCountdown } from "@/lib/format";
 
 export const TREATMENT_FOOTNOTE = "The treating team makes every treatment decision.";
@@ -151,7 +152,7 @@ function AlertCard({
       </div>
 
       <dl className="mt-5 grid grid-cols-[9rem_1fr] gap-x-4 gap-y-2 text-xl">
-        <dt className="text-slate-400">Blood thinner</dt>
+        <dt className="text-slate-400">{bloodThinnerLabel(thinner?.value ?? null)}</dt>
         <dd className="text-white">
           {thinner ? (
             <>

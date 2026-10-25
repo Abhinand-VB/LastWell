@@ -24,7 +24,7 @@ export async function proxyToGateway(req: Request, path: string[], cfg: ProxyCon
   const target = gatewayTarget(cfg.gatewayUrl, path, url.search);
   if (!target) return errorResponse(400, "bad_path", "invalid gateway path");
 
-  const headers: Record<string, string> = { "x-internal-key": cfg.internalKey, accept: "application/json" };
+  const headers: Record<string, string> = { "x-internal-key": cfg.internalKey };
   const contentType = req.headers.get("content-type");
   let body: string | undefined;
   if (req.method !== "GET" && req.method !== "HEAD") {
@@ -41,8 +41,9 @@ export async function proxyToGateway(req: Request, path: string[], cfg: ProxyCon
       cache: "no-store",
       signal: AbortSignal.timeout(cfg.timeoutMs ?? 15_000),
     });
-    const text = await res.text();
-    return new Response(text, {
+    // Bytes, not text: GET alerts/:id/audio is a WAV (D-43).
+    const bytes = await res.arrayBuffer();
+    return new Response(bytes, {
       status: res.status,
       headers: { "content-type": res.headers.get("content-type") ?? "application/json", "cache-control": "no-store" },
     });

@@ -1,0 +1,2357 @@
+{
+  "mode": "text",
+  "model": "claude-haiku-5-5 + claude-sonnet-5-5 @medium",
+  "ranAt": "2026-10-25T03:11:54.408Z",
+  "wallMs": 62349,
+  "summary": {
+    "scripts": 5,
+    "strokes": 2,
+    "lastwell": {
+      "sensPossible": {
+        "n": 2,
+        "d": 2
+      },
+      "sensLikely": {
+        "n": 1,
+        "d": 2
+      },
+      "precPossible": {
+        "n": 2,
+        "d": 4
+      },
+      "precLikely": {
+        "n": 1,
+        "d": 1
+      },
+      "medianFirstFlagS": 7,
+      "lkw": {
+        "n": 4,
+        "d": 4
+      },
+      "lkwUnknown": 0,
+      "bloodThinner": {
+        "n": 2,
+        "d": 2
+      },
+      "invented": 0,
+      "dropped": 0,
+      "wrongFacts": 0,
+      "levelAgreement": {
+        "n": 5,
+        "d": 5
+      },
+      "errors": 0,
+      "fastPassMsP50": 1201.5,
+      "reasonerMsP50": 2936
+    },
+    "baseline": {
+      "sensPossible": {
+        "n": 0,
+        "d": 2
+      },
+      "precPossible": {
+        "n": 0,
+        "d": 0
+      },
+      "medianFirstFlagS": null
+    }
+  },
+  "records": [
+    {
+      "id": "A01",
+      "type": "classic",
+      "isStroke": true,
+      "expectedLevel": "likely",
+      "finalLevel": "likely",
+      "maxLevel": "likely",
+      "firstPossibleS": 11,
+      "firstLikelyS": 11,
+      "signs": [
+        "speech",
+        "arms"
+      ],
+      "baseline": {
+        "flagged": false,
+        "atS": null,
+        "pattern": null
+      },
+      "lkw": {
+        "truth": "14:00",
+        "shown": "2:00 PM (1:45–2:15 PM)",
+        "correct": true,
+        "unknown": false
+      },
+      "bloodThinner": {
+        "truth": "Eliquis",
+        "shown": "Eliquis",
+        "correct": true
+      },
+      "lookalike": {
+        "truth": null,
+        "shown": []
+      },
+      "invented": [],
+      "wrongFacts": [],
+      "dropped": 0,
+      "errors": 0,
+      "fastPassMs": [
+        1257,
+        1195,
+        1429,
+        1144,
+        1223
+      ],
+      "reasonerMs": [
+        2066,
+        2620,
+        2977,
+        2943,
+        3367,
+        2948,
+        3036
+      ]
+    },
+    {
+      "id": "B01",
+      "type": "chameleon",
+      "isStroke": true,
+      "expectedLevel": "possible",
+      "finalLevel": "possible",
+      "maxLevel": "possible",
+      "firstPossibleS": 3,
+      "firstLikelyS": null,
+      "signs": [
+        "balance",
+        "eyes"
+      ],
+      "baseline": {
+        "flagged": false,
+        "atS": null,
+        "pattern": null
+      },
+      "lkw": {
+        "truth": "18:50",
+        "shown": "6:50 PM (6:40–7:00 PM)",
+        "correct": true,
+        "unknown": false
+      },
+      "bloodThinner": {
+        "truth": "none",
+        "shown": "none",
+        "correct": true
+      },
+      "lookalike": {
+        "truth": null,
+        "shown": []
+      },
+      "invented": [],
+      "wrongFacts": [],
+      "dropped": 0,
+      "errors": 0,
+      "fastPassMs": [
+        1323,
+        1476,
+        1101,
+        1538,
+        846,
+        675
+      ],
+      "reasonerMs": [
+        2357,
+        2523,
+        2750,
+        2775,
+        3778,
+        2979,
+        3134
+      ]
+    },
+    {
+      "id": "C01",
+      "type": "lookalike",
+      "isStroke": false,
+      "expectedLevel": "possible",
+      "finalLevel": "possible",
+      "maxLevel": "possible",
+      "firstPossibleS": 17,
+      "firstLikelyS": null,
+      "signs": [
+        "speech"
+      ],
+      "baseline": {
+        "flagged": false,
+        "atS": null,
+        "pattern": null
+      },
+      "lkw": {
+        "truth": "19:05",
+        "shown": "7:05 PM (6:50–7:20 PM)",
+        "correct": true,
+        "unknown": false
+      },
+      "bloodThinner": null,
+      "lookalike": {
+        "truth": "low blood sugar",
+        "shown": [
+          "low blood sugar"
+        ]
+      },
+      "invented": [],
+      "wrongFacts": [],
+      "dropped": 0,
+      "errors": 0,
+      "fastPassMs": [
+        1061,
+        1208,
+        1560,
+        1580,
+        1060
+      ],
+      "reasonerMs": [
+        2360,
+        3115,
+        2936,
+        3330,
+        3340
+      ]
+    },
+    {
+      "id": "C02",
+      "type": "lookalike",
+      "isStroke": false,
+      "expectedLevel": "possible",
+      "finalLevel": "possible",
+      "maxLevel": "possible",
+      "firstPossibleS": 11,
+      "firstLikelyS": null,
+      "signs": [
+        "speech"
+      ],
+      "baseline": {
+        "flagged": false,
+        "atS": null,
+        "pattern": null
+      },
+      "lkw": {
+        "truth": "15:10",
+        "shown": "3:10 PM (3:07–3:13 PM)",
+        "correct": true,
+        "unknown": false
+      },
+      "bloodThinner": null,
+      "lookalike": {
+        "truth": "seizure",
+        "shown": [
+          "seizure"
+        ]
+      },
+      "invented": [],
+      "wrongFacts": [],
+      "dropped": 0,
+      "errors": 0,
+      "fastPassMs": [
+        1498,
+        2626,
+        673,
+        1675,
+        903
+      ],
+      "reasonerMs": [
+        2040,
+        2585,
+        7090,
+        2436,
+        2983,
+        2891
+      ]
+    },
+    {
+      "id": "D01",
+      "type": "other",
+      "isStroke": false,
+      "expectedLevel": "none",
+      "finalLevel": "none",
+      "maxLevel": "none",
+      "firstPossibleS": null,
+      "firstLikelyS": null,
+      "signs": [],
+      "baseline": {
+        "flagged": false,
+        "atS": null,
+        "pattern": null
+      },
+      "lkw": null,
+      "bloodThinner": null,
+      "lookalike": {
+        "truth": null,
+        "shown": []
+      },
+      "invented": [],
+      "wrongFacts": [],
+      "dropped": 0,
+      "errors": 0,
+      "fastPassMs": [
+        1027,
+        729,
+        1314,
+        640,
+        1100
+      ],
+      "reasonerMs": [
+        2139,
+        3389,
+        2044,
+        2159
+      ]
+    }
+  ],
+  "states": [
+    {
+      "scriptId": "A01",
+      "state": {
+        "callId": "00000101-0000-4000-8000-000000000000",
+        "version": 12,
+        "level": "likely",
+        "modelLevel": "likely",
+        "signs": [
+          {
+            "kind": "speech",
+            "ref": {
+              "quote": "his words come out all mixed up",
+              "utteranceId": "00000101-0000-4000-8000-000000000004",
+              "tMs": 11000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          },
+          {
+            "kind": "arms",
+            "ref": {
+              "quote": "his right hand is weak, he can't lift his coffee cup",
+              "utteranceId": "00000101-0000-4000-8000-000000000004",
+              "tMs": 11000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          },
+          {
+            "kind": "speech",
+            "ref": {
+              "quote": "he just can't get the words out right",
+              "utteranceId": "00000101-0000-4000-8000-000000000006",
+              "tMs": 21000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          }
+        ],
+        "facts": [
+          {
+            "kind": "address",
+            "value": "1842 Clement Street, apartment 3",
+            "ref": {
+              "quote": "It's 1842 Clement Street, apartment 3",
+              "utteranceId": "00000101-0000-4000-8000-000000000002",
+              "tMs": 3000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          },
+          {
+            "kind": "sex",
+            "value": "male",
+            "ref": {
+              "quote": "It's my father",
+              "utteranceId": "00000101-0000-4000-8000-000000000002",
+              "tMs": 3000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          },
+          {
+            "kind": "age",
+            "value": "78",
+            "ref": {
+              "quote": "he's 78",
+              "utteranceId": "00000101-0000-4000-8000-000000000002",
+              "tMs": 3000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          },
+          {
+            "kind": "last_known_well",
+            "value": "fine at about 2 PM",
+            "ref": {
+              "quote": "He was fine at about 2 PM",
+              "utteranceId": "00000101-0000-4000-8000-000000000008",
+              "tMs": 30000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          },
+          {
+            "kind": "onset",
+            "value": "since lunch",
+            "ref": {
+              "quote": "Since lunch his words come out all mixed up",
+              "utteranceId": "00000101-0000-4000-8000-000000000004",
+              "tMs": 11000,
+              "speaker": "caller"
+            },
+            "source": "reasoner"
+          },
+          {
+            "kind": "blood_thinner",
+            "value": "Eliquis",
+            "ref": {
+              "quote": "he takes Eliquis",
+              "utteranceId": "00000101-0000-4000-8000-000000000010",
+              "tMs": 37000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          }
+        ],
+        "lkw": {
+          "phrase": "fine at about 2 PM",
+          "lkwAt": "2026-10-25T14:00:00-07:00",
+          "rangeStart": "2026-10-25T13:45:00-07:00",
+          "rangeEnd": "2026-10-25T14:15:00-07:00",
+          "confidence": "approx",
+          "note": null,
+          "display": "2:00 PM (1:45–2:15 PM)",
+          "ref": {
+            "quote": "He was fine at about 2 PM",
+            "utteranceId": "00000101-0000-4000-8000-000000000008",
+            "tMs": 30000,
+            "speaker": "caller"
+          },
+          "minutesAgo": null
+        },
+        "lookalikes": [],
+        "nextQuestion": {
+          "kind": "face",
+          "text": "Ask the caller to look at his face: is one side drooping or uneven when he smiles?"
+        },
+        "summary": "Mixed-up words and right hand weakness since lunch, fine at about 2 PM; takes Eliquis.",
+        "reasonerQuestion": {
+          "kind": "face",
+          "text": "Ask whether his face looks uneven or drooping on one side."
+        },
+        "droppedCount": 0,
+        "warnings": [],
+        "latency": {
+          "fastPassMs": 1223,
+          "reasonerMs": 3036,
+          "sttMs": null
+        },
+        "updatedAt": "2026-10-25T22:47:41.000+01:00"
+      },
+      "utterances": [
+        {
+          "id": "00000101-0000-4000-8000-000000000001",
+          "callId": "00000101-0000-4000-8000-000000000000",
+          "seq": 1,
+          "speaker": "dispatcher",
+          "text": "911, what is the address of your emergency?",
+          "tStartMs": 0,
+          "tEndMs": 2999
+        },
+        {
+          "id": "00000101-0000-4000-8000-000000000002",
+          "callId": "00000101-0000-4000-8000-000000000000",
+          "seq": 2,
+          "speaker": "caller",
+          "text": "It's 1842 Clement Street, apartment 3. It's my father, he's 78.",
+          "tStartMs": 3000,
+          "tEndMs": 8999
+        },
+        {
+          "id": "00000101-0000-4000-8000-000000000003",
+          "callId": "00000101-0000-4000-8000-000000000000",
+          "seq": 3,
+          "speaker": "dispatcher",
+          "text": "Okay. Tell me exactly what happened.",
+          "tStartMs": 9000,
+          "tEndMs": 10999
+        },
+        {
+          "id": "00000101-0000-4000-8000-000000000004",
+          "callId": "00000101-0000-4000-8000-000000000000",
+          "seq": 4,
+          "speaker": "caller",
+          "text": "Since lunch his words come out all mixed up and his right hand is weak, he can't lift his coffee cup.",
+          "tStartMs": 11000,
+          "tEndMs": 18999
+        },
+        {
+          "id": "00000101-0000-4000-8000-000000000005",
+          "callId": "00000101-0000-4000-8000-000000000000",
+          "seq": 5,
+          "speaker": "dispatcher",
+          "text": "Is he awake and breathing normally?",
+          "tStartMs": 19000,
+          "tEndMs": 20999
+        },
+        {
+          "id": "00000101-0000-4000-8000-000000000006",
+          "callId": "00000101-0000-4000-8000-000000000000",
+          "seq": 6,
+          "speaker": "caller",
+          "text": "Yes, he's awake, he's sitting on the couch, he just can't get the words out right.",
+          "tStartMs": 21000,
+          "tEndMs": 26999
+        },
+        {
+          "id": "00000101-0000-4000-8000-000000000007",
+          "callId": "00000101-0000-4000-8000-000000000000",
+          "seq": 7,
+          "speaker": "dispatcher",
+          "text": "When was he last seen completely normal?",
+          "tStartMs": 27000,
+          "tEndMs": 29999
+        },
+        {
+          "id": "00000101-0000-4000-8000-000000000008",
+          "callId": "00000101-0000-4000-8000-000000000000",
+          "seq": 8,
+          "speaker": "caller",
+          "text": "He was fine at about 2 PM. We had lunch and he was fine.",
+          "tStartMs": 30000,
+          "tEndMs": 34999
+        },
+        {
+          "id": "00000101-0000-4000-8000-000000000009",
+          "callId": "00000101-0000-4000-8000-000000000000",
+          "seq": 9,
+          "speaker": "dispatcher",
+          "text": "Does he take any blood thinners, like Eliquis, Xarelto or warfarin?",
+          "tStartMs": 35000,
+          "tEndMs": 36999
+        },
+        {
+          "id": "00000101-0000-4000-8000-000000000010",
+          "callId": "00000101-0000-4000-8000-000000000000",
+          "seq": 10,
+          "speaker": "caller",
+          "text": "Yes, he takes Eliquis. For his heart.",
+          "tStartMs": 37000,
+          "tEndMs": 40999
+        },
+        {
+          "id": "00000101-0000-4000-8000-000000000011",
+          "callId": "00000101-0000-4000-8000-000000000000",
+          "seq": 11,
+          "speaker": "dispatcher",
+          "text": "Okay. Help is on the way. Stay with him and keep the phone with you.",
+          "tStartMs": 41000,
+          "tEndMs": 43000
+        }
+      ],
+      "turns": [
+        {
+          "seq": 1,
+          "atMs": 0,
+          "speaker": "dispatcher",
+          "level": "none",
+          "nextQuestion": null
+        },
+        {
+          "seq": 2,
+          "atMs": 3000,
+          "speaker": "caller",
+          "level": "none",
+          "nextQuestion": null
+        },
+        {
+          "seq": 3,
+          "atMs": 9000,
+          "speaker": "dispatcher",
+          "level": "none",
+          "nextQuestion": null
+        },
+        {
+          "seq": 4,
+          "atMs": 11000,
+          "speaker": "caller",
+          "level": "likely",
+          "nextQuestion": {
+            "kind": "lkw",
+            "text": "Ask: what time exactly was he last seen completely normal?"
+          }
+        },
+        {
+          "seq": 5,
+          "atMs": 19000,
+          "speaker": "dispatcher",
+          "level": "likely",
+          "nextQuestion": {
+            "kind": "lkw",
+            "text": "Ask: what time exactly was he last seen completely normal?"
+          }
+        },
+        {
+          "seq": 6,
+          "atMs": 21000,
+          "speaker": "caller",
+          "level": "likely",
+          "nextQuestion": {
+            "kind": "lkw",
+            "text": "Ask: what time exactly was he last seen completely normal?"
+          }
+        },
+        {
+          "seq": 7,
+          "atMs": 27000,
+          "speaker": "dispatcher",
+          "level": "likely",
+          "nextQuestion": {
+            "kind": "lkw",
+            "text": "Ask: what time exactly was he last seen completely normal?"
+          }
+        },
+        {
+          "seq": 8,
+          "atMs": 30000,
+          "speaker": "caller",
+          "level": "likely",
+          "nextQuestion": {
+            "kind": "blood_thinner",
+            "text": "Ask: does he take any blood thinners, like Eliquis, Xarelto or warfarin?"
+          }
+        },
+        {
+          "seq": 9,
+          "atMs": 35000,
+          "speaker": "dispatcher",
+          "level": "likely",
+          "nextQuestion": {
+            "kind": "blood_thinner",
+            "text": "Ask: does he take any blood thinners, like Eliquis, Xarelto or warfarin?"
+          }
+        },
+        {
+          "seq": 10,
+          "atMs": 37000,
+          "speaker": "caller",
+          "level": "likely",
+          "nextQuestion": {
+            "kind": "face",
+            "text": "Ask the caller to look at his face: is one side drooping or uneven when he smiles?"
+          }
+        },
+        {
+          "seq": 11,
+          "atMs": 41000,
+          "speaker": "dispatcher",
+          "level": "likely",
+          "nextQuestion": {
+            "kind": "face",
+            "text": "Ask the caller to look at his face: is one side drooping or uneven when he smiles?"
+          }
+        }
+      ],
+      "firstAtMs": {
+        "possible": 11000,
+        "likely": 11000
+      },
+      "calls": [
+        {
+          "pass": "fast",
+          "seq": 2,
+          "ms": 1257,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 3,
+          "ms": 2066,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "fast",
+          "seq": 4,
+          "ms": 1195,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 4,
+          "ms": 2620,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "fast",
+          "seq": 6,
+          "ms": 1429,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 6,
+          "ms": 2977,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "fast",
+          "seq": 8,
+          "ms": 1144,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 8,
+          "ms": 2943,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 9,
+          "ms": 3367,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "fast",
+          "seq": 10,
+          "ms": 1223,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 10,
+          "ms": 2948,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 11,
+          "ms": 3036,
+          "empty": false,
+          "error": null
+        }
+      ],
+      "drops": [],
+      "errors": 0
+    },
+    {
+      "scriptId": "B01",
+      "state": {
+        "callId": "00000201-0000-4000-8000-000000000000",
+        "version": 13,
+        "level": "possible",
+        "modelLevel": "possible",
+        "signs": [
+          {
+            "kind": "balance",
+            "ref": {
+              "quote": "She's dizzy and she keeps bumping into the wall",
+              "utteranceId": "00000201-0000-4000-8000-000000000002",
+              "tMs": 3000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          },
+          {
+            "kind": "eyes",
+            "ref": {
+              "quote": "she says she sees double",
+              "utteranceId": "00000201-0000-4000-8000-000000000002",
+              "tMs": 3000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          },
+          {
+            "kind": "balance",
+            "ref": {
+              "quote": "she can't walk straight",
+              "utteranceId": "00000201-0000-4000-8000-000000000008",
+              "tMs": 29000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          }
+        ],
+        "facts": [
+          {
+            "kind": "address",
+            "value": "530 Ulloa Street",
+            "ref": {
+              "quote": "530 Ulloa Street",
+              "utteranceId": "00000201-0000-4000-8000-000000000002",
+              "tMs": 3000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          },
+          {
+            "kind": "sex",
+            "value": "female",
+            "ref": {
+              "quote": "It's my wife. She's dizzy",
+              "utteranceId": "00000201-0000-4000-8000-000000000002",
+              "tMs": 3000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          },
+          {
+            "kind": "age",
+            "value": "74",
+            "ref": {
+              "quote": "She's 74",
+              "utteranceId": "00000201-0000-4000-8000-000000000004",
+              "tMs": 14000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          },
+          {
+            "kind": "last_known_well",
+            "value": "about half an hour ago",
+            "ref": {
+              "quote": "She was fine about half an hour ago",
+              "utteranceId": "00000201-0000-4000-8000-000000000006",
+              "tMs": 19000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          },
+          {
+            "kind": "blood_thinner",
+            "value": "none",
+            "ref": {
+              "quote": "No, nothing like that",
+              "utteranceId": "00000201-0000-4000-8000-000000000012",
+              "tMs": 42000,
+              "speaker": "caller"
+            },
+            "source": "reasoner"
+          }
+        ],
+        "lkw": {
+          "phrase": "about half an hour ago",
+          "lkwAt": "2026-10-25T18:50:19-07:00",
+          "rangeStart": "2026-10-25T18:40:19-07:00",
+          "rangeEnd": "2026-10-25T19:00:19-07:00",
+          "confidence": "approx",
+          "note": null,
+          "display": "6:50 PM (6:40–7:00 PM)",
+          "ref": {
+            "quote": "She was fine about half an hour ago",
+            "utteranceId": "00000201-0000-4000-8000-000000000006",
+            "tMs": 19000,
+            "speaker": "caller"
+          },
+          "minutesAgo": null
+        },
+        "lookalikes": [],
+        "nextQuestion": {
+          "kind": "speech",
+          "text": "Ask: is her speech slurred or are the words mixed up?"
+        },
+        "summary": "Sudden dizziness, unsteady walking and double vision; face normal and arms fine per caller; last well about half an hour ago; no blood thinners.",
+        "reasonerQuestion": {
+          "kind": "speech",
+          "text": "Ask whether her speech sounds slurred or different, or whether she is having trouble finding or understanding words."
+        },
+        "droppedCount": 0,
+        "warnings": [],
+        "latency": {
+          "fastPassMs": 675,
+          "reasonerMs": 3134,
+          "sttMs": null
+        },
+        "updatedAt": "2026-10-26T03:20:42.000+01:00"
+      },
+      "utterances": [
+        {
+          "id": "00000201-0000-4000-8000-000000000001",
+          "callId": "00000201-0000-4000-8000-000000000000",
+          "seq": 1,
+          "speaker": "dispatcher",
+          "text": "911, what is the address of your emergency?",
+          "tStartMs": 0,
+          "tEndMs": 2999
+        },
+        {
+          "id": "00000201-0000-4000-8000-000000000002",
+          "callId": "00000201-0000-4000-8000-000000000000",
+          "seq": 2,
+          "speaker": "caller",
+          "text": "530 Ulloa Street. It's my wife. She's dizzy and she keeps bumping into the wall, and she says she sees double. I think she's just tired.",
+          "tStartMs": 3000,
+          "tEndMs": 11999
+        },
+        {
+          "id": "00000201-0000-4000-8000-000000000003",
+          "callId": "00000201-0000-4000-8000-000000000000",
+          "seq": 3,
+          "speaker": "dispatcher",
+          "text": "How old is she?",
+          "tStartMs": 12000,
+          "tEndMs": 13999
+        },
+        {
+          "id": "00000201-0000-4000-8000-000000000004",
+          "callId": "00000201-0000-4000-8000-000000000000",
+          "seq": 4,
+          "speaker": "caller",
+          "text": "She's 74.",
+          "tStartMs": 14000,
+          "tEndMs": 15999
+        },
+        {
+          "id": "00000201-0000-4000-8000-000000000005",
+          "callId": "00000201-0000-4000-8000-000000000000",
+          "seq": 5,
+          "speaker": "dispatcher",
+          "text": "When was she last seen completely normal?",
+          "tStartMs": 16000,
+          "tEndMs": 18999
+        },
+        {
+          "id": "00000201-0000-4000-8000-000000000006",
+          "callId": "00000201-0000-4000-8000-000000000000",
+          "seq": 6,
+          "speaker": "caller",
+          "text": "She was fine about half an hour ago, when we finished dinner.",
+          "tStartMs": 19000,
+          "tEndMs": 24999
+        },
+        {
+          "id": "00000201-0000-4000-8000-000000000007",
+          "callId": "00000201-0000-4000-8000-000000000000",
+          "seq": 7,
+          "speaker": "dispatcher",
+          "text": "Ask her to smile for you. Is one side of her face drooping or uneven?",
+          "tStartMs": 25000,
+          "tEndMs": 28999
+        },
+        {
+          "id": "00000201-0000-4000-8000-000000000008",
+          "callId": "00000201-0000-4000-8000-000000000000",
+          "seq": 8,
+          "speaker": "caller",
+          "text": "No, her face looks normal. She's just wobbly, she can't walk straight.",
+          "tStartMs": 29000,
+          "tEndMs": 33999
+        },
+        {
+          "id": "00000201-0000-4000-8000-000000000009",
+          "callId": "00000201-0000-4000-8000-000000000000",
+          "seq": 9,
+          "speaker": "dispatcher",
+          "text": "Can she lift both arms and keep them up?",
+          "tStartMs": 34000,
+          "tEndMs": 36999
+        },
+        {
+          "id": "00000201-0000-4000-8000-000000000010",
+          "callId": "00000201-0000-4000-8000-000000000000",
+          "seq": 10,
+          "speaker": "caller",
+          "text": "Yes, both arms are fine.",
+          "tStartMs": 37000,
+          "tEndMs": 39999
+        },
+        {
+          "id": "00000201-0000-4000-8000-000000000011",
+          "callId": "00000201-0000-4000-8000-000000000000",
+          "seq": 11,
+          "speaker": "dispatcher",
+          "text": "Does she take any blood thinners?",
+          "tStartMs": 40000,
+          "tEndMs": 41999
+        },
+        {
+          "id": "00000201-0000-4000-8000-000000000012",
+          "callId": "00000201-0000-4000-8000-000000000000",
+          "seq": 12,
+          "speaker": "caller",
+          "text": "No, nothing like that.",
+          "tStartMs": 42000,
+          "tEndMs": 44000
+        }
+      ],
+      "turns": [
+        {
+          "seq": 1,
+          "atMs": 0,
+          "speaker": "dispatcher",
+          "level": "none",
+          "nextQuestion": null
+        },
+        {
+          "seq": 2,
+          "atMs": 3000,
+          "speaker": "caller",
+          "level": "possible",
+          "nextQuestion": {
+            "kind": "lkw",
+            "text": "Ask: when was she last seen completely normal?"
+          }
+        },
+        {
+          "seq": 3,
+          "atMs": 12000,
+          "speaker": "dispatcher",
+          "level": "possible",
+          "nextQuestion": {
+            "kind": "lkw",
+            "text": "Ask: when was she last seen completely normal?"
+          }
+        },
+        {
+          "seq": 4,
+          "atMs": 14000,
+          "speaker": "caller",
+          "level": "possible",
+          "nextQuestion": {
+            "kind": "lkw",
+            "text": "Ask: when was she last seen completely normal?"
+          }
+        },
+        {
+          "seq": 5,
+          "atMs": 16000,
+          "speaker": "dispatcher",
+          "level": "possible",
+          "nextQuestion": {
+            "kind": "lkw",
+            "text": "Ask: when was she last seen completely normal?"
+          }
+        },
+        {
+          "seq": 6,
+          "atMs": 19000,
+          "speaker": "caller",
+          "level": "possible",
+          "nextQuestion": {
+            "kind": "face",
+            "text": "Ask the caller to look at her face: is one side drooping or uneven when she smiles?"
+          }
+        },
+        {
+          "seq": 7,
+          "atMs": 25000,
+          "speaker": "dispatcher",
+          "level": "possible",
+          "nextQuestion": {
+            "kind": "face",
+            "text": "Ask the caller to look at her face: is one side drooping or uneven when she smiles?"
+          }
+        },
+        {
+          "seq": 8,
+          "atMs": 29000,
+          "speaker": "caller",
+          "level": "possible",
+          "nextQuestion": {
+            "kind": "arms",
+            "text": "Ask: can she lift both arms and keep them up?"
+          }
+        },
+        {
+          "seq": 9,
+          "atMs": 34000,
+          "speaker": "dispatcher",
+          "level": "possible",
+          "nextQuestion": {
+            "kind": "arms",
+            "text": "Ask: can she lift both arms and keep them up?"
+          }
+        },
+        {
+          "seq": 10,
+          "atMs": 37000,
+          "speaker": "caller",
+          "level": "possible",
+          "nextQuestion": {
+            "kind": "arms",
+            "text": "Ask: can she lift both arms and keep them up?"
+          }
+        },
+        {
+          "seq": 11,
+          "atMs": 40000,
+          "speaker": "dispatcher",
+          "level": "possible",
+          "nextQuestion": {
+            "kind": "arms",
+            "text": "Ask: can she lift both arms and keep them up?"
+          }
+        },
+        {
+          "seq": 12,
+          "atMs": 42000,
+          "speaker": "caller",
+          "level": "possible",
+          "nextQuestion": {
+            "kind": "speech",
+            "text": "Ask: is her speech slurred or are the words mixed up?"
+          }
+        }
+      ],
+      "firstAtMs": {
+        "possible": 3000,
+        "likely": null
+      },
+      "calls": [
+        {
+          "pass": "fast",
+          "seq": 2,
+          "ms": 1323,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 2,
+          "ms": 2357,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 3,
+          "ms": 2523,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "fast",
+          "seq": 4,
+          "ms": 1476,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "fast",
+          "seq": 6,
+          "ms": 1101,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 6,
+          "ms": 2750,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "fast",
+          "seq": 8,
+          "ms": 1538,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 8,
+          "ms": 2775,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 9,
+          "ms": 3778,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "fast",
+          "seq": 10,
+          "ms": 846,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "fast",
+          "seq": 12,
+          "ms": 675,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 12,
+          "ms": 2979,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 12,
+          "ms": 3134,
+          "empty": false,
+          "error": null
+        }
+      ],
+      "drops": [],
+      "errors": 0
+    },
+    {
+      "scriptId": "C01",
+      "state": {
+        "callId": "00000301-0000-4000-8000-000000000000",
+        "version": 10,
+        "level": "possible",
+        "modelLevel": "possible",
+        "signs": [
+          {
+            "kind": "speech",
+            "ref": {
+              "quote": "He's mumbling, he's not making much sense",
+              "utteranceId": "00000301-0000-4000-8000-000000000006",
+              "tMs": 17000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          }
+        ],
+        "facts": [
+          {
+            "kind": "address",
+            "value": "2210 Taraval Street",
+            "ref": {
+              "quote": "2210 Taraval Street",
+              "utteranceId": "00000301-0000-4000-8000-000000000002",
+              "tMs": 3000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          },
+          {
+            "kind": "sex",
+            "value": "male",
+            "ref": {
+              "quote": "my husband",
+              "utteranceId": "00000301-0000-4000-8000-000000000002",
+              "tMs": 3000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          },
+          {
+            "kind": "diabetes",
+            "value": "insulin",
+            "ref": {
+              "quote": "he took his insulin at five",
+              "utteranceId": "00000301-0000-4000-8000-000000000008",
+              "tMs": 25000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          },
+          {
+            "kind": "age",
+            "value": "68",
+            "ref": {
+              "quote": "He's 68",
+              "utteranceId": "00000301-0000-4000-8000-000000000004",
+              "tMs": 13000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          },
+          {
+            "kind": "medication",
+            "value": "insulin",
+            "ref": {
+              "quote": "he took his insulin at five",
+              "utteranceId": "00000301-0000-4000-8000-000000000008",
+              "tMs": 25000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          },
+          {
+            "kind": "medication",
+            "value": "insulin taken at five, then did not eat",
+            "ref": {
+              "quote": "he took his insulin at five and then he didn't eat anything",
+              "utteranceId": "00000301-0000-4000-8000-000000000008",
+              "tMs": 25000,
+              "speaker": "caller"
+            },
+            "source": "reasoner"
+          },
+          {
+            "kind": "last_known_well",
+            "value": "About an hour ago",
+            "ref": {
+              "quote": "About an hour ago, he was fine",
+              "utteranceId": "00000301-0000-4000-8000-000000000010",
+              "tMs": 33000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          }
+        ],
+        "lkw": {
+          "phrase": "About an hour ago",
+          "lkwAt": "2026-10-25T19:05:33-07:00",
+          "rangeStart": "2026-10-25T18:50:33-07:00",
+          "rangeEnd": "2026-10-25T19:20:33-07:00",
+          "confidence": "approx",
+          "note": null,
+          "display": "7:05 PM (6:50–7:20 PM)",
+          "ref": {
+            "quote": "About an hour ago, he was fine",
+            "utteranceId": "00000301-0000-4000-8000-000000000010",
+            "tMs": 33000,
+            "speaker": "caller"
+          },
+          "minutesAgo": null
+        },
+        "lookalikes": [
+          {
+            "name": "low blood sugar",
+            "ask": "Is he diabetic, and when did he last eat?",
+            "ref": {
+              "quote": "he skipped dinner, and now he's sweaty and confused",
+              "utteranceId": "00000301-0000-4000-8000-000000000002",
+              "tMs": 3000,
+              "speaker": "caller"
+            }
+          }
+        ],
+        "nextQuestion": {
+          "kind": "blood_thinner",
+          "text": "Ask: does he take any blood thinners, like Eliquis, Xarelto or warfarin?"
+        },
+        "summary": "68-year-old diabetic man on insulin skipped dinner; now sweaty, shaky, confused, mumbling; last seen well about an hour ago.",
+        "reasonerQuestion": {
+          "kind": "lookalike",
+          "text": "Ask if they have a glucose meter and what his blood sugar reading is, if it can be checked safely."
+        },
+        "droppedCount": 0,
+        "warnings": [],
+        "latency": {
+          "fastPassMs": 1060,
+          "reasonerMs": 3340,
+          "sttMs": null
+        },
+        "updatedAt": "2026-10-26T04:05:33.000+01:00"
+      },
+      "utterances": [
+        {
+          "id": "00000301-0000-4000-8000-000000000001",
+          "callId": "00000301-0000-4000-8000-000000000000",
+          "seq": 1,
+          "speaker": "dispatcher",
+          "text": "911, what is the address of your emergency?",
+          "tStartMs": 0,
+          "tEndMs": 2999
+        },
+        {
+          "id": "00000301-0000-4000-8000-000000000002",
+          "callId": "00000301-0000-4000-8000-000000000000",
+          "seq": 2,
+          "speaker": "caller",
+          "text": "2210 Taraval Street. It's my husband, he's diabetic, he skipped dinner, and now he's sweaty and confused.",
+          "tStartMs": 3000,
+          "tEndMs": 10999
+        },
+        {
+          "id": "00000301-0000-4000-8000-000000000003",
+          "callId": "00000301-0000-4000-8000-000000000000",
+          "seq": 3,
+          "speaker": "dispatcher",
+          "text": "How old is he?",
+          "tStartMs": 11000,
+          "tEndMs": 12999
+        },
+        {
+          "id": "00000301-0000-4000-8000-000000000004",
+          "callId": "00000301-0000-4000-8000-000000000000",
+          "seq": 4,
+          "speaker": "caller",
+          "text": "He's 68.",
+          "tStartMs": 13000,
+          "tEndMs": 14999
+        },
+        {
+          "id": "00000301-0000-4000-8000-000000000005",
+          "callId": "00000301-0000-4000-8000-000000000000",
+          "seq": 5,
+          "speaker": "dispatcher",
+          "text": "Is he talking to you?",
+          "tStartMs": 15000,
+          "tEndMs": 16999
+        },
+        {
+          "id": "00000301-0000-4000-8000-000000000006",
+          "callId": "00000301-0000-4000-8000-000000000000",
+          "seq": 6,
+          "speaker": "caller",
+          "text": "He's mumbling, he's not making much sense. And he's shaky.",
+          "tStartMs": 17000,
+          "tEndMs": 21999
+        },
+        {
+          "id": "00000301-0000-4000-8000-000000000007",
+          "callId": "00000301-0000-4000-8000-000000000000",
+          "seq": 7,
+          "speaker": "dispatcher",
+          "text": "Does he take insulin, and when did he last eat?",
+          "tStartMs": 22000,
+          "tEndMs": 24999
+        },
+        {
+          "id": "00000301-0000-4000-8000-000000000008",
+          "callId": "00000301-0000-4000-8000-000000000000",
+          "seq": 8,
+          "speaker": "caller",
+          "text": "Yes, he took his insulin at five and then he didn't eat anything.",
+          "tStartMs": 25000,
+          "tEndMs": 29999
+        },
+        {
+          "id": "00000301-0000-4000-8000-000000000009",
+          "callId": "00000301-0000-4000-8000-000000000000",
+          "seq": 9,
+          "speaker": "dispatcher",
+          "text": "When was he last acting normally?",
+          "tStartMs": 30000,
+          "tEndMs": 32999
+        },
+        {
+          "id": "00000301-0000-4000-8000-000000000010",
+          "callId": "00000301-0000-4000-8000-000000000000",
+          "seq": 10,
+          "speaker": "caller",
+          "text": "About an hour ago, he was fine.",
+          "tStartMs": 33000,
+          "tEndMs": 35000
+        }
+      ],
+      "turns": [
+        {
+          "seq": 1,
+          "atMs": 0,
+          "speaker": "dispatcher",
+          "level": "none",
+          "nextQuestion": null
+        },
+        {
+          "seq": 2,
+          "atMs": 3000,
+          "speaker": "caller",
+          "level": "none",
+          "nextQuestion": null
+        },
+        {
+          "seq": 3,
+          "atMs": 11000,
+          "speaker": "dispatcher",
+          "level": "none",
+          "nextQuestion": null
+        },
+        {
+          "seq": 4,
+          "atMs": 13000,
+          "speaker": "caller",
+          "level": "none",
+          "nextQuestion": null
+        },
+        {
+          "seq": 5,
+          "atMs": 15000,
+          "speaker": "dispatcher",
+          "level": "none",
+          "nextQuestion": null
+        },
+        {
+          "seq": 6,
+          "atMs": 17000,
+          "speaker": "caller",
+          "level": "possible",
+          "nextQuestion": {
+            "kind": "lkw",
+            "text": "Ask: when was he last seen completely normal?"
+          }
+        },
+        {
+          "seq": 7,
+          "atMs": 22000,
+          "speaker": "dispatcher",
+          "level": "possible",
+          "nextQuestion": {
+            "kind": "lkw",
+            "text": "Ask: when was he last seen completely normal?"
+          }
+        },
+        {
+          "seq": 8,
+          "atMs": 25000,
+          "speaker": "caller",
+          "level": "possible",
+          "nextQuestion": {
+            "kind": "lkw",
+            "text": "Ask: when was he last seen completely normal?"
+          }
+        },
+        {
+          "seq": 9,
+          "atMs": 30000,
+          "speaker": "dispatcher",
+          "level": "possible",
+          "nextQuestion": {
+            "kind": "lkw",
+            "text": "Ask: when was he last seen completely normal?"
+          }
+        },
+        {
+          "seq": 10,
+          "atMs": 33000,
+          "speaker": "caller",
+          "level": "possible",
+          "nextQuestion": {
+            "kind": "blood_thinner",
+            "text": "Ask: does he take any blood thinners, like Eliquis, Xarelto or warfarin?"
+          }
+        }
+      ],
+      "firstAtMs": {
+        "possible": 17000,
+        "likely": null
+      },
+      "calls": [
+        {
+          "pass": "fast",
+          "seq": 2,
+          "ms": 1061,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 3,
+          "ms": 2360,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "fast",
+          "seq": 4,
+          "ms": 1208,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "fast",
+          "seq": 6,
+          "ms": 1560,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 6,
+          "ms": 3115,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "fast",
+          "seq": 8,
+          "ms": 1580,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 9,
+          "ms": 2936,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "fast",
+          "seq": 10,
+          "ms": 1060,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 10,
+          "ms": 3330,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 10,
+          "ms": 3340,
+          "empty": false,
+          "error": null
+        }
+      ],
+      "drops": [],
+      "errors": 0
+    },
+    {
+      "scriptId": "C02",
+      "state": {
+        "callId": "00000302-0000-4000-8000-000000000000",
+        "version": 11,
+        "level": "possible",
+        "modelLevel": "possible",
+        "signs": [
+          {
+            "kind": "speech",
+            "ref": {
+              "quote": "he's not talking",
+              "utteranceId": "00000302-0000-4000-8000-000000000004",
+              "tMs": 11000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          }
+        ],
+        "facts": [
+          {
+            "kind": "address",
+            "value": "250 Ocean Avenue",
+            "ref": {
+              "quote": "250 Ocean Avenue",
+              "utteranceId": "00000302-0000-4000-8000-000000000002",
+              "tMs": 4000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          },
+          {
+            "kind": "age",
+            "value": "34",
+            "ref": {
+              "quote": "he's 34",
+              "utteranceId": "00000302-0000-4000-8000-000000000002",
+              "tMs": 4000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          },
+          {
+            "kind": "sex",
+            "value": "male",
+            "ref": {
+              "quote": "my son, he's 34",
+              "utteranceId": "00000302-0000-4000-8000-000000000002",
+              "tMs": 4000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          },
+          {
+            "kind": "seizure_history",
+            "value": "epilepsy, seizures since he was a kid",
+            "ref": {
+              "quote": "he has epilepsy. He's had seizures since he was a kid",
+              "utteranceId": "00000302-0000-4000-8000-000000000008",
+              "tMs": 31000,
+              "speaker": "caller"
+            },
+            "source": "reasoner"
+          },
+          {
+            "kind": "last_known_well",
+            "value": "Ten minutes ago",
+            "ref": {
+              "quote": "Ten minutes ago",
+              "utteranceId": "00000302-0000-4000-8000-000000000010",
+              "tMs": 40000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          },
+          {
+            "kind": "onset",
+            "value": "shaking and jerking for about a minute, then confused and not talking",
+            "ref": {
+              "quote": "He was shaking and jerking all over for about a minute",
+              "utteranceId": "00000302-0000-4000-8000-000000000004",
+              "tMs": 11000,
+              "speaker": "caller"
+            },
+            "source": "reasoner"
+          }
+        ],
+        "lkw": {
+          "phrase": "Ten minutes ago",
+          "lkwAt": "2026-10-25T15:10:40-07:00",
+          "rangeStart": "2026-10-25T15:07:40-07:00",
+          "rangeEnd": "2026-10-25T15:13:40-07:00",
+          "confidence": "approx",
+          "note": null,
+          "display": "3:10 PM (3:07–3:13 PM)",
+          "ref": {
+            "quote": "Ten minutes ago",
+            "utteranceId": "00000302-0000-4000-8000-000000000010",
+            "tMs": 40000,
+            "speaker": "caller"
+          },
+          "minutesAgo": null
+        },
+        "lookalikes": [
+          {
+            "name": "seizure",
+            "ask": "Was there any shaking or jerking before this, or any history of seizures?",
+            "ref": {
+              "quote": "He was shaking and jerking all over for about a minute",
+              "utteranceId": "00000302-0000-4000-8000-000000000004",
+              "tMs": 11000,
+              "speaker": "caller"
+            }
+          }
+        ],
+        "nextQuestion": {
+          "kind": "blood_thinner",
+          "text": "Ask: does he take any blood thinners, like Eliquis, Xarelto or warfarin?"
+        },
+        "summary": "Son, 34, had about a minute of shaking and jerking, now confused and not talking; known epilepsy; last normal about ten minutes ago.",
+        "reasonerQuestion": {
+          "kind": "blood_thinner",
+          "text": "Ask whether he takes any blood thinners, such as Eliquis, warfarin or aspirin."
+        },
+        "droppedCount": 0,
+        "warnings": [],
+        "latency": {
+          "fastPassMs": 903,
+          "reasonerMs": 2891,
+          "sttMs": null
+        },
+        "updatedAt": "2026-10-25T23:20:44.000+01:00"
+      },
+      "utterances": [
+        {
+          "id": "00000302-0000-4000-8000-000000000001",
+          "callId": "00000302-0000-4000-8000-000000000000",
+          "seq": 1,
+          "speaker": "dispatcher",
+          "text": "911, what is the address of your emergency?",
+          "tStartMs": 0,
+          "tEndMs": 3999
+        },
+        {
+          "id": "00000302-0000-4000-8000-000000000002",
+          "callId": "00000302-0000-4000-8000-000000000000",
+          "seq": 2,
+          "speaker": "caller",
+          "text": "250 Ocean Avenue. It's my son, he's 34.",
+          "tStartMs": 4000,
+          "tEndMs": 7999
+        },
+        {
+          "id": "00000302-0000-4000-8000-000000000003",
+          "callId": "00000302-0000-4000-8000-000000000000",
+          "seq": 3,
+          "speaker": "dispatcher",
+          "text": "Okay. Tell me exactly what happened.",
+          "tStartMs": 8000,
+          "tEndMs": 10999
+        },
+        {
+          "id": "00000302-0000-4000-8000-000000000004",
+          "callId": "00000302-0000-4000-8000-000000000000",
+          "seq": 4,
+          "speaker": "caller",
+          "text": "He was shaking and jerking all over for about a minute. Now he's stopped but he's confused and he's not talking.",
+          "tStartMs": 11000,
+          "tEndMs": 19999
+        },
+        {
+          "id": "00000302-0000-4000-8000-000000000005",
+          "callId": "00000302-0000-4000-8000-000000000000",
+          "seq": 5,
+          "speaker": "dispatcher",
+          "text": "Is he breathing normally?",
+          "tStartMs": 20000,
+          "tEndMs": 22999
+        },
+        {
+          "id": "00000302-0000-4000-8000-000000000006",
+          "callId": "00000302-0000-4000-8000-000000000000",
+          "seq": 6,
+          "speaker": "caller",
+          "text": "Yes, he's breathing, he's lying on his side on the floor.",
+          "tStartMs": 23000,
+          "tEndMs": 27999
+        },
+        {
+          "id": "00000302-0000-4000-8000-000000000007",
+          "callId": "00000302-0000-4000-8000-000000000000",
+          "seq": 7,
+          "speaker": "dispatcher",
+          "text": "Has this happened before?",
+          "tStartMs": 28000,
+          "tEndMs": 30999
+        },
+        {
+          "id": "00000302-0000-4000-8000-000000000008",
+          "callId": "00000302-0000-4000-8000-000000000000",
+          "seq": 8,
+          "speaker": "caller",
+          "text": "Yes, he has epilepsy. He's had seizures since he was a kid.",
+          "tStartMs": 31000,
+          "tEndMs": 36999
+        },
+        {
+          "id": "00000302-0000-4000-8000-000000000009",
+          "callId": "00000302-0000-4000-8000-000000000000",
+          "seq": 9,
+          "speaker": "dispatcher",
+          "text": "When was he last acting normally?",
+          "tStartMs": 37000,
+          "tEndMs": 39999
+        },
+        {
+          "id": "00000302-0000-4000-8000-000000000010",
+          "callId": "00000302-0000-4000-8000-000000000000",
+          "seq": 10,
+          "speaker": "caller",
+          "text": "Ten minutes ago, right before the shaking started.",
+          "tStartMs": 40000,
+          "tEndMs": 43999
+        },
+        {
+          "id": "00000302-0000-4000-8000-000000000011",
+          "callId": "00000302-0000-4000-8000-000000000000",
+          "seq": 11,
+          "speaker": "dispatcher",
+          "text": "Okay. Help is on the way. Don't put anything in his mouth.",
+          "tStartMs": 44000,
+          "tEndMs": 46000
+        }
+      ],
+      "turns": [
+        {
+          "seq": 1,
+          "atMs": 0,
+          "speaker": "dispatcher",
+          "level": "none",
+          "nextQuestion": null
+        },
+        {
+          "seq": 2,
+          "atMs": 4000,
+          "speaker": "caller",
+          "level": "none",
+          "nextQuestion": null
+        },
+        {
+          "seq": 3,
+          "atMs": 8000,
+          "speaker": "dispatcher",
+          "level": "none",
+          "nextQuestion": null
+        },
+        {
+          "seq": 4,
+          "atMs": 11000,
+          "speaker": "caller",
+          "level": "possible",
+          "nextQuestion": {
+            "kind": "lkw",
+            "text": "Ask: when was he last seen completely normal?"
+          }
+        },
+        {
+          "seq": 5,
+          "atMs": 20000,
+          "speaker": "dispatcher",
+          "level": "possible",
+          "nextQuestion": {
+            "kind": "lkw",
+            "text": "Ask: when was he last seen completely normal?"
+          }
+        },
+        {
+          "seq": 6,
+          "atMs": 23000,
+          "speaker": "caller",
+          "level": "possible",
+          "nextQuestion": {
+            "kind": "lkw",
+            "text": "Ask: when was he last seen completely normal?"
+          }
+        },
+        {
+          "seq": 7,
+          "atMs": 28000,
+          "speaker": "dispatcher",
+          "level": "possible",
+          "nextQuestion": {
+            "kind": "lkw",
+            "text": "Ask: when was he last seen completely normal?"
+          }
+        },
+        {
+          "seq": 8,
+          "atMs": 31000,
+          "speaker": "caller",
+          "level": "possible",
+          "nextQuestion": {
+            "kind": "lkw",
+            "text": "Ask: when was he last seen completely normal?"
+          }
+        },
+        {
+          "seq": 9,
+          "atMs": 37000,
+          "speaker": "dispatcher",
+          "level": "possible",
+          "nextQuestion": {
+            "kind": "lkw",
+            "text": "Ask: when was he last seen completely normal?"
+          }
+        },
+        {
+          "seq": 10,
+          "atMs": 40000,
+          "speaker": "caller",
+          "level": "possible",
+          "nextQuestion": {
+            "kind": "blood_thinner",
+            "text": "Ask: does he take any blood thinners, like Eliquis, Xarelto or warfarin?"
+          }
+        },
+        {
+          "seq": 11,
+          "atMs": 44000,
+          "speaker": "dispatcher",
+          "level": "possible",
+          "nextQuestion": {
+            "kind": "blood_thinner",
+            "text": "Ask: does he take any blood thinners, like Eliquis, Xarelto or warfarin?"
+          }
+        }
+      ],
+      "firstAtMs": {
+        "possible": 11000,
+        "likely": null
+      },
+      "calls": [
+        {
+          "pass": "fast",
+          "seq": 2,
+          "ms": 1498,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 3,
+          "ms": 2040,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "fast",
+          "seq": 4,
+          "ms": 2626,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 4,
+          "ms": 2585,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "fast",
+          "seq": 6,
+          "ms": 673,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 6,
+          "ms": 7090,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "fast",
+          "seq": 8,
+          "ms": 1675,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 9,
+          "ms": 2436,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "fast",
+          "seq": 10,
+          "ms": 903,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 10,
+          "ms": 2983,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 11,
+          "ms": 2891,
+          "empty": false,
+          "error": null
+        }
+      ],
+      "drops": [],
+      "errors": 0
+    },
+    {
+      "scriptId": "D01",
+      "state": {
+        "callId": "00000401-0000-4000-8000-000000000000",
+        "version": 9,
+        "level": "none",
+        "modelLevel": "none",
+        "signs": [],
+        "facts": [
+          {
+            "kind": "address",
+            "value": "4410 Anza Street",
+            "ref": {
+              "quote": "4410 Anza Street",
+              "utteranceId": "00000401-0000-4000-8000-000000000002",
+              "tMs": 4000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          },
+          {
+            "kind": "sex",
+            "value": "male",
+            "ref": {
+              "quote": "my husband",
+              "utteranceId": "00000401-0000-4000-8000-000000000002",
+              "tMs": 4000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          },
+          {
+            "kind": "age",
+            "value": "58",
+            "ref": {
+              "quote": "he's 58",
+              "utteranceId": "00000401-0000-4000-8000-000000000002",
+              "tMs": 4000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          },
+          {
+            "kind": "onset",
+            "value": "About fifteen minutes ago, when he was getting dressed",
+            "ref": {
+              "quote": "About fifteen minutes ago, when he was getting dressed",
+              "utteranceId": "00000401-0000-4000-8000-000000000010",
+              "tMs": 39000,
+              "speaker": "caller"
+            },
+            "source": "fast"
+          }
+        ],
+        "lkw": null,
+        "lookalikes": [],
+        "nextQuestion": null,
+        "summary": "58-year-old man with crushing chest pain, sweating and pain down both arms since about fifteen minutes ago; no stroke signs described yet.",
+        "reasonerQuestion": {
+          "kind": "face",
+          "text": "Ask whether his face looks uneven or drooping on one side."
+        },
+        "droppedCount": 0,
+        "warnings": [],
+        "latency": {
+          "fastPassMs": 1100,
+          "reasonerMs": 2159,
+          "sttMs": null
+        },
+        "updatedAt": "2026-10-25T15:50:43.000+01:00"
+      },
+      "utterances": [
+        {
+          "id": "00000401-0000-4000-8000-000000000001",
+          "callId": "00000401-0000-4000-8000-000000000000",
+          "seq": 1,
+          "speaker": "dispatcher",
+          "text": "911, what is the address of your emergency?",
+          "tStartMs": 0,
+          "tEndMs": 3999
+        },
+        {
+          "id": "00000401-0000-4000-8000-000000000002",
+          "callId": "00000401-0000-4000-8000-000000000000",
+          "seq": 2,
+          "speaker": "caller",
+          "text": "4410 Anza Street. It's my husband, he's 58.",
+          "tStartMs": 4000,
+          "tEndMs": 7999
+        },
+        {
+          "id": "00000401-0000-4000-8000-000000000003",
+          "callId": "00000401-0000-4000-8000-000000000000",
+          "seq": 3,
+          "speaker": "dispatcher",
+          "text": "Okay. Tell me exactly what happened.",
+          "tStartMs": 8000,
+          "tEndMs": 10999
+        },
+        {
+          "id": "00000401-0000-4000-8000-000000000004",
+          "callId": "00000401-0000-4000-8000-000000000000",
+          "seq": 4,
+          "speaker": "caller",
+          "text": "He has crushing pain in his chest, he's sweating a lot, and the pain is going down both arms.",
+          "tStartMs": 11000,
+          "tEndMs": 18999
+        },
+        {
+          "id": "00000401-0000-4000-8000-000000000005",
+          "callId": "00000401-0000-4000-8000-000000000000",
+          "seq": 5,
+          "speaker": "dispatcher",
+          "text": "Is he awake and breathing?",
+          "tStartMs": 19000,
+          "tEndMs": 21999
+        },
+        {
+          "id": "00000401-0000-4000-8000-000000000006",
+          "callId": "00000401-0000-4000-8000-000000000000",
+          "seq": 6,
+          "speaker": "caller",
+          "text": "He's awake, he's breathing fast, he says it feels like an elephant on his chest.",
+          "tStartMs": 22000,
+          "tEndMs": 28999
+        },
+        {
+          "id": "00000401-0000-4000-8000-000000000007",
+          "callId": "00000401-0000-4000-8000-000000000000",
+          "seq": 7,
+          "speaker": "dispatcher",
+          "text": "Is he talking to you normally?",
+          "tStartMs": 29000,
+          "tEndMs": 31999
+        },
+        {
+          "id": "00000401-0000-4000-8000-000000000008",
+          "callId": "00000401-0000-4000-8000-000000000000",
+          "seq": 8,
+          "speaker": "caller",
+          "text": "Yes, he's talking, he's just really scared and pale.",
+          "tStartMs": 32000,
+          "tEndMs": 35999
+        },
+        {
+          "id": "00000401-0000-4000-8000-000000000009",
+          "callId": "00000401-0000-4000-8000-000000000000",
+          "seq": 9,
+          "speaker": "dispatcher",
+          "text": "When did the pain start?",
+          "tStartMs": 36000,
+          "tEndMs": 38999
+        },
+        {
+          "id": "00000401-0000-4000-8000-000000000010",
+          "callId": "00000401-0000-4000-8000-000000000000",
+          "seq": 10,
+          "speaker": "caller",
+          "text": "About fifteen minutes ago, when he was getting dressed.",
+          "tStartMs": 39000,
+          "tEndMs": 42999
+        },
+        {
+          "id": "00000401-0000-4000-8000-000000000011",
+          "callId": "00000401-0000-4000-8000-000000000000",
+          "seq": 11,
+          "speaker": "dispatcher",
+          "text": "Okay. Help is on the way. Have him sit down and stay still.",
+          "tStartMs": 43000,
+          "tEndMs": 45000
+        }
+      ],
+      "turns": [
+        {
+          "seq": 1,
+          "atMs": 0,
+          "speaker": "dispatcher",
+          "level": "none",
+          "nextQuestion": null
+        },
+        {
+          "seq": 2,
+          "atMs": 4000,
+          "speaker": "caller",
+          "level": "none",
+          "nextQuestion": null
+        },
+        {
+          "seq": 3,
+          "atMs": 8000,
+          "speaker": "dispatcher",
+          "level": "none",
+          "nextQuestion": null
+        },
+        {
+          "seq": 4,
+          "atMs": 11000,
+          "speaker": "caller",
+          "level": "none",
+          "nextQuestion": null
+        },
+        {
+          "seq": 5,
+          "atMs": 19000,
+          "speaker": "dispatcher",
+          "level": "none",
+          "nextQuestion": null
+        },
+        {
+          "seq": 6,
+          "atMs": 22000,
+          "speaker": "caller",
+          "level": "none",
+          "nextQuestion": null
+        },
+        {
+          "seq": 7,
+          "atMs": 29000,
+          "speaker": "dispatcher",
+          "level": "none",
+          "nextQuestion": null
+        },
+        {
+          "seq": 8,
+          "atMs": 32000,
+          "speaker": "caller",
+          "level": "none",
+          "nextQuestion": null
+        },
+        {
+          "seq": 9,
+          "atMs": 36000,
+          "speaker": "dispatcher",
+          "level": "none",
+          "nextQuestion": null
+        },
+        {
+          "seq": 10,
+          "atMs": 39000,
+          "speaker": "caller",
+          "level": "none",
+          "nextQuestion": null
+        },
+        {
+          "seq": 11,
+          "atMs": 43000,
+          "speaker": "dispatcher",
+          "level": "none",
+          "nextQuestion": null
+        }
+      ],
+      "firstAtMs": {
+        "possible": null,
+        "likely": null
+      },
+      "calls": [
+        {
+          "pass": "fast",
+          "seq": 2,
+          "ms": 1027,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 3,
+          "ms": 2139,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "fast",
+          "seq": 4,
+          "ms": 729,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "fast",
+          "seq": 6,
+          "ms": 1314,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 6,
+          "ms": 3389,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "fast",
+          "seq": 8,
+          "ms": 640,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 9,
+          "ms": 2044,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "fast",
+          "seq": 10,
+          "ms": 1100,
+          "empty": false,
+          "error": null
+        },
+        {
+          "pass": "reasoner",
+          "seq": 11,
+          "ms": 2159,
+          "empty": false,
+          "error": null
+        }
+      ],
+      "drops": [],
+      "errors": 0
+    }
+  ]
+}

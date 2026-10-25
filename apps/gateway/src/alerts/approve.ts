@@ -26,6 +26,8 @@ export interface AlertServiceDeps {
   allowedNumbers: readonly string[];
   timezone: string;
   qaEnabled: boolean;
+  /** D-43: `local` synthesizes but places no call; the browser fetches the audio and reports `played`. */
+  delivery?: "phone" | "local";
   /** Q&A on the briefing call (V-08, FEATURE_QA_ENABLED). */
   model?: ModelClient;
   now?: () => Date;
@@ -56,14 +58,14 @@ export class AlertService {
   }
 
   /** Apply a status change (forward only unless forced) + store + broadcast. Returns false if refused. */
-  setStatus(a: AlertRecord, to: AlertStatus, opts: { lastError?: string | null; force?: boolean } = {}): boolean {
+  setStatus(a: AlertRecord, to: AlertStatus, opts: { lastError?: string | null; force?: boolean; ms?: number } = {}): boolean {
     if (!opts.force && !canTransition(a.status, to)) return false;
     const from = a.status;
     a.status = to;
     if (opts.lastError !== undefined) a.lastError = opts.lastError;
     a.updatedAt = this.now().toISOString();
     this.deps.repo.patchAlert(a.id, { status: to, ...(opts.lastError !== undefined ? { lastError: opts.lastError } : {}) }, a.updatedAt);
-    this.deps.log.info({ event: `alert.${to}`, alertId: a.id, callId: a.callId, from }, `alert ${to}`);
+    this.deps.log.info({ event: `alert.${to}`, alertId: a.id, callId: a.callId, from, ...(opts.ms !== undefined ? { ms: opts.ms } : {}) }, `alert ${to}`);
     this.broadcast(a);
     return true;
   }
@@ -139,10 +141,12 @@ export class AlertService {
    * synthesis fails, the call is hung up and the alert fails (502). Failures mark the alert failed.
    */
   private async synthesizeAndDial(a: AlertRecord): Promise<ActionResult<AlertSummary>> {
+    if (this.deps.delivery === "local") return this.synthesizeOnly(a);
     const t0 = Date.now();
     const before = a.status;
     const audio = a.audio !== null ? Promise.resolve(a.audio) : this.synthesize(a);
     a.audioPending = audio.catch(() => null);
+    a.dialedAtMs = Date.now();
     const dial = this.deps.telephony.placeCall({ to: a.targetPhone, alertId: a.id });
     const [synth, placed] = await Promise.allSettled([audio, dial]);
     if (placed.status === "fulfilled") {
@@ -169,6 +173,45 @@ export class AlertService {
     // Unless the new call's own callbacks already moved it on (a fast fake), the alert is now `calling`.
     if (a.status === before) this.setStatus(a, "calling", { lastError: null, force: true });
     this.deps.log.info({ event: "alert.dialed", alertId: a.id, ms: Date.now() - t0 }, "dialed and audio ready");
+    return { ok: true, value: toSummary(a) };
+  }
+
+  /** D-43 local delivery: no call; the alert stays `queued` until the browser reports `played`. */
+  private async synthesizeOnly(a: AlertRecord): Promise<ActionResult<AlertSummary>> {
+    const audio = a.audio !== null ? Promise.resolve(a.audio) : this.synthesize(a);
+    a.audioPending = audio.catch(() => null);
+    try {
+      await audio;
+    } catch {
+      this.setStatus(a, "failed", { lastError: SYNTH_FAILED, force: true });
+      return fail(502, "tts_failed", `Cartesia: ${SYNTH_FAILED}`);
+    }
+    if (a.status === "failed") this.setStatus(a, "queued", { lastError: null, force: true });
+    this.deps.log.info({ event: "alert.local_ready", alertId: a.id, bytes: a.audio?.length ?? 0 }, "briefing ready to play in the browser");
+    return { ok: true, value: toSummary(a) };
+  }
+
+  /** GET /api/alerts/:id/audio: the cached µ-law briefing; re-synthesized from briefingText if the cache is gone. */
+  async briefingAudio(alertId: string): Promise<ActionResult<Buffer>> {
+    const a = await this.load(alertId);
+    if (!a) return fail(404, "unknown_alert", `unknown alert ${alertId}`);
+    const cached = a.audio ?? (a.audioPending ? await a.audioPending : null);
+    if (cached !== null) return { ok: true, value: cached };
+    try {
+      return { ok: true, value: await this.synthesize(a) };
+    } catch {
+      return fail(502, "tts_failed", `Cartesia: ${SYNTH_FAILED}`);
+    }
+  }
+
+  /** POST /api/alerts/:id/played: the browser finished playing the briefing → briefed → completed. */
+  async played(alertId: string): Promise<ActionResult<AlertSummary>> {
+    const a = await this.load(alertId);
+    if (!a) return fail(404, "unknown_alert", `unknown alert ${alertId}`);
+    if (a.status === "completed") return { ok: true, value: toSummary(a) };
+    if (a.status === "failed") return fail(409, "bad_state", "the briefing failed; retry first");
+    if (a.status !== "briefed") this.setStatus(a, "briefed");
+    this.setStatus(a, "completed");
     return { ok: true, value: toSummary(a) };
   }
 
@@ -216,7 +259,8 @@ export class AlertService {
   /** Alert media stream `start`. */
   onAnswered(a: AlertRecord): void {
     a.answeredAtMs = Date.now();
-    this.setStatus(a, "answered");
+    // ms = ring time: outbound call placed → the stream started (the phone was picked up).
+    this.setStatus(a, "answered", a.dialedAtMs != null ? { ms: a.answeredAtMs - a.dialedAtMs } : {});
   }
 
   /** The `briefing` mark came back: the whole briefing was played. */
@@ -325,7 +369,8 @@ export class AlertService {
   async retry(alertId: string): Promise<ActionResult<AlertSummary>> {
     const a = await this.load(alertId);
     if (!a) return fail(404, "unknown_alert", `unknown alert ${alertId}`);
-    if (!["calling", "ringing", "failed"].includes(a.status)) return fail(409, "bad_state", `cannot retry from ${a.status}`);
+    const retryable = this.deps.delivery === "local" ? ["queued", "failed"] : ["calling", "ringing", "failed"];
+    if (!retryable.includes(a.status)) return fail(409, "bad_state", `cannot retry from ${a.status}`);
     if (!this.allowed(a.targetPhone)) return this.notAllowed(a.targetPhone);
     // Forget the old sid first so its own completed/canceled callback is ignored.
     const previous = a.twilioCallSid;

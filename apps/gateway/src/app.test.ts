@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { validateEnv } from "./env.js";
-import { auth, KEY, testGateway, type TestGateway } from "./testkit.js";
+import { auth, KEY, testEnv, testGateway, type TestGateway } from "./testkit.js";
 import { originAllowed } from "./app.js";
 
 let gw: TestGateway | null = null;
@@ -34,6 +34,16 @@ describe("env (X-01b)", () => {
     expect(validateEnv({ PUBLIC_BASE_URL: "https://x.example", INTERNAL_API_KEY: "abcdefgh12", LASTWELL_FAKES: "all,phone" }).problems.join()).toMatch(/unknown item "phone"/);
   });
 
+  it("STT_KEYTERMS defaults to the docs/04 §5 list (≤ 100 terms, ≤ 1200 chars); a set value replaces it", () => {
+    const d = testEnv().STT_KEYTERMS;
+    expect(d).toContain("Eliquis");
+    expect(d).toHaveLength(24);
+    expect(d.length).toBeLessThanOrEqual(100);
+    expect(d.join(",").length).toBeLessThanOrEqual(1200);
+    expect(testEnv({ STT_KEYTERMS: "" }).STT_KEYTERMS).toEqual(d); // blank in .env = unset
+    expect(testEnv({ STT_KEYTERMS: "Eliquis, tPA" }).STT_KEYTERMS).toEqual(["Eliquis", "tPA"]);
+  });
+
   it("ALERT_ALLOWED_NUMBERS must be E.164", () => {
     expect(validateEnv({ PUBLIC_BASE_URL: "https://x.example", INTERNAL_API_KEY: "abcdefgh12", LASTWELL_FAKES: "all", ALERT_ALLOWED_NUMBERS: "+14155550100,4155550101" }).problems.join()).toMatch(/ALERT_ALLOWED_NUMBERS/);
   });
@@ -59,6 +69,7 @@ describe("gateway app", () => {
       featureQa: false,
       callTimezone: "America/Los_Angeles",
       alertDefaultTargetPhone: "+14155550100",
+      alertDelivery: "phone",
     });
   });
 

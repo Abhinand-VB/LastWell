@@ -2,8 +2,29 @@
 
 Only the integration session edits this file.
 
+## Remaining work (snapshot 2026-10-24 20:25 PT; refreshed every 20-minute loop)
+
+Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live eval on the 20 scripts, numbers on the slide → (c) browser-mic fallback + play-briefing-locally on the live gateway → (d) W-11 polish for the judging table. Q&A (D-32: R-08, V-08 live) only after all of that is green. No real phone calls 9 PM–8 AM (FakeTelephony overnight).
+
+| Task | What is left | Pri | Owner | Blocked? |
+| --- | --- | --- | --- | --- |
+| V-06 / V-07 | live evidence from the log (alert.created ms, ring ≤ 20 s, speech ≤ 1.5 s, `briefed`) | P0 | voice | no (ring observed by human) |
+| V-01, V-03, V-04, V-05 | live inbound call (Gates 0–2) | P0 | voice + humans | **yes: inbound test call tomorrow morning (no calls 9 PM–8 AM)** |
+| V-02 | live Ink 2 spike | P0 | voice | **yes: Card A recording at apps/eval/audio/A01.wav (human)** |
+| V-09 | browser mic live check (gateway side in, 998f166) | P1 | voice | needs a person at the laptop |
+| V-10 | live Ink kill/reconnect check | P1 | voice | no |
+| W-11 | presenter approval of the look (screens has nothing else open) | P1 | presenter | human |
+| C-04 | print deck, slide, two timed pitch runs | P1 | humans | human |
+| X-05 | final PR + `demo-ready` tag after the live gates | P1 | integration | waits on M-01…M-04 |
+| S-05 | Cartesia credits check + voice pick | — | humans | human |
+| M-01…M-04, M-06 | live gates, ten rehearsals | — | humans + voice | tomorrow morning |
+| C-01, C-05, C-07, C-08 | interview quote, Devpost, backup video, submission | — | humans | human |
+| V-08 (live) | Q&A on a real briefing call (R-08 done) | P2 | voice | after the voice P1 checks; no real calls 9 PM–8 AM; FEATURE_QA_ENABLED stays false until two clean rehearsals (D-32) |
+| W-09 | mic record to WAV | P2 | screens | deferred (D-33) |
+
+
 ## Current task
-- 2026-10-24 ~18:20 PT: D-43 update (phone primary again); 20-minute version1 checks; final PR after the live gates.
+- 2026-10-24 18:35 PT: remaining-work snapshot + lane posts (human update); 20-minute loop with snapshot refresh and idle check.
 
 ## Last green commit on version1
 - (X-04, see below)
@@ -14,6 +35,7 @@ Only the integration session edits this file.
 - `pnpm e2e` → "e2e: 23 passed, 0 failed, 0 pending in 27 s"; `E2E_STRICT=1 pnpm e2e` → "23 passed, 0 failed, 0 pending (strict)". Checks listed in docs/TASKS.md X-02.
 
 ### X-03 Playwright smoke — done
+- 2026-10-24 19:20 PT, with the W-12 step (dev:fake + ALERT_DELIVERY=local): `E2E_STRICT=1 pnpm e2e:ui` → "5 passed (41.4s)" incl. "console: Send pre-alert then Play briefing reaches completed".
 - `E2E_STRICT=1 pnpm e2e:ui` → "4 passed (27.3s)": home lists calls; console renders the A01 replay (transcript, Likely, quoted chips); board shows the approved A01 alert; empty console shows "No stroke signs heard yet."; "no orphans" after teardown. Screenshots: docs/status/screens/{home,console-A01,board-A01}.png.
 
 ### X-04 Repo guardrails — done 2026-10-24
@@ -62,6 +84,12 @@ Only the integration session edits this file.
 - `pnpm dev:fake` replays A01 through `POST /api/calls/replay`; it logs a 404 until V-11 lands, and the gateway runs without fakes until X-01b lands (it ignores `LASTWELL_FAKES` today).
 
 ## Periodic version1 checks (newest first)
+- 2026-10-24 20:23 PT · version1 32fe31a (D-46 compact guardrails, R-08, D-47 human decisions, fast-5/reasoner-5) · verify exit 0 · e2e 23/0/0 (strict). Idle: reasoning active (20:20) and its build work is done; voice 96 min; screens 73 min (nothing P0/P1 open).
+- 2026-10-24 20:00 PT · version1 e6d3aff (no new commits) · verify exit 0 · e2e 23/0/0 (strict). Idle: voice 73 min, reasoning 48 min, screens 50 min → all three in BLOCKERS (screens likely just finished).
+- 2026-10-24 19:38 PT · version1 aabbe6f (no new commits) · verify exit 0 · e2e 23/0/0 (strict). Idle: **voice 51 min (18:47) → BLOCKERS**; reasoning 19:12, screens 19:10 ok.
+- 2026-10-24 19:14 PT · version1 3389497 (D-44 prompts, E-03 run 2, D-45 contract, W-12, W-08, W-11 labels, fake phrase table) · verify exit 0 · e2e 23/0/0 (strict). Idle check: all three lanes active (voice 18:47, reasoning 19:12, screens 19:10).
+- 2026-10-24 18:52 PT · version1 7f904d6 (V-12, voice hardening) · verify exit 0 · e2e 23/0/0 (strict). Idle: reasoning (16:53), screens (16:08) still silent → stay at the top of BLOCKERS; voice active (18:47).
+- 2026-10-24 18:31 PT · version1 169567f (main synced, 6c767d5) · verify exit 0 · e2e 23/0/0 (strict). Idle check 18:34: reasoning last 16:53, screens last 16:08 (> 45 min) → BLOCKERS; voice 18:06 ok.
 - 2026-10-24 17:35 PT · version1 cd32ac8 (no new commits) · verify exit 0 · e2e 23/0/0 (strict).
 - 2026-10-24 17:13 PT · version1 a7703f2 (D-41c antiplatelet wording, E-03 rescore) · verify exit 0 (core 217 + 2 skipped, gateway 50, eval 51, web 37, stt 13; 20 valid) · e2e 23 passed, 0 failed, 0 pending (strict).
 - 2026-10-24 16:50 PT · version1 eb5e836 (R-06 reasoner-2, D-42) · verify exit 0 (core 216 + 2 skipped, gateway 50, eval 51, web 37, stt 13; 20 valid) · e2e 23 passed, 0 failed, 0 pending (strict).
@@ -71,6 +99,10 @@ Only the integration session edits this file.
 - 2026-10-24 15:58 PT · df3e7a7 · verify exit 0 · e2e 2 pending.
 
 ## Handled requests from other lanes
+- [x] from reasoning (D-47): README "Honest limits" gains append-only signs and no sex from a bare pronoun; D-40 marked not adopted in docs/09; slide/README footnote names the prompt versions of E-03 run 2 and the fast-5/reasoner-5 spot check.
+- [x] from screens (W-12): X-03 now runs dev:fake with `ALERT_DELIVERY=local` and clicks send-button → confirm-checkbox → modal-send → play-briefing until `alert-status[data-status=completed]` (A02 replay); the phone path stays covered by `pnpm e2e`.
+- [x] from reasoning: E-03 run 2 (slide numbers) → README Results + docs/08 §3; all 16 card scripts still match truth (final and peak) in run 2.
+- [x] from voice (README check): (1) the "pending carrier verification" limit → "fallback without the phone line"; (2) Ink `call`/`qa` profiles, reconnect-once-then-degrade banner, local-delivery WAV from the same Sonic bytes; (3) keyterms on by default; (4) the unmeasured "1.5 s" claim dropped (re-add from `alert.briefing_sent` `ms` after the first real briefing call); (5) Q&A ships off (D-32).
 - [x] from reasoning: re-scored E-03 run 1 (D-41a) → only level agreement moved (18/20 → 19/20, not a slide metric); README and docs/08 numbers unchanged, source lines say "re-scored". Deck: A05's back now labels aspirin "Antiplatelet" (D-41c).
 - [x] from voice: demo gateway runs with `pnpm --filter @lastwell/gateway start`, never `dev` → docs/08 §2 pre-flight and README setup updated.
 - [x] from screens: X-03 board test approves before "fine at about 2 PM"/"Eliquis" are in the snapshot → the test now waits until `GET /api/calls/:id` reports `ended` before approving.
@@ -78,6 +110,8 @@ Only the integration session edits this file.
 - [x] from reasoning: E-03 run 1 numbers carried into README "Results" and docs/08 §3 "Slide numbers", with the footnote.
 
 ## Requests to other lanes
+- [ ] to voice, reasoning, screens: **all four vendors are live on the gateway Mac** (Anthropic, Cartesia, Convex, Twilio; human, 2026-10-24 ~18:35 PT; Twilio number works end to end, Send pre-alert rang the medical phone). Run your `blocked-keys` checks now, within docs/10 §7.4 (Anthropic test:live ≤ 3/h, E-03 ≤ 2 runs total before freeze; Cartesia live only for gate tasks, ≤ 10 min audio/h). **Exception: no real phone calls between 9 PM and 8 AM** — for any call check overnight run the gateway with `LASTWELL_FAKES=twilio` (FakeTelephony; DEMO_MODE=false) so no teammate's phone rings. (human update)
+- [ ] to voice, reasoning, screens: **tonight's priority order** (human): (a) any open P0/P1 task (see "Remaining work" above), (b) E-03 full live eval → slide, (c) browser-mic fallback + play briefing locally on the live gateway (V-09, V-12, W-08, W-12), (d) W-11 polish for the judging table. Q&A (D-32) only after all of that is green. Each lane: update your "Current task" line when you pick one up; a lane with no commit and no status update for 45 minutes goes to the top of BLOCKERS. (human update)
 - [ ] to voice, screens: **D-43 update (human, ~18:20 PT): the Twilio number exists and its webhook is set and verified; the phone path is primary again.** V-12/W-12 and V-09/W-08 drop to P1 (the §0 fallback); keep building them, but the live gates on the phone path (V-01, V-03…V-07 live; M-01…M-04) come first. Real calls only to ALERT_ALLOWED_NUMBERS (D-35), never from a loop (§7.4). (D-43)
 - [ ] to voice: **D-43, P0 now** (human, 2026-10-24 ~18:00 PT): there is no Twilio number (Trust Hub pending), so the demo runs phone-free on the live gateway on the Mac (:8787). (1) **V-09 browser mic is P0**: make the `/mic` → `POST /api/calls/browser` → `WS /browser/media/:callId` path work end to end on the live gateway (real Ink 2, real Claude), and note the live evidence. (2) **New V-12, P0**: `ALERT_DELIVERY=phone|local` in env.ts (default `phone`, so nothing changes for Twilio or e2e); in `local`, approve composes + synthesizes exactly as now but places no call; `GET /api/alerts/:alertId/audio` returns the cached briefing as a 16-bit PCM WAV (8 kHz mono, decoded from µ-law, re-synthesized from `briefingText` if the cache is gone); `POST /api/alerts/:alertId/played` → `briefed` → `completed` with `alert.updated`; the test-briefing endpoint works the same way in local mode; `GET /api/config` returns `alertDelivery`. Acceptance in docs/TASKS.md V-12. Keep the Twilio path and its flags untouched so it works the moment a number exists. (D-43)
 - [ ] to screens: **D-43, P0 now**: (1) **W-08 mic page is P0**: verify it against the live gateway on :8787 (a browser call, transcript on the console). (2) **New W-12, P0**: when `/api/config` says `alertDelivery: "local"`, the alert status on the console shows **Play briefing** once the alert exists: play `/api/gateway/alerts/:id/audio` in an `<audio>` element (allow `alerts/:id/audio` and `alerts/:id/played` in the proxy allowlist and pass the binary body through), then `POST …/played`; hide "Call again" in local mode; the "Test briefing call" footer link must also get a Play button. Acceptance in docs/TASKS.md W-12. (D-43)

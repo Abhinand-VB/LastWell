@@ -29,7 +29,7 @@ export function ConsoleView({ callId }: { callId: string }) {
           {call && (
             <span data-testid="call-meta" className="text-lg text-slate-300">
               {call.label ? `${call.label} · ` : ""}
-              {call.mode === "phone" ? (call.callerNumberMasked ?? "phone call") : call.mode}
+              {call.mode === "phone" ? `Phone ${call.callerNumberMasked ?? ""}`.trim() : call.mode === "browser" ? "Browser mic" : "Replay"}
             </span>
           )}
         </div>

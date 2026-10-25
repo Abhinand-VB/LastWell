@@ -122,6 +122,7 @@ export class CallService {
       { event: "utterance.final", callId: call.id, speaker: u.speaker, seq: u.seq, tStartMs: u.tStartMs, ...(f.sttMs != null ? { ms: Math.round(f.sttMs) } : {}) },
       "utterance",
     );
+    if (f.sttMs != null) this.deps.log.info({ event: "stt.turn_end", callId: call.id, speaker: u.speaker, seq: u.seq, ms: Math.round(f.sttMs) }, "stt turn end");
     this.deps.repo.insertUtterance(u);
     this.deps.hub.toCall(call.id, { type: "utterance.final", callId: call.id, utterance: u });
     try {

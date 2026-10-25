@@ -25,6 +25,8 @@ export interface AlertRecord {
   audioPending: Promise<Buffer | null> | null;
   /** Wall ms when the stream `start` arrived (status answered). */
   answeredAtMs: number | null;
+  /** When the latest outbound call was placed (for `alert.answered` ms: ring time). */
+  dialedAtMs?: number | null;
 }
 
 const RANK: Record<AlertStatus, number> = {

@@ -75,6 +75,20 @@ test("board shows the approved A01 alert", async ({ page, request }) => {
   await page.screenshot({ path: `${SHOTS}/board-A01.png`, fullPage: true });
 });
 
+test("console: Send pre-alert then Play briefing reaches completed (W-12, local delivery)", async ({ page, request }) => {
+  const id = await replay(request, "A02", 8);
+  pending(id === null, "POST /api/calls/replay → 404 (V-11 not landed)");
+  await waitEnded(request, id!);
+  const res = await page.goto(`/console/${id}`);
+  pending(res?.status() === 404, "/console/[callId] → 404");
+  await page.getByTestId("send-button").click();
+  await page.getByTestId("confirm-checkbox").check();
+  await page.getByTestId("modal-send").click();
+  await page.getByTestId("play-briefing").click();
+  await expect(page.locator('[data-testid=alert-status][data-status=completed]')).toBeVisible({ timeout: 60_000 });
+  await page.screenshot({ path: `${SHOTS}/console-play-briefing.png`, fullPage: true });
+});
+
 test("console starts empty with the no-signs headline (docs/03 §3)", async ({ page, request }) => {
   const id = await replay(request, "D04", 1);
   pending(id === null, "POST /api/calls/replay → 404 (V-11 not landed)");

@@ -44,11 +44,25 @@ export async function parseJson<T extends z.ZodTypeAny>(args: {
 - `cache_control` on the system block is harmless if caching is not triggered (prompts shorter than the model's minimum cacheable length simply are not cached). It ships from day one; task R-10 only measures and tunes.
 - Live tests are named `*.live.test.ts` and start with `if (!process.env.LIVE) { it.skip(...); return; }` so that plain `vitest run` passes offline; `pnpm --filter @lastwell/core test:live` sets `LIVE=1`.
 
+## 1.1 Call-evidence rules — appended to the fast-pass and reasoner system prompts (D-44, D-46)
+
+Two files in `docs/guardrails/`: `call-evidence-hard-rules.md` is the human-provided original (v1.0, unchanged, for people); `call-evidence-rules.model.md` is the compact model-facing version (≈ a third of the length: one-line imperative rules grouped A–F, each tagged with the original rule number `[Rn]`, and the eight worked examples as "caller says → emit / never" lines in our schema's terms; no citations, research notes or "Minimal output" field list). Only the compact file is sent. What Claude receives as the system prompt for the fast pass (§2) and the reasoner (§3) is:
+
+```text
+{the §2 or §3 system prompt below}
+
+{docs/guardrails/call-evidence-rules.model.md, whole}
+```
+
+The output schemas (docs/03 §4) do not change; the compact file's own first paragraph tells the model to apply the rules inside them. Q&A (§4) does not get the rules. `packages/core/src/prompts/guardrails.ts` embeds the file as a string constant (core does no file I/O at runtime); regenerate it with `node packages/core/scripts/gen-guardrails.mjs` after editing the file, and `guardrails.test.ts` fails when they drift. The rules are part of the cached system block (`cache_control`), so they cost little after the first call. If the full file makes the fast pass more than ~0.3 s slower at p50, the fast pass gets only the intro and sections A and C (`GUARDRAILS_MODEL_AC`). Measured +0.18 s, so both passes ship the whole file (docs/09 D-46).
+
+Settled conflicts (D-47): the compact file drops R24's wake-up clause, so "woke up like this" stays a last_known_well phrase (§2, docs/06 R11); R19 (a corrected claim is not emitted again) does not remove a sign already on the card, because signs are append-only (docs/03 §3) — a known limitation.
+
 ## 2. Fast pass — `claude-haiku-5-5`, effort `low`, thinking disabled, `max_tokens 1024`
 
 Called once per **caller** utterance (`speaker === "caller" | "mixed"`), in order, one in flight per call. Input: the utterance text, plus the immediately preceding dispatcher utterance when there is one (so "yes, his left arm" is interpretable).
 
-### System prompt (`prompts/fastPass.ts`)
+### System prompt (`prompts/fastPass.ts`, `FAST_PASS_BASE`; the call-evidence rules of §1.1 are appended)
 
 ```
 You are a transcript reader inside a 911 dispatch tool. You read ONE utterance from a caller describing a sick person and extract two things: stroke signs the caller described, and factual details the caller stated. You output JSON only, matching the schema you were given.
@@ -106,7 +120,7 @@ The last row is deliberate. A bare "Yes." contains no sign words, and quotes mus
 
 Runs on: a new validated sign or LKW/blood-thinner fact (immediately), else every `REASONER_INTERVAL_MS` when the transcript changed, and once more when the call ends. One in flight per call; if a trigger arrives mid-flight, run again after.
 
-### System prompt (`prompts/reasoner.ts`)
+### System prompt (`prompts/reasoner.ts`, `REASONER_BASE`; the call-evidence rules of §1.1 are appended)
 
 ```
 You are the stroke reasoner inside a 911 dispatch tool. You read the FULL transcript of a live emergency call so far (both speakers, with timestamps and utterance numbers) and the current case state. You decide how likely it is that the caller is describing a stroke, which stroke signs are present, which other conditions could explain the picture, and the single most useful next question for the dispatcher to ask. You output JSON only, matching the schema.
@@ -178,6 +192,7 @@ FACTS (computed by code, trusted):
 - Signs: {kind: "quote" (mm:ss), ...}
 - Last known well: {spokenLkw} — caller said "{quote}"      | not established on the call
 - Blood thinner: {value} — caller said "{quote}"            | not mentioned
+                                                            | none mentioned; takes {value}, an antiplatelet, not a blood thinner — caller said "{quote}"   (D-41c: aspirin, clopidogrel/Plavix, ticagrelor/Brilinta, prasugrel/Effient)
 - Other facts: age 78 ("he's 78"), sex male ("my father"), ...
 
 TRANSCRIPT (mm:ss speaker: text)

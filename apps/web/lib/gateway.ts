@@ -74,6 +74,9 @@ export const gateway = {
   emsConfirm: (alertId: string, confirmed: boolean) =>
     request(AlertResponse, "POST", `alerts/${id(alertId)}/ems-confirm`, { confirmed }),
   hangup: (alertId: string) => request(OkResponse, "POST", `alerts/${id(alertId)}/hangup`, {}),
+  played: (alertId: string) => request(AlertResponse, "POST", `alerts/${id(alertId)}/played`, {}),
+  /** D-43 local delivery: the briefing WAV, streamed through the proxy. */
+  audioUrl: (alertId: string) => `${BASE}/alerts/${id(alertId)}/audio`,
   retry: (alertId: string) => request(AlertResponse, "POST", `alerts/${id(alertId)}/retry`, {}),
   testBriefing: (targetPhone: string) => request(AlertResponse, "POST", "alerts/test-briefing", { targetPhone }),
   clearTestAlerts: () => request(DeletedResponse, "DELETE", "alerts/test"),

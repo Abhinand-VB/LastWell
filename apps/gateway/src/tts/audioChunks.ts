@@ -14,6 +14,20 @@ export function sliceAudio(audio: Buffer, size = CHUNK_BYTES): Buffer[] {
   return out;
 }
 
+/** G.711 µ-law byte → 16-bit linear sample. */
+function mulawToLinear(u: number): number {
+  const x = ~u & 0xff;
+  const t = (((x & 0x0f) << 3) + 0x84) << ((x & 0x70) >> 4);
+  return x & 0x80 ? 0x84 - t : t - 0x84;
+}
+
+/** µ-law 8 kHz bytes → 16-bit little-endian PCM (for the browser WAV, D-43). */
+export function mulawToPcm16(audio: Buffer): Buffer {
+  const out = Buffer.alloc(audio.length * 2);
+  for (let i = 0; i < audio.length; i++) out.writeInt16LE(mulawToLinear(audio[i]!), i * 2);
+  return out;
+}
+
 /** Playback duration of µ-law 8 kHz bytes in ms. */
 export function mulawMs(bytes: number): number {
   return Math.round(bytes / 8);

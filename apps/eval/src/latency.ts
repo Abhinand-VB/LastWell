@@ -67,7 +67,7 @@ async function main(argv: readonly string[]): Promise<void> {
   };
 
   await bench(`fast pass ${env.CLAUDE_FAST_MODEL} @${env.CLAUDE_FAST_EFFORT}`, env.CLAUDE_FAST_EFFORT, "fast");
-  for (const e of efforts) await bench(`reasoner ${env.CLAUDE_REASONER_MODEL} @${e}`, e, "reasoner");
+  if (!argv.includes("--fast-only")) for (const e of efforts) await bench(`reasoner ${env.CLAUDE_REASONER_MODEL} @${e}`, e, "reasoner");
 
   console.log("\n| Pass | n | p50 | p95 | max | errors | stop≠end_turn | input tok p50 | cache read tok (total) |");
   console.log("| --- | --- | --- | --- | --- | --- | --- | --- | --- |");

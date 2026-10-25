@@ -221,7 +221,7 @@ Browser authentication: the browser never holds `INTERNAL_API_KEY`. It calls `GE
 | Method & path | Body | Response | Notes |
 | --- | --- | --- | --- |
 | `GET /healthz` | — | `{ok, uptimeS, liveCalls, cartesia, version}` | no auth |
-| `GET /api/config` | — | `{demoAlertToCaller, featureBrowserMic, featureQa, callTimezone, alertDefaultTargetPhone: E164 | null}` | public flags the web app needs (browser cannot read gateway env) |
+| `GET /api/config` | — | `{demoAlertToCaller, featureBrowserMic, featureQa, callTimezone, alertDefaultTargetPhone: E164 | null, alertDelivery: "phone" | "local"}` | public flags the web app needs (browser cannot read gateway env) |
 | `GET /api/ws-token` | — | `{token, expiresInS}` | §5 browser authentication |
 | `GET /api/calls` | — | `{calls: (CallInfo & {level})[]}` | recent 20, all modes |
 | `GET /api/calls/:callId` | — | same payload as WS `snapshot` | |
@@ -231,6 +231,8 @@ Browser authentication: the browser never holds `INTERNAL_API_KEY`. It calls `GE
 | `POST /api/alerts/:alertId/ems-confirm` | `{confirmed: boolean}` | `{alert}` | toggles `emsConfirmedAt` |
 | `POST /api/alerts/:alertId/hangup` | `{}` | `{ok}` | ends the briefing call |
 | `POST /api/alerts/:alertId/retry` | `{}` | `{alert}` | "Call again": allowed from `calling`, `ringing` or `failed`. If a Twilio call is still in progress it is ended first (`calls(sid).update({status:"completed"})`), then the same number is dialled again with the cached briefing audio; if the cache is gone (gateway restarted) the audio is re-synthesized from `alerts.briefingText`. The same alert row is reused: status back to `calling`, `twilioCallSid` overwritten (the previous sid is logged). 409 from other states. |
+| `GET /api/alerts/:alertId/audio` | — | `audio/wav` (16-bit PCM, 8 kHz, mono) | the briefing audio for `ALERT_DELIVERY=local` (D-43): decoded from the cached µ-law, re-synthesized from `alerts.briefingText` if the cache is gone; 404 for an unknown alert |
+| `POST /api/alerts/:alertId/played` | `{}` | `{alert}` | the browser finished playing the briefing (`ALERT_DELIVERY=local`): status `briefed` → `completed` |
 | `POST /api/alerts/test-briefing` | `{targetPhone: E164}` | `{alert}` | pre-flight smoke test: creates a `replay` call with `label:"TEST"`, an empty transcript and the canned state `packages/core/src/fixtures/caseState.TEST.json` (level `possible`, one `speech` sign "test one two three", no LKW, no blood thinner), composes and dials it like a real alert |
 | `DELETE /api/alerts/test` | — | `{deleted: n}` | deletes alerts (and their calls) whose call has `label:"TEST"` ("Clear test alerts"); drops them from the in-memory registries and broadcasts `alert.removed` for each |
 | `POST /api/calls/replay` | `{scriptId: "B01", speed?: 2}` | `{callId}` | feeds an eval script through the live pipeline as a `replay` call with `label: scriptId` (semantics in docs/05 §13) |

@@ -84,9 +84,9 @@ Smoke test (two minutes, every time)
 
 Say these words somewhere in the two minutes: "quote or drop", "the time is computed by code, not by the model", "the dispatcher approves every alert", "we never say not a stroke".
 
-### Slide numbers (E-03 run 1, re-scored for D-41; copied from `apps/eval/results/E-03-run1-table.md`)
+### Slide numbers (E-03 run 2, the final allowed full run; copied from `apps/eval/results/E-03-run2-table.md`)
 
-LastWell vs keyword baseline: sensitivity @possible 12/12 vs 3/12 · sensitivity @likely 6/12 · precision @possible 12/17 vs 3/6 · precision @likely 6/7 · LKW correct 16/16 · blood thinner correct 8/8 · invented facts 0. Footnote: "20 scripted calls (text mode), written by the team; real-world precision will be lower — the Copenhagen model was right about one time in four (63.0% recall, 24.9% precision)." If E-03 run 2 replaces these, copy its table instead; never type numbers by hand.
+LastWell vs keyword baseline: sensitivity @possible 12/12 vs 3/12 · sensitivity @likely 7/12 · precision @possible 12/17 vs 3/6 · precision @likely 7/7 · LKW correct 16/16 · blood thinner correct 8/8 · invented facts 0. Footnote: "20 scripted calls (text mode), written by the team; real-world precision will be lower — the Copenhagen model was right about one time in four (63.0% recall, 24.9% precision)." Level agreement 20/20; median fast pass 1.3 s, reasoner 2.9 s. (Run on prompts fast-3/reasoner-3; fast-5/reasoner-5 spot-checked with the same results on A01, B01, C01, C02, D01.) Never type numbers by hand.
 
 ## 4. Dispatcher coaching (the person on the headset)
 

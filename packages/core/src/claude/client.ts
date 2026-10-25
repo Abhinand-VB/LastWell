@@ -157,7 +157,7 @@ export function createClaudeClient(config: ClaudeConfig): ModelClient {
  * G-21: the first use of each output schema compiles a grammar (cached 24 h). The gateway calls this
  * once at boot so the first live utterance does not pay for it. Errors are returned, never thrown.
  */
-export async function warmup(model: ModelClient): Promise<{ pass: string; ms: number; error: string | null }[]> {
+export async function warmup(model: ModelClient, opts: { qa?: boolean } = {}): Promise<{ pass: string; ms: number; error: string | null }[]> {
   const now = new Date();
   const state = {
     callId: "00000000-0000-4000-8000-000000000000",
@@ -181,6 +181,8 @@ export async function warmup(model: ModelClient): Promise<{ pass: string; ms: nu
     ["fast", () => model.fastPass({ utteranceText: "Hello?", prevDispatcherText: null })],
     ["reasoner", () => model.reason({ utterances: [u], state, callStartedAt: now, now, timezone: "America/Los_Angeles" })],
   ];
+  // R-08: the Q&A schema compiles on first use too (first live answer 2374 ms vs ≈1.4 s warm).
+  if (opts.qa) calls.push(["qa", () => model.answer({ questionText: "Hello?", utterances: [u], state, now, timezone: "America/Los_Angeles" })]);
   return Promise.all(
     calls.map(async ([pass, f]) => {
       try {

@@ -131,6 +131,18 @@ describe("fake model through the pipeline — A01, B01, C01", () => {
     expectMatchesFixture(r, "C01");
   });
 
+  it("C-04: every scripted call reaches its truth level with the fake model (demo-card scripts included)", async () => {
+    const { readdirSync } = await import("node:fs");
+    const ids = readdirSync(SCRIPTS).filter((f) => /^[A-D]\d{2}\.json$/.test(f)).map((f) => f.slice(0, 3));
+    expect(ids.length).toBeGreaterThanOrEqual(20);
+    for (const id of ids) {
+      const s = script(id);
+      const r = await runScript(s, createFakeModel(), { timezone: TZ });
+      expect(r.state.level, id).toBe(s.truth.expectedLevel);
+      if (s.truth.lkw !== null) expect(r.state.lkw?.confidence, `${id} lkw`).not.toBe("unknown");
+    }
+  });
+
   it("reasoner outputs parse against the docs/03 §4 schema and never say 'not a stroke'", async () => {
     for (const id of ["A01", "B01", "C01"]) {
       const r = await run(id);

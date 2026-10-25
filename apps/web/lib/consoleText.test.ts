@@ -27,3 +27,13 @@ describe("console text", () => {
     expect(WARNING_TEXT.reasoner_delayed).toBe("Reasoner delayed");
   });
 });
+
+describe("D-41(c) antiplatelet label", () => {
+  it("never calls aspirin or clopidogrel a blood thinner", async () => {
+    const { bloodThinnerLabel } = await import("./consoleText");
+    expect(bloodThinnerLabel("daily aspirin")).toBe("Antiplatelet");
+    expect(bloodThinnerLabel("Plavix")).toBe("Antiplatelet");
+    expect(bloodThinnerLabel("Eliquis")).toBe("Blood thinner");
+    expect(bloodThinnerLabel(null)).toBe("Blood thinner");
+  });
+});

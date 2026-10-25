@@ -3,12 +3,47 @@
 Only the reasoning session edits this file.
 
 ## Current task
-- (P0 + P1 of the lane done; R-08 waits for D-32. Next: re-run test:live for the B01 reading; second E-03 run kept in reserve for after any prompt change.)
+- Lane build work done (R-03, R-06, R-08, R-10, E-01, E-03 ×2, X-01a, C-04 fake, D-39/D-45 contracts, D-41c, D-42/D-44/D-46 prompts). Waiting on human answers to the blockers below; both E-03 runs used.
 
 ## Last green commit on version1
-- E-03 run 1 results (see below)
+- 43930b2 (D-46 + R-08)
 
 ## Acceptance evidence (pasted command output per task)
+
+### D-47 human decisions on the six blockers — 2026-10-25
+- Compact guardrails R24 line now omits the wake-up clause (deviation noted in the file); `fast-5` / `reasoner-5`. Live (03:20 UTC): fast rows 2, 3, 4, 6 ✓ (rows 1, 5 pronoun-only sex, accepted), median 1236 ms; reasoner A01 likely 2693 ms, B01 possible/face, C01 possible/low blood sugar; Q&A blood thinners 1562 ms, seizure 1179, last normal 1352, address 1298 (all < 2 s).
+- Known limitation for the README (to integration): a sign recorded before the caller corrects it stays on the card (signs are append-only, docs/03 §3).
+
+### D-46 compact guardrails in the prompts + R-08 Q&A wrapper — 2026-10-25
+- `docs/guardrails/call-evidence-rules.model.md`: 911 words (original 2667), one-line rules A–F tagged [Rn], all 30 covered (test checks every rule line ends in [Rn] and R1–R30 all appear), examples mapped to our schema. Prompts: fast pass `fast-4` and reasoner `reasoner-4` = docs/04 base + the whole compact file (generated `prompts/guardrails.ts`, byte-match test), cached system block.
+- Latency (R-10 bench, 20 sequential calls each): before (D-44 prompts) fast p50 1147 / p95 1987 ms, reasoner 2852 / 4948; after fast p50 1406 then 1253 (avg +0.18 s ≤ 0.3 s gate → full file for both), p95 2703 / 2339; reasoner 2638 / 3326.
+- Live run (with D-40's exact sex line): rows 1, 3, 5 lost the sex fact — row 3 "My wife" had passed in every earlier run.
+- Live run (old sex line, 03:10 UTC): fast rows 2, 3, 4, 6 ✓, rows 1 and 5 miss pronoun-only sex (as with fast-1/fast-3); median 1000 ms; reasoner A01 likely 3453 ms, B01 possible/face, C01 low blood sugar ✓.
+- Eval `--ids A01,B01,C01,C02,D01` (docs/04 §6): identical to E-03 run 2 for these scripts — level 5/5, LKW 4/4, blood thinner 2/2, 0 drops, 0 wrong, 0 invented; fast p50 1202, reasoner 2936 ms.
+- R-08: `qa.live.test.ts` (A01): blood thinners → known, "Yes, he takes Eliquis for his heart.", evidence validates (2374 ms, first call: grammar compile — over the 2 s target); seizure → known false (1222 ms); last normal → "Last seen normal at 2:00 PM, 48 minutes ago…" no parentheses/dashes (1418 ms); address → known, evidence validates (1385 ms). `warmup(model, {qa: true})` now also compiles the Q&A schema. The spoken post-processing (fallback phrase, quote-or-drop, LKW rule) is the gateway's `finalizeQa` (voice). D-41(c) for Q&A: the facts line names an antiplatelet as "none mentioned; takes {value}, an antiplatelet, not a blood thinner" (`qa-2`, offline test); the fake answers likewise. `FEATURE_QA_ENABLED` stays false.
+
+### D-44 Call-evidence hard rules in the prompts (human request) — done 2026-10-25
+- Doc copied unchanged: `docs/guardrails/call-evidence-hard-rules.md` (`cmp` identical to the provided file). `packages/core/scripts/gen-guardrails.mjs` generates `src/prompts/guardrails.ts`; `guardrails.test.ts` checks the constants against the doc byte for byte, the docs/04 §1.1 preamble verbatim, and that no "Minimal output" / intro / evidence-notes text reaches a prompt. `cache_control` on the system block unchanged.
+- Reasoner `reasoner-3`: base + preamble + sections A–F + worked examples. Fast pass `fast-3`: base + preamble + sections A, C, E (full set measured slower). Q&A unchanged.
+- Fast-pass latency bench (`npx tsx src/latency.ts --n 20 --fast-only`, sequential): no rules (R-10) p50 1335 / p95 2480 ms; full A–F + examples p50 1536 / p95 3265 ms; **A, C, E subset p50 1332 / p95 1749 ms**.
+- `test:live` (02:47): 34/35; fast median 952 ms; reasoner A01 likely/face 3014 ms, B01 possible/face, C01 possible/low blood sugar. Only failure: row 5 sex fact (the open R-03 item, also failing before).
+- **E-03 run 2** (last allowed full run), 20 scripts, 4 m 37 s, 0 model errors — results `apps/eval/results/2026-10-25T01-52-37-926Z-text-live.json`, table `apps/eval/results/E-03-run2-table.md` (rescored after adding "denied" to the scorer's negation words; run 1's table is unchanged by that fix):
+  ```
+  | Metric | run 1 (fast-1/reasoner-1) | run 2 (fast-3/reasoner-3, guardrails) | baseline |
+  | Sensitivity @possible (n=12) | 12/12 | 12/12 | 3/12 |
+  | Sensitivity @likely | 6/12 (50%) | 7/12 (58%) | — |
+  | Precision @possible (flags=17) | 12/17 (71%) | 12/17 (71%) | 3/6 |
+  | Precision @likely | 6/7 (86%) | 7/7 (100%) | — |
+  | Median seconds to first flag | 12 s | 12 s | 12 s |
+  | LKW correct (n=16) | 16/16 | 16/16 | — |
+  | Blood thinner correct (n=8) | 8/8 | 8/8 | — |
+  | Invented facts shown | 0 | 0 | — |
+  | Dropped by validator | 1 | 0 | — |
+  | Wrong facts | 0 | 0 | — |
+  | Level agreement (n=20) | 19/20 | 20/20 | — |
+  | Median latency fast / reasoner | 1207 / 2861 ms | 1270 / 2916 ms | — |
+  ```
+  Gate (no regression on sens@possible, LKW, blood thinner, invented; fast p50 ≤ +0.5 s) passed → prompts landed. **Slide numbers: use run 2.** A03 now reaches `likely`; C03 no longer touches `likely`.
 
 ### D-41(c) briefing: antiplatelets are named, never "Blood thinner" — done 2026-10-25
 - `composeBriefing`: a blood-thinner fact whose value names aspirin, clopidogrel/Plavix, ticagrelor/Brilinta or prasugrel/Effient is spoken as "Takes {value}, per the caller." (docs/05 §7 rule 5); anticoagulants unchanged ("Blood thinner: Eliquis, per the caller."). `isAntiplatelet(value)` is exported from `@lastwell/core`.
@@ -112,16 +147,28 @@ Only the reasoning session edits this file.
 -
 
 ## Requests to other lanes
+- [ ] to integration: D-47 — add to README "Honest limits": a sign heard before the caller corrects it stays on the card (signs are append-only); sex from a bare pronoun is not extracted by the fast pass.
+- [ ] to voice: R-08 — call `warmup(model, { qa: true })` at boot when `FEATURE_QA_ENABLED=true` (the first Q&A answer took 2374 ms cold vs ≈1.4 s warm).
+- [ ] to screens: D-45 — `ConfigResponse.alertDelivery: "phone" | "local"` is in core; W-12 can read it from `loadConfig()` (I added it to `WebConfig` with default "phone" and to `FALLBACK_CONFIG` and the mock gateway, the minimal consumer edit the contract rule requires).
+- [ ] to voice: D-45 — `alertDelivery` is now in `ConfigResponse`; `apps/gateway/src/app.ts` can drop its local `ConfigResponse & { alertDelivery }` type. docs/03 §6 now lists `GET /api/alerts/:alertId/audio` and `POST /api/alerts/:alertId/played` as you implemented them.
 - [ ] to screens: D-41(c) — wherever the console or board labels the blood-thinner fact, use `isAntiplatelet(value)` from `@lastwell/core` and show the drug (e.g. "Takes daily aspirin") instead of "Blood thinner: …" for antiplatelets.
 - [ ] to voice: `GET /api/config` must return `alertDefaultTargetPhone` (`ALERT_DEFAULT_TARGET_PHONE` or null); the field is now required in `ConfigResponse` (D-39, screens request).
 - [ ] to integration: E-03 slide/Devpost numbers are under "E-03" above (and `apps/eval/results/E-03-run1-table.md`); please carry them into docs/08 / the Devpost text with the footnote. `apps/eval/results` is gitignored, so the committed files were added with `git add -f`.
 - [ ] to screens: `ConfigResponse` now has `alertDefaultTargetPhone: E164 | null` (D-39); `WebConfig`'s `.extend` in `apps/web/lib/config.ts` can be dropped.
 
 ## Handled requests from other lanes
+- [x] from integration: D-43 contract additions → D-45 (`alertDelivery`, audio/played rows).
+- [x] from integration: D-41(c) composer + rescore → a7703f2.
 - [x] from screens: `alertDefaultTargetPhone` in `ConfigResponse` (D-39) — see commit "reasoning: D-39 …".
 
 ## Blockers for humans
-- [ ] R-03 · (still open: two `fast-2` wordings tried live; the second fixed rows 1 and 5 but row 2 then returned Eliquis as `medication`, so the prompt stays `fast-1`. D-40 (human) asks for this wording; landing it needs a live run where rows 1–6 all pass.) Fast-pass prompt (docs/04 §2) lists "he"/"she" as sex evidence and asks for "the shortest verbatim span", so the model quotes `"he"` (2 characters), which the quote validator always drops (needs ≥ 3). Proposed wording change (docs/04 §6 protocol, bump to `fast-2`): in the `sex:` line, replace "(father, husband, he, mom, wife, she)" with "(father, husband, mom, wife, or a pronoun quoted with its next word, e.g. "his chest", "she says"; a quote must be at least 3 characters)". Not on the demo path (A01's sex comes from "my father"). Meanwhile: test left strict, rows 1 and 5 fail live on the sex item only.
+- [x] 32fe31a D-47 (human: keep the old sex line; not adopted) — D-40 · The exact D-40 sex line ("quote the phrase that makes it certain, with its context … never a bare pronoun") made the fast pass drop the sex fact even for "My wife" (row 3) in a live run; with the old line row 3 passes. Not adopted; the fast pass keeps the old line (fast-4). Pronoun-only sex (rows 1, 5) still fails with every wording tried. Impact: sex then comes from the reasoner's other_facts or a relation word; the banner falls back to they/their. Decide: accept, or try another wording in a later window.
+- [x] 32fe31a D-47 (human: no removal before the demo; known limitation) — D-46 · Rule R19 (a corrected claim is not emitted again) vs docs/03 §3 (signs are never removed once added): a sign the fast pass took before the caller corrected it stays on the card; the reasoner now omits it but cannot remove it. Decide whether corrections should remove a sign (a reducer + contract change).
+- [x] 32fe31a D-47 (human: keep R11; compact file drops R24's wake-up clause, fast-5/reasoner-5) — D-44 · Rule 24 (a wake-up or discovery time is not last-known-well) conflicts with docs/06 R11 (the parser maps "woke up like this" to a vague previous-evening LKW) and with the docs/04 §2 fact list, which names "woke up like this" as a last_known_well phrase. Both texts are sent unchanged; the parser is unchanged. Decide: keep R11 (then drop rule 24's wake-up clause from the prompt) or follow rule 24 (then R11 and the §2 example change).
+- [x] 32fe31a D-47 (human: board countdown stays) — D-44 · Rules 26 and 29 ("must not imply a treatment window", "do not state … a treatment eligibility window") vs the stroke-team board's 4.5 h countdown from LKW (docs/00 scope item 6, acceptance row 8) and the briefing's "N minutes ago". These rules bind the model, which never states a window; the countdown is UI. Confirm the board countdown stays.
+- [x] 32fe31a D-47 (human: level definition stays) — D-44 · Rule 27 (a possible mimic is a parallel claim, not proof stroke is absent) vs the reasoner's level definition ("likely … and no look-alike explains the whole picture"), under which a look-alike can keep a two-sign call at `possible`. Run 2 shows no case where this lowered a stroke script. Confirm or reword the level definition.
+- [x] 32fe31a D-47 (human: compatible) — D-44 · Rule 25 (do not silently choose AM/PM) vs the parser's `ampm_assumed` (docs/06): the parser chooses but flags it, the banner asks to confirm, and the briefing says "possibly …, unconfirmed". Looks compatible; confirm.
+- [x] 32fe31a D-47 (human: keep the old sex line; not adopted) — R-03 · (still open: two `fast-2` wordings tried live; the second fixed rows 1 and 5 but row 2 then returned Eliquis as `medication`, so the prompt stays `fast-1`. D-40 (human) asks for this wording; landing it needs a live run where rows 1–6 all pass.) Fast-pass prompt (docs/04 §2) lists "he"/"she" as sex evidence and asks for "the shortest verbatim span", so the model quotes `"he"` (2 characters), which the quote validator always drops (needs ≥ 3). Proposed wording change (docs/04 §6 protocol, bump to `fast-2`): in the `sex:` line, replace "(father, husband, he, mom, wife, she)" with "(father, husband, mom, wife, or a pronoun quoted with its next word, e.g. "his chest", "she says"; a quote must be at least 3 characters)". Not on the demo path (A01's sex comes from "my father"). Meanwhile: test left strict, rows 1 and 5 fail live on the sex item only.
 - [x] eb5e836 (`reasoner-2`, D-42) R-06 · Reasoner prompt (docs/04 §3) rule 5(a) vs. the chameleon line: on B01 the model asks for an exact LKW clock time (or, on the full call, a speech check) instead of the face/arm check. Proposed wording (bump to `reasoner-2`): in rule 5(a) add "when the state line shows a clock time for lkw, last-known-well is settled: do not choose lkw"; and in the chameleon paragraph "…make the next question the face or arm check, unless the caller has already answered it". Not on the demo path (the code ladder decides the banner). Meanwhile: live test left strict.
 
 ## Notes and small decisions

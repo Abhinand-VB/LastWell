@@ -73,6 +73,8 @@ describe("eval runner (text mode, fake model)", () => {
     expect(contradicts("sex", "female", "male")).toBe(true);
     expect(contradicts("onset", "suddenly", "gradual")).toBe(false);
     expect(contradicts("alcohol_or_drugs", "does not drink at all", "doesn't drink")).toBe(false);
+    expect(contradicts("alcohol_or_drugs", "denied alcohol", "doesn't drink")).toBe(false);
+    expect(contradicts("head_injury", "denied", "no")).toBe(false);
   });
 
   it("--rescore reproduces the table from a saved results file", async () => {

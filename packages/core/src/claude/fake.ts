@@ -3,6 +3,7 @@
 // match on the original text), so the quote validator keeps it; the level guard and the ladder still
 // decide what is shown. Selected by the gateway when LASTWELL_FAKES includes `claude`.
 import type { CaseState, FactKind, FastPassOutput, Level, QaOutput, ReasonerOutput, SignKind } from "../contracts/index.js";
+import { isAntiplatelet } from "../briefing/compose.js";
 import { nextQuestion } from "../state/nextQuestion.js";
 import type { FastPassInput, ModelClient, ModelResult, QaInput, ReasonerInput } from "./types.js";
 
@@ -11,7 +12,7 @@ type FactOut = FastPassOutput["facts"][number];
 
 const SUBJ = "(?:he|she|they)";
 const POSS = "(?:his|her|their|my|the)";
-const NEG = /\b(no|not|never|isn'?t|doesn'?t|don'?t|wasn'?t|without|denies)\b/i;
+const NEG = /\b(no|not|never|isn'?t|doesn'?t|don'?t|didn'?t|hasn'?t|haven'?t|wasn'?t|without|denies)\b/i;
 
 /** Lay phrases per BE-FAST kind, most specific first (a superset of the keyword baseline vocabulary). */
 const SIGN_PHRASES: Record<SignKind, readonly RegExp[]> = {
@@ -19,7 +20,11 @@ const SIGN_PHRASES: Record<SignKind, readonly RegExp[]> = {
     new RegExp(`\\b${POSS} words (?:come|are coming|came|keep coming) out (?:all )?(?:mixed up|jumbled|garbled|wrong|funny|weird)`, "i"),
     new RegExp(`\\b${SUBJ}(?: just)? can'?t get (?:the|his|her|their|any|my) words out(?: right)?`, "i"),
     new RegExp(`\\b${SUBJ}(?:'s| is| are|'re) (?:mumbling|slurring)(?:[^.!?]*?\\bnot making (?:much |any )?sense)?`, "i"),
-    new RegExp(`\\b(?:${POSS} )?speech (?:is|was|sounds|seems) (?:slurred|garbled|weird|funny|off|thick)`, "i"),
+    new RegExp(`\\b(?:${POSS} )?speech (?:is|was|sounds|seems) (?:all )?(?:slurred|garbled|weird|funny|off|thick)`, "i"),
+    new RegExp(`\\b(?:${POSS} )?words won'?t come out`, "i"),
+    new RegExp(`\\b(?:${SUBJ} )?can'?t say (?:any|a single|the|her|his|their) words?`, "i"),
+    /\bnothing comes out/i,
+    new RegExp(`\\b(?:${SUBJ}(?:'s| is| are|'re) )?not talking`, "i"),
     new RegExp(`\\bslurr(?:ed|ing)(?: (?:his|her|their) (?:words|speech))?`, "i"),
     /\bmixed[- ]up words|\bwords (?:are )?(?:all )?mixed up/i,
     /\b(?:using|saying) (?:the )?wrong words|\btalking gibberish|\bgibberish/i,
@@ -58,7 +63,7 @@ const SIGN_PHRASES: Record<SignKind, readonly RegExp[]> = {
     new RegExp(`(?:\\b${SUBJ} )?(?:sees?|seeing|saw) (?:double|two of everything|everything twice)`, "i"),
     /\bdouble vision\b/i,
     /\bblurr(?:y|ed) vision|\bvision (?:is|went|got|seems) (?:blurry|blurred|dark|black|weird|funny|dim)/i,
-    new RegExp(`\\bcan'?t see (?:out of|on|from|with) (?:${POSS}|one) (?:right |left )?(?:eye|side)`, "i"),
+    new RegExp(`\\bcan'?t see (?:anything )?(?:out of|on|from|with|to) (?:${POSS}|one|the) (?:right |left )?(?:eye|side)`, "i"),
     /\b(?:lost|losing|loss of) (?:his|her|their|the )?(?:vision|sight)/i,
     /\bblind in (?:one|his|her|their|the (?:right|left)) eye/i,
   ],
@@ -81,15 +86,18 @@ const WELL_SUBJ = `(?:\\b(?:${SUBJ}|I) (?:was|were|seemed|looked|felt) (?:totall
 /** LKW phrases, most precise first; `value` is the time phrase handed to the parser. */
 const LKW_RULES: readonly { value: RegExp; quote?: (sentence: string, m: RegExpExecArray) => string | null }[] = [
   // "fine at about 2 PM" (quote widens to "He was fine at about 2 PM")
-  { value: new RegExp(`\\b${WELL}(?: (?:until|till|at|since|by|before|earlier|this morning|this afternoon))+ ${APPROX}${CLOCK}`, "i"), quote: widenLeft(new RegExp(`${WELL_SUBJ}$`, "i")) },
+  { value: new RegExp(`\\b${WELL}(?: (?:until|till|at|since|by|before|earlier|around|about|this morning|this afternoon))+ ${APPROX}${CLOCK}`, "i"), quote: widenLeft(new RegExp(`${WELL_SUBJ}$`, "i")) },
+  // "We talked at 11 and she was fine"
+  { value: new RegExp(`\\b(?:talked|spoke|was talking|were talking|saw (?:her|him|them))(?: to (?:her|him|them))? (?:at|around|about) ${APPROX}${CLOCK}`, "i") },
   { value: new RegExp(`\\b(?:since|at|around|about) ${APPROX}${CLOCK}(?= ?(?:${SUBJ} (?:was|were) ${WELL}))`, "i") },
   { value: new RegExp(`\\bsince ${APPROX}\\d{1,2}(?::\\d{2})? ?(?:am|pm|a\\.m\\.|p\\.m\\.|o'clock)`, "i") },
   // "about half an hour ago" (quote widens to the "was fine" words in the same sentence)
   { value: new RegExp(`\\b${APPROX}${AMOUNT} (?:hours?|minutes?|mins?|hrs?)(?: or so)? ago\\b`, "i"), quote: withWellWords },
   { value: /\bwoke up (?:like this|with it|this way|like that)/i },
-  { value: /\bsince (?:lunch|breakfast|dinner|supper|this morning|this afternoon|last night|yesterday|noon|(?:he|she|they) woke up)\b/i },
+  // "fine yesterday morning" is more precise than "since yesterday", so the "was fine" rules go first.
   { value: new RegExp(`\\b${WELL} (?:at|before|after|until|till|during) (?:lunch|breakfast|dinner|supper|bedtime)\\b`, "i"), quote: widenLeft(new RegExp(`${WELL_SUBJ}$`, "i")) },
-  { value: new RegExp(`\\b${WELL} (?:this morning|last night|yesterday)\\b`, "i"), quote: widenLeft(new RegExp(`${WELL_SUBJ}$`, "i")) },
+  { value: new RegExp(`\\b${WELL} (?:yesterday (?:morning|afternoon|evening)|this morning|this afternoon|last night|yesterday)\\b`, "i"), quote: widenLeft(new RegExp(`${WELL_SUBJ}$`, "i")) },
+  { value: /\bsince (?:lunch|breakfast|dinner|supper|this morning|this afternoon|last night|yesterday|noon|(?:he|she|they) woke up)\b/i },
 ];
 
 function widenLeft(prefix: RegExp): (sentence: string, m: RegExpExecArray) => string {
@@ -314,9 +322,11 @@ function fakeLookalikes(input: ReasonerInput): ReasonerOutput["lookalikes"] {
 function fakeLevel(state: CaseState, lookalikes: ReasonerOutput["lookalikes"]): Level {
   const kinds = new Set(state.signs.map((s) => s.kind));
   if (kinds.size === 0) return "none";
-  const focal = [...kinds].some((k) => k === "face" || k === "arms" || k === "speech");
-  const explained = lookalikes.some((l) => l.name !== BELLS.name);
-  return kinds.size >= 2 && focal && !explained ? "likely" : "possible";
+  const focal = [...kinds].filter((k) => k === "face" || k === "arms" || k === "speech").length;
+  // A look-alike explains the whole picture only when at most one focal kind was heard (D-41a: B08's
+  // face + speech stays likely with migraine raised; C03's speech + balance with drinking stays possible).
+  const explained = focal < 2 && lookalikes.some((l) => l.name !== BELLS.name);
+  return kinds.size >= 2 && focal > 0 && !explained ? "likely" : "possible";
 }
 
 function fakeSummary(state: CaseState): string {
@@ -368,6 +378,10 @@ export function fakeAnswer(input: QaInput): QaOutput {
   for (const kind of topic.kinds) {
     const f = input.state.facts.find((x) => x.kind === kind);
     if (f !== undefined) {
+      if (kind === "blood_thinner" && isAntiplatelet(f.value)) {
+        // D-41(c): an antiplatelet is not a blood thinner; name the drug.
+        return { known: true, answer: `No blood thinner was mentioned; the caller said '${f.ref.quote}'.`, evidence: [{ quote: f.ref.quote }] };
+      }
       const yes = kind === "blood_thinner" ? (f.value.toLowerCase() === "none" ? "No" : "Yes") : null;
       const lead = yes === null ? f.value : `${yes}, ${f.value}`;
       return { known: true, answer: `${lead}. The caller said '${f.ref.quote}'.`, evidence: [{ quote: f.ref.quote }] };

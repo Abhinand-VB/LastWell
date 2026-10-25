@@ -17,6 +17,9 @@ const bool = (d: boolean) =>
     .default(d ? "true" : "false")
     .transform((v) => v === "true" || v === "1");
 const Effort = z.enum(["low", "medium", "high"]);
+/** docs/04 §5: the default Ink 2 keyterms (drug names first: a misheard blood thinner is the costliest error). */
+export const DEFAULT_KEYTERMS =
+  "Eliquis,apixaban,Xarelto,rivaroxaban,Pradaxa,dabigatran,warfarin,Coumadin,Plavix,clopidogrel,Brilinta,Lovenox,tPA,stroke,drooping,slurred,numb,aphasia,insulin,metformin,glucose,seizure,epilepsy,migraine";
 
 const EnvSchema = z.object({
   NODE_ENV: z.string().default("development"),
@@ -42,7 +45,7 @@ const EnvSchema = z.object({
   STT_DISPATCHER_TRACK: bool(true),
   STT_KEYTERMS: z
     .string()
-    .default("")
+    .default(DEFAULT_KEYTERMS)
     .transform((s) => s.split(",").map((x) => x.trim()).filter((x) => x !== "")),
 
   ANTHROPIC_API_KEY: z.string().optional(),
@@ -67,6 +70,8 @@ const EnvSchema = z.object({
     .default("")
     .transform((s) => s.split(",").map((x) => x.trim()).filter((x) => x !== ""))
     .pipe(z.array(E164)),
+  /** D-43: `local` synthesizes the briefing but places no call; the browser plays it (fallback). */
+  ALERT_DELIVERY: z.enum(["phone", "local"]).default("phone"),
   FEATURE_QA_ENABLED: bool(false),
   FEATURE_BROWSER_MIC: bool(true),
 
