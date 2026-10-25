@@ -3,21 +3,23 @@
 Integration copies open blockers from the four lane files here at each merge, newest first, so humans have one place to look. Answer by editing the relevant doc or `.env`, then tick the line in the lane file.
 
 
-## Shift note (integration, 2026-10-24 20:25 PT)
-- Answered (D-47, BM): D-40 not adopted; append-only signs and pronoun-only sex are documented limits; R24 wake-up clause dropped from the compact guardrails. Reasoning's build work is done (R-03, R-08 done).
-- Still open: voice idle 96 min (log evidence for the briefing call, V-10 live); W-11 approval; Card A recording; card print; S-05; inbound test call after 8 AM.
-- Watch: nothing P0 is open in code; remaining risk is the live inbound call tomorrow.
+## Shift note (integration, 2026-10-24 23:00 PT)
+- All three lanes idle (voice 57 min, reasoning 2 h 37, screens 3 h 49); version1 green (cd65916).
+- Waiting on voice: E-05 blind run. Waiting on humans: D-49 and D-51 (Q&A, non-blocking), W-11 look approval, card print, Card A recording, S-05, inbound test call after 8 AM.
+- Watch: nothing P0 is open in code.
 
 ## Open (newest first)
 
-- [ ] **IDLE · reasoning** · No commit or status since 20:22 PT (re-checked 22:37 PT: 2 h 15). Build work is done; open: review voice's core LKW edit (007fc26, `lkw/widen.ts` + reducer line) and a prompt line asking for the whole time expression (test:live within §7.4). → nudge lw-reasoning to post the review.
+- [ ] **IDLE · voice** · No commit or status since 22:03 PT (checked 22:59 PT: 57 min). Waiting on voice: **E-05 held-out blind run** (one run, `pnpm --filter @lastwell/eval eval --mode text --scripts scripts-heldout`, table unchanged to apps/eval/results/heldout-run1.md, see docs/status/integration.md Requests), then the V-06/V-07 log evidence after 8 AM. → nudge lw-voice: "if the Q&A task is done, run E-05 once now".
+
+- [ ] **IDLE · reasoning** · No commit or status since 20:22 PT (re-checked 22:59 PT: 2 h 37). Build work is done; open: review voice's core LKW edit (007fc26, `lkw/widen.ts` + reducer line) and a prompt line asking for the whole time expression (test:live within §7.4). → nudge lw-reasoning to post the review.
 
 - [ ] **voice · D-51 (human glance, non-blocking)** · Q&A answers common questions from the validated case state without a model call (0.9 s vs 2.1 s median), a "One moment." filler, and a gate that only lets question-shaped speech reach the answer path. Extends D-10; Q&A ships off. → approve with D-49, or ask voice to revert to model-only answers.
 - [ ] **voice · D-49 needs a human yes/no** · Voice implemented Q&A utterance sorting (11eb6ef): fixed goodbye on "thank you", silence on "ok", a fixed reprompt, a fixed self-description, and **three rotating "not mentioned" phrasings**. That relaxes D-10 / docs/00 row 7, which say the unknown answer is *always exactly* "That wasn't mentioned on the call." Q&A ships off (D-32), so nothing on the demo path changes today. → approve (I mark D-49 approved) or reject (voice keeps the sorting but restores the single fixed phrase).
 - [ ] **voice → reasoning · core edit to review** · Voice changed `packages/core` (reasoning's lane) in a human-directed LKW fix (007fc26: `lkw/widen.ts` + one line in `state/reducer.ts`): a truncated model phrase ("an hour ago" out of "about half an hour ago") put B01's LKW 30 min early on a live replay. Tests pass; reasoning is asked to review it and to consider a prompt line asking for the whole time expression.
 
 - [x] ~~IDLE · reasoning~~ resumed 20:13 PT; D-40 closed by D-47 (not adopted); lane build work done.
-- [ ] **IDLE · screens (maybe done)** · No commit or status since 19:10 (re-checked 22:37 PT: 3 h 27). Nothing P0/P1 open in the lane: W-11 waits on the presenter's approval (human), W-09 is P2/deferred. → a human can approve W-11 from docs/status/screens/ and apps/web/screenshots/, or give screens a polish list for the judging table.
+- [ ] **IDLE · screens (maybe done)** · No commit or status since 19:10 (re-checked 22:59 PT: 3 h 49). Nothing P0/P1 open in the lane: W-11 waits on the presenter's approval (human), W-09 is P2/deferred. → a human can approve W-11 from docs/status/screens/ and apps/web/screenshots/, or give screens a polish list for the judging table.
 
 - [x] ~~IDLE · voice~~ resumed 20:48 PT (LKW widen fix, D-49 Q&A sorting).
 
