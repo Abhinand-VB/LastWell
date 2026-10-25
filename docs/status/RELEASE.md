@@ -1,6 +1,9 @@
 # Release: `version1 → main`
 
-Maintained by the integration session (task X-05). A **draft** PR was opened at the P0 milestone (docs/10 §8): https://github.com/Abhinand-VB/LastWell/pull/1 — it tracks `version1` and is updated by every landing. A human reviews and merges it after the human gates (docs/10 §9); then tag `demo-ready` on the merge commit.
+Maintained by the integration session (task X-05).
+
+- **Checkpoint merge:** PR #1 (https://github.com/Abhinand-VB/LastWell/pull/1) was merged into `main` on 2026-10-24 at ~18:10 PT by human decision, as merge commit d341ae5 (version1 at 830e196: `pnpm verify` green, `pnpm e2e` 23/0/0). It is **not** tagged `demo-ready`: the live gates have not run (no Twilio number, D-43).
+- **Final release:** later work keeps landing on `version1`; a second PR `version1 → main` is opened after the live demo flow (docs/08 §0 or §3) passes, merged by a human, then tagged `demo-ready`. The title and body below are reused for it.
 
 ## PR title
 

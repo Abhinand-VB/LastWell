@@ -3,7 +3,7 @@
 Only the integration session edits this file.
 
 ## Current task
-- 2026-10-24 ~18:00 PT: D-43 (no Twilio number) docs + requests; then 20-minute version1 checks; PR #1 merge waits on the human's answer.
+- 2026-10-24 ~18:10 PT: PR #1 merged to main (d341ae5) as a checkpoint; 20-minute version1 checks; X-05 final PR after the live demo flow.
 
 ## Last green commit on version1
 - (X-04, see below)
