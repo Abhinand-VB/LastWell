@@ -103,7 +103,7 @@ The scripted eval (20 calls written by the team: 12 strokes including chameleons
 
 **Through real speech recognition:** the same pipeline on 6 scripts spoken by Sonic in three deliveries (calm, accented, panicked), sent as phone audio through Ink 2, flagged 4/4 strokes in every voice, with LKW 6/6, blood thinner 3/3 and 0 invented facts (`apps/eval/results/audio-robustness.md`). Synthetic speech is cleaner than a real 911 caller (no line noise, crosstalk or crying), so treat this as a transcription check, not a field result.
 
-Every script ended at its expected level (20/20). Run 2 used prompt versions `fast-3`/`reasoner-3`; the later guardrail revisions (`fast-5`/`reasoner-5`) were spot-checked live on fixture calls and 5 scripts with the same results. Median model latency in the run: fast pass 1.3 s, reasoner 2.9 s.
+Every script ended at its expected level (20/20). **Consistency:** two further runs on the same 20 scripts (Oct 25, ~1:30 and ~1:37 AM) gave identical per-script results on level, last-known-well, blood thinner and invented facts, again 20/20 (docs/07). Run 2 used prompt versions `fast-3`/`reasoner-3`; the later guardrail revisions (`fast-5`/`reasoner-5`) were spot-checked live on fixture calls and 5 scripts with the same results. Median model latency in the run: fast pass 1.3 s, reasoner 2.9 s.
 
 ## Honest limits
 

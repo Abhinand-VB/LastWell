@@ -114,6 +114,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - 2026-10-24 15:58 PT · df3e7a7 · verify exit 0 · e2e 2 pending.
 
 ## Handled requests from other lanes
+- [x] from a human: committed the two E-01 consistency runs (08-29-53, 08-36-02; read and compared first: 20/20 both, 0 per-script differences, run on cd65916 from ~/LastWell) + note in docs/07 and README.
 - [x] from voice: record the note + override decision → it is D-53 (wording and field name per Liang; mismatches posted back); `override` flag documented in docs/03 §6.
 - [x] from voice: E-05 heldout-run1.md → slide (docs/08) and README, unchanged numbers incl. LKW 3/6; LKW misses read against the scripts by integration (2 are a parser gap, 1 is by design) → BLOCKERS decision.
 - [x] from a human: "Path to production" in README (three stages, measures, exit criteria as examples to agree with partners, audit endpoint, dispatcher approval, synthetic-voice robustness as a first check only, open questions) + short version in the Devpost draft (RELEASE.md). No numbers beyond the docs/07 eval results and the Copenhagen figures; the Bergen study is named without figures.

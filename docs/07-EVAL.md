@@ -236,6 +236,8 @@ WAV files: 16 kHz, mono, 16-bit PCM, named `{id}.wav` under `apps/eval/audio/`. 
 
 (The numbers above are placeholders to show the shape; real ones are filled in by the run and must never be typed by hand.)
 
+**Run-to-run consistency (2026-10-25, human-run).** E-01 text mode was run twice more on the 20 development scripts, at ~1:30 and ~1:37 AM PT, on `version1` cd65916 (prompts fast-5 / reasoner-5): `apps/eval/results/2026-10-25T08-29-53-599Z-text-live.json` and `…T08-36-02-927Z-text-live.json`. Both: level agreement 20/20 (final and peak level), sensitivity @possible 12/12, @likely 7/12, precision @likely 7/7, LKW 16/16, blood thinner 8/8, invented facts 0. Per script, the two runs are identical on final level, peak level, LKW, blood thinner and invented facts (0 differences). The first run had 1 model error (recovered by the retry path, no effect on the scores), the second 0. Median fast pass 1037 / 1187 ms, reasoner 2687 / 2747 ms. These two runs are beyond the docs/10 §7.4 E-03 budget (two runs); a human ran them.
+
 ## 5b. Held-out blind test (task E-05, 2026-10-24)
 
 Answers "you graded your own homework". Protocol, fixed before any run:
