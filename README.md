@@ -99,7 +99,9 @@ The scripted eval (20 calls written by the team: 12 strokes including chameleons
 | Invented facts shown | 0 | — |
 | Dropped by the quote validator | 0 items | — |
 
-20 scripted calls (text mode), written by the team; real-world precision will be lower. The 5 non-stroke flags at Possible are the 5 look-alike scripts, each shown with its look-alike panel (e.g. "low blood sugar"); the 3 other emergencies stayed at None. The keyword baseline caught only 3 of 12 strokes, which is why its time to first flag ties ours. Every script ended at its expected level (20/20). Run 2 used prompt versions `fast-3`/`reasoner-3`; the later guardrail revisions (`fast-5`/`reasoner-5`) were spot-checked live on fixture calls and 5 scripts with the same results. Median model latency in the run: fast pass 1.3 s, reasoner 2.9 s.
+20 scripted calls (text mode), written by the team; real-world precision will be lower. The 5 non-stroke flags at Possible are the 5 look-alike scripts, each shown with its look-alike panel (e.g. "low blood sugar"); the 3 other emergencies stayed at None. The keyword baseline caught only 3 of 12 strokes, which is why its time to first flag ties ours. **Through real speech recognition:** the same pipeline on 6 scripts spoken by Sonic in three deliveries (calm, accented, panicked), sent as phone audio through Ink 2, flagged 4/4 strokes in every voice, with LKW 6/6, blood thinner 3/3 and 0 invented facts (`apps/eval/results/audio-robustness.md`). Synthetic speech is cleaner than a real 911 caller (no line noise, crosstalk or crying), so treat this as a transcription check, not a field result.
+
+Every script ended at its expected level (20/20). Run 2 used prompt versions `fast-3`/`reasoner-3`; the later guardrail revisions (`fast-5`/`reasoner-5`) were spot-checked live on fixture calls and 5 scripts with the same results. Median model latency in the run: fast pass 1.3 s, reasoner 2.9 s.
 
 ## Honest limits
 
