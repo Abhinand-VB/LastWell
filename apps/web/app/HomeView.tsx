@@ -11,7 +11,7 @@ import { claimCall, useIncomingCall } from "@/hooks/useIncomingCall";
 import { useNow } from "@/hooks/useNow";
 import { AppNav } from "@/components/AppNav";
 import { MicIcon, PhoneIcon, PlayIcon } from "@/components/icons";
-import { LevelPill } from "@/components/console/StrokeCard";
+import { LevelText } from "@/components/console/StrokeCard";
 import { preAlertCell, type CellTone } from "@/lib/alerts";
 import { mmss } from "@/lib/format";
 
@@ -130,7 +130,7 @@ export function HomeView() {
                       </span>
                       <span className={`font-mono text-lg tabular-nums ${live ? "text-lw-ink" : "text-lw-ink-2"}`}>{mmss(Math.max(0, ms))}</span>
                       <span>
-                        <LevelPill level={c.level} tone="light" />
+                        <LevelText level={c.level} />
                       </span>
                       <span data-testid="pre-alert" className={`text-base font-semibold ${TONE[cell.tone]}`}>
                         {cell.text}

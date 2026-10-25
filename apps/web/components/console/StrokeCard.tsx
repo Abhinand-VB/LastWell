@@ -33,6 +33,23 @@ export function LevelPill({ level, title, tone = "dark" }: { level: Level; title
   );
 }
 
+const LEVEL_TEXT_CLS: Record<Level, string> = {
+  none: "text-lw-ink-3",
+  possible: "text-amber-700",
+  likely: "text-lw-danger",
+};
+
+/** The home list's level: the same words as LevelPill, as plain text without the filled pill (human request). */
+export function LevelText({ level }: { level: Level }) {
+  const s = LEVEL_STYLE[level];
+  return (
+    <span data-testid="level-text" data-level={level} className={`text-lg font-bold ${LEVEL_TEXT_CLS[level]}`}>
+      {s.word}
+      {s.suffix && ` ${s.suffix}`}
+    </span>
+  );
+}
+
 export type ChipState = "on" | "half" | "off";
 
 export function Chip({
