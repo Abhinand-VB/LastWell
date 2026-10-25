@@ -208,6 +208,8 @@ Post-processing (code): if `known === false` → fallback phrase. If `known === 
 
 Fallback phrase (constant `QA_FALLBACK`): **"That wasn't mentioned on the call."**
 
+D-49 (proposed by voice, pending human approval): before this prompt runs, the gateway sorts each utterance by code: closings and thanks get a fixed goodbye and a hang-up, acknowledgments get silence, unclear speech gets a fixed reprompt, and questions about LastWell get a fixed self-description; only real questions reach the model. The "not mentioned" answer rotates among three fixed phrasings with `QA_FALLBACK` first.
+
 ## 5. Keyterms passed to Ink 2 (voice lane, not a prompt)
 
 `STT_KEYTERMS` default: `Eliquis,apixaban,Xarelto,rivaroxaban,Pradaxa,dabigatran,warfarin,Coumadin,Plavix,clopidogrel,Brilinta,Lovenox,tPA,stroke,drooping,slurred,numb,aphasia,insulin,metformin,glucose,seizure,epilepsy,migraine`. Keep ≤ 100 terms and ≤ 1200 characters.

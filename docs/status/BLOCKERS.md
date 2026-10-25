@@ -10,10 +10,13 @@ Integration copies open blockers from the four lane files here at each merge, ne
 
 ## Open (newest first)
 
-- [x] ~~IDLE · reasoning~~ resumed 20:13 PT; D-40 closed by D-47 (not adopted); lane build work done.
-- [ ] **IDLE · screens (maybe done)** · No commit or status since 19:10 (re-checked 20:45 PT: 1 h 35). Nothing P0/P1 open in the lane: W-11 waits on the presenter's approval (human), W-09 is P2/deferred. → a human can approve W-11 from docs/status/screens/ and apps/web/screenshots/, or give screens a polish list for the judging table.
+- [ ] **voice · D-49 needs a human yes/no** · Voice implemented Q&A utterance sorting (11eb6ef): fixed goodbye on "thank you", silence on "ok", a fixed reprompt, a fixed self-description, and **three rotating "not mentioned" phrasings**. That relaxes D-10 / docs/00 row 7, which say the unknown answer is *always exactly* "That wasn't mentioned on the call." Q&A ships off (D-32), so nothing on the demo path changes today. → approve (I mark D-49 approved) or reject (voice keeps the sorting but restores the single fixed phrase).
+- [ ] **voice → reasoning · core edit to review** · Voice changed `packages/core` (reasoning's lane) in a human-directed LKW fix (007fc26: `lkw/widen.ts` + one line in `state/reducer.ts`): a truncated model phrase ("an hour ago" out of "about half an hour ago") put B01's LKW 30 min early on a live replay. Tests pass; reasoning is asked to review it and to consider a prompt line asking for the whole time expression.
 
-- [ ] **IDLE · voice** · No commit and no status update since 18:47 PT (re-checked 20:45 PT: 2 h). Open voice work: V-06/V-07 live evidence from the gateway log (alert.created ms, ring time, `briefed`); V-10 live Ink reconnect check; V-09 browser-mic live check (needs a person at the laptop). → nudge the lw-voice session: "read docs/status/integration.md Remaining work; post the V-06/V-07 log evidence, then V-10 live; tell integration if anything needs a person". Reminder: no real calls 9 PM–8 AM (`LASTWELL_FAKES=twilio`).
+- [x] ~~IDLE · reasoning~~ resumed 20:13 PT; D-40 closed by D-47 (not adopted); lane build work done.
+- [ ] **IDLE · screens (maybe done)** · No commit or status since 19:10 (re-checked 21:08 PT: 2 h). Nothing P0/P1 open in the lane: W-11 waits on the presenter's approval (human), W-09 is P2/deferred. → a human can approve W-11 from docs/status/screens/ and apps/web/screenshots/, or give screens a polish list for the judging table.
+
+- [x] ~~IDLE · voice~~ resumed 20:48 PT (LKW widen fix, D-49 Q&A sorting).
 
 - [x] ~~IDLE · screens~~ resumed 19:00 PT (W-12, W-08 live check, W-11).
 - [x] ~~IDLE · reasoning~~ resumed 18:55 PT (D-44, E-03 run 2, D-45, fake phrase table).
