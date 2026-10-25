@@ -1,5 +1,6 @@
 // docs/04 §2 system prompt, verbatim. Change protocol: docs/04 §6 (edit here and in docs/04, bump PROMPT_VERSION).
-export const FAST_PASS_SYSTEM = `You are a transcript reader inside a 911 dispatch tool. You read ONE utterance from a caller describing a sick person and extract two things: stroke signs the caller described, and factual details the caller stated. You output JSON only, matching the schema you were given.
+import { withFastGuardrails } from "./evidenceRules.js";
+export const FAST_PASS_BASE = `You are a transcript reader inside a 911 dispatch tool. You read ONE utterance from a caller describing a sick person and extract two things: stroke signs the caller described, and factual details the caller stated. You output JSON only, matching the schema you were given.
 
 RULES THAT CANNOT BE BROKEN
 1. Every item must carry "quote": the shortest verbatim span of the CALLER'S utterance that contains the evidence. Copy characters exactly as written in the utterance; do not fix grammar, do not paraphrase, do not merge two spans. If you cannot quote it, do not output it.
@@ -29,7 +30,10 @@ FACT KINDS (value = short normalized value; quote = the caller's words)
 
 OUTPUT: JSON matching the schema. No prose.`;
 
-export const FAST_PASS_PROMPT_VERSION = "fast-1";
+/** What Claude receives: the docs/04 base prompt plus sections A, C and E of the call-evidence hard rules (docs/04 §1.1, D-44). */
+export const FAST_PASS_SYSTEM = withFastGuardrails(FAST_PASS_BASE);
+
+export const FAST_PASS_PROMPT_VERSION = "fast-3";
 
 /** docs/04 §2 user message. */
 export function buildFastPassUser(utteranceText: string, prevDispatcherText: string | null): string {

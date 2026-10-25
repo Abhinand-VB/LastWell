@@ -3,12 +3,35 @@
 Only the reasoning session edits this file.
 
 ## Current task
-- (P0 + P1 of the lane done; R-08 waits for D-32. Next: re-run test:live for the B01 reading; second E-03 run kept in reserve for after any prompt change.)
+- (lane P0 + P1 done; D-44 landed; both E-03 runs used. Open: R-03 sex-quote wording, D-44 conflicts below.)
 
 ## Last green commit on version1
 - E-03 run 1 results (see below)
 
 ## Acceptance evidence (pasted command output per task)
+
+### D-44 Call-evidence hard rules in the prompts (human request) — done 2026-10-25
+- Doc copied unchanged: `docs/guardrails/call-evidence-hard-rules.md` (`cmp` identical to the provided file). `packages/core/scripts/gen-guardrails.mjs` generates `src/prompts/guardrails.ts`; `guardrails.test.ts` checks the constants against the doc byte for byte, the docs/04 §1.1 preamble verbatim, and that no "Minimal output" / intro / evidence-notes text reaches a prompt. `cache_control` on the system block unchanged.
+- Reasoner `reasoner-3`: base + preamble + sections A–F + worked examples. Fast pass `fast-3`: base + preamble + sections A, C, E (full set measured slower). Q&A unchanged.
+- Fast-pass latency bench (`npx tsx src/latency.ts --n 20 --fast-only`, sequential): no rules (R-10) p50 1335 / p95 2480 ms; full A–F + examples p50 1536 / p95 3265 ms; **A, C, E subset p50 1332 / p95 1749 ms**.
+- `test:live` (02:47): 34/35; fast median 952 ms; reasoner A01 likely/face 3014 ms, B01 possible/face, C01 possible/low blood sugar. Only failure: row 5 sex fact (the open R-03 item, also failing before).
+- **E-03 run 2** (last allowed full run), 20 scripts, 4 m 37 s, 0 model errors — results `apps/eval/results/2026-10-25T01-52-37-926Z-text-live.json`, table `apps/eval/results/E-03-run2-table.md` (rescored after adding "denied" to the scorer's negation words; run 1's table is unchanged by that fix):
+  ```
+  | Metric | run 1 (fast-1/reasoner-1) | run 2 (fast-3/reasoner-3, guardrails) | baseline |
+  | Sensitivity @possible (n=12) | 12/12 | 12/12 | 3/12 |
+  | Sensitivity @likely | 6/12 (50%) | 7/12 (58%) | — |
+  | Precision @possible (flags=17) | 12/17 (71%) | 12/17 (71%) | 3/6 |
+  | Precision @likely | 6/7 (86%) | 7/7 (100%) | — |
+  | Median seconds to first flag | 12 s | 12 s | 12 s |
+  | LKW correct (n=16) | 16/16 | 16/16 | — |
+  | Blood thinner correct (n=8) | 8/8 | 8/8 | — |
+  | Invented facts shown | 0 | 0 | — |
+  | Dropped by validator | 1 | 0 | — |
+  | Wrong facts | 0 | 0 | — |
+  | Level agreement (n=20) | 19/20 | 20/20 | — |
+  | Median latency fast / reasoner | 1207 / 2861 ms | 1270 / 2916 ms | — |
+  ```
+  Gate (no regression on sens@possible, LKW, blood thinner, invented; fast p50 ≤ +0.5 s) passed → prompts landed. **Slide numbers: use run 2.** A03 now reaches `likely`; C03 no longer touches `likely`.
 
 ### D-41(c) briefing: antiplatelets are named, never "Blood thinner" — done 2026-10-25
 - `composeBriefing`: a blood-thinner fact whose value names aspirin, clopidogrel/Plavix, ticagrelor/Brilinta or prasugrel/Effient is spoken as "Takes {value}, per the caller." (docs/05 §7 rule 5); anticoagulants unchanged ("Blood thinner: Eliquis, per the caller."). `isAntiplatelet(value)` is exported from `@lastwell/core`.
@@ -121,6 +144,10 @@ Only the reasoning session edits this file.
 - [x] from screens: `alertDefaultTargetPhone` in `ConfigResponse` (D-39) — see commit "reasoning: D-39 …".
 
 ## Blockers for humans
+- [ ] D-44 · Rule 24 (a wake-up or discovery time is not last-known-well) conflicts with docs/06 R11 (the parser maps "woke up like this" to a vague previous-evening LKW) and with the docs/04 §2 fact list, which names "woke up like this" as a last_known_well phrase. Both texts are sent unchanged; the parser is unchanged. Decide: keep R11 (then drop rule 24's wake-up clause from the prompt) or follow rule 24 (then R11 and the §2 example change).
+- [ ] D-44 · Rules 26 and 29 ("must not imply a treatment window", "do not state … a treatment eligibility window") vs the stroke-team board's 4.5 h countdown from LKW (docs/00 scope item 6, acceptance row 8) and the briefing's "N minutes ago". These rules bind the model, which never states a window; the countdown is UI. Confirm the board countdown stays.
+- [ ] D-44 · Rule 27 (a possible mimic is a parallel claim, not proof stroke is absent) vs the reasoner's level definition ("likely … and no look-alike explains the whole picture"), under which a look-alike can keep a two-sign call at `possible`. Run 2 shows no case where this lowered a stroke script. Confirm or reword the level definition.
+- [ ] D-44 · Rule 25 (do not silently choose AM/PM) vs the parser's `ampm_assumed` (docs/06): the parser chooses but flags it, the banner asks to confirm, and the briefing says "possibly …, unconfirmed". Looks compatible; confirm.
 - [ ] R-03 · (still open: two `fast-2` wordings tried live; the second fixed rows 1 and 5 but row 2 then returned Eliquis as `medication`, so the prompt stays `fast-1`. D-40 (human) asks for this wording; landing it needs a live run where rows 1–6 all pass.) Fast-pass prompt (docs/04 §2) lists "he"/"she" as sex evidence and asks for "the shortest verbatim span", so the model quotes `"he"` (2 characters), which the quote validator always drops (needs ≥ 3). Proposed wording change (docs/04 §6 protocol, bump to `fast-2`): in the `sex:` line, replace "(father, husband, he, mom, wife, she)" with "(father, husband, mom, wife, or a pronoun quoted with its next word, e.g. "his chest", "she says"; a quote must be at least 3 characters)". Not on the demo path (A01's sex comes from "my father"). Meanwhile: test left strict, rows 1 and 5 fail live on the sex item only.
 - [x] eb5e836 (`reasoner-2`, D-42) R-06 · Reasoner prompt (docs/04 §3) rule 5(a) vs. the chameleon line: on B01 the model asks for an exact LKW clock time (or, on the full call, a speech check) instead of the face/arm check. Proposed wording (bump to `reasoner-2`): in rule 5(a) add "when the state line shows a clock time for lkw, last-known-well is settled: do not choose lkw"; and in the chameleon paragraph "…make the next question the face or arm check, unless the caller has already answered it". Not on the demo path (the code ladder decides the banner). Meanwhile: live test left strict.
 

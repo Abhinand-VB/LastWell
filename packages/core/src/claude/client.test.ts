@@ -3,9 +3,9 @@ import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { CaseState, initialCaseState, type Utterance } from "../contracts/index.js";
-import { FAST_PASS_SYSTEM } from "../prompts/fastPass.js";
+import { FAST_PASS_BASE, FAST_PASS_SYSTEM } from "../prompts/fastPass.js";
 import { QA_SYSTEM } from "../prompts/qa.js";
-import { REASONER_SYSTEM, buildReasonerUser, lkwLine } from "../prompts/reasoner.js";
+import { REASONER_BASE, REASONER_SYSTEM, buildReasonerUser, lkwLine } from "../prompts/reasoner.js";
 import { DEFAULT_CLAUDE_CONFIG, createAnthropic, createClaudeClient, warmup } from "./client.js";
 
 const DOC = readFileSync(fileURLToPath(new URL("../../../../docs/04-PROMPTS.md", import.meta.url)), "utf8");
@@ -53,8 +53,8 @@ const FAST_OK = JSON.stringify({ signs: [{ kind: "speech", quote: "his words com
 
 describe("system prompts are verbatim docs/04", () => {
   it.each([
-    ["fastPass", FAST_PASS_SYSTEM],
-    ["reasoner", REASONER_SYSTEM],
+    ["fastPass", FAST_PASS_BASE],
+    ["reasoner", REASONER_BASE],
     ["qa", QA_SYSTEM],
   ])("%s", (_name, text) => {
     expect(DOC).toContain(`\`\`\`\n${text}\n\`\`\``);

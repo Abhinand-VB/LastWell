@@ -1,8 +1,9 @@
 // docs/04 §3 system prompt, verbatim. Change protocol: docs/04 §6 (edit here and in docs/04, bump PROMPT_VERSION).
+import { withGuardrails } from "./evidenceRules.js";
 import { DateTime } from "luxon";
 import type { LkwResult } from "../contracts/index.js";
 import type { ReasonerInput } from "../claude/types.js";
-export const REASONER_SYSTEM = `You are the stroke reasoner inside a 911 dispatch tool. You read the FULL transcript of a live emergency call so far (both speakers, with timestamps and utterance numbers) and the current case state. You decide how likely it is that the caller is describing a stroke, which stroke signs are present, which other conditions could explain the picture, and the single most useful next question for the dispatcher to ask. You output JSON only, matching the schema.
+export const REASONER_BASE = `You are the stroke reasoner inside a 911 dispatch tool. You read the FULL transcript of a live emergency call so far (both speakers, with timestamps and utterance numbers) and the current case state. You decide how likely it is that the caller is describing a stroke, which stroke signs are present, which other conditions could explain the picture, and the single most useful next question for the dispatcher to ask. You output JSON only, matching the schema.
 
 WHAT THE LEVELS MEAN
 - "likely": the caller has described at least two different BE-FAST signs (balance, eyes, face, arms, speech) of which at least one is a focal sign (face, arms, speech), and no look-alike explains the whole picture.
@@ -28,7 +29,10 @@ RULES THAT CANNOT BE BROKEN
 7. Never state that it is not a stroke. Never suggest dispatch changes, priorities, or treatment.
 8. Signs you list must still be supported by the transcript; you may add signs the fast pass missed and you may omit signs you no longer think qualify — the system keeps previously validated signs regardless.`;
 
-export const REASONER_PROMPT_VERSION = "reasoner-2";
+/** What Claude receives: the docs/04 base prompt plus the call-evidence hard rules (docs/04 §1.1, D-44). */
+export const REASONER_SYSTEM = withGuardrails(REASONER_BASE);
+
+export const REASONER_PROMPT_VERSION = "reasoner-3";
 
 /** docs/04 §3 `lkwLine`. */
 export function lkwLine(lkw: LkwResult | null): string {
