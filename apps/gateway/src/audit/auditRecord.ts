@@ -33,6 +33,8 @@ function alertAudit(a: AlertRecord | AlertRow, start: string | null, events: rea
     emsConfirmedAt: a.emsConfirmedAt,
     levelAtApproval: a.caseSnapshot.level,
     briefingText: a.briefingText,
+    dispatcherNote: "note" in a ? (a.note ?? null) : null,
+    override: "override" in a ? a.override === true : a.caseSnapshot.level === "none",
     statusChanges: events.filter((e) => e.type === "alert.status" && e.alertId === id),
     qa: a.qaTurns.map((t) => ({ seq: t.seq, question: t.question, answer: t.answer, known: t.known, ms: t.ms, evidence: evidenceRefs(t.evidence).map((r) => quoteRef(r, start)) })),
   };

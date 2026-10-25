@@ -22,6 +22,7 @@ import { loadReplayScript, ReplayError, startReplay } from "../pipeline/replay.j
 import type { Repo } from "../store/repo.js";
 import { buildWav } from "@lastwell/stt";
 import { mulawToPcm16 } from "../tts/audioChunks.js";
+import { ApproveExtras } from "../alerts/dispatcherNote.js";
 import { callAudit } from "../audit/auditRecord.js";
 import { actorOf } from "../audit/auditTrail.js";
 import type { TokenStore } from "./tokens.js";
@@ -35,6 +36,8 @@ export interface RestDeps {
   config: ConfigResponse;
   evalScriptsDir: string;
   devRoutes: boolean;
+  /** Proposed D-57: set only when FEATURE_CONVEX_BOARD and the store is Convex; otherwise the route is absent. */
+  boardTokens?: { issueBoardToken(): Promise<{ token: string; expiresInS: number }> } | null;
 }
 
 export function keyMatches(expected: string, got: unknown): boolean {
@@ -88,6 +91,18 @@ export function registerRest(app: FastifyInstance, deps: RestDeps): void {
 
   app.get("/api/config", async () => deps.config);
   app.get("/api/ws-token", async () => deps.tokens.issue());
+  const boardTokens = deps.boardTokens;
+  if (boardTokens) {
+    app.get("/api/board-token", async (req, reply) => {
+      try {
+        return await boardTokens.issueBoardToken();
+      } catch (e) {
+        // Convex's error text (stack, file paths) stays in the log, not in the browser.
+        req.log.warn({ event: "board.token_failed", err: e instanceof Error ? e.message : String(e) }, "board token not issued");
+        return err(reply, 503, "store_unavailable", "board token unavailable");
+      }
+    });
+  }
 
   app.get("/api/calls", async () => {
     const out = new Map<string, CallListItem>();
@@ -115,7 +130,9 @@ export function registerRest(app: FastifyInstance, deps: RestDeps): void {
     const { callId } = Params.parse(req.params);
     const body = parse(CreateAlertBody, req.body, reply);
     if (!body) return reply;
-    return sendResult(reply, await deps.alerts.approve(callId, body.targetPhone, actorOf(req.headers["x-lastwell-actor"])), (alert) => ({ alert }));
+    const extra = parse(ApproveExtras, req.body, reply);
+    if (!extra) return reply;
+    return sendResult(reply, await deps.alerts.approve(callId, body.targetPhone, actorOf(req.headers["x-lastwell-actor"]), extra), (alert) => ({ alert }));
   });
 
   // Read-only audit record (path to production): transcript, quoted signs/facts, level changes with the

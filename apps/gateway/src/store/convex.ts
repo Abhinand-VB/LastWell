@@ -1,6 +1,10 @@
 // The real store: Convex functions in ../../convex/store.ts over ConvexHttpClient (docs/02, D-29).
 // Every call passes the shared secret (INTERNAL_API_KEY). Rows are validated loosely on the way out.
+import { randomBytes } from "node:crypto";
 import { ConvexHttpClient } from "convex/browser";
+import type { GenericId } from "convex/values";
+import { z } from "zod";
+import type { BriefingAudioStore, CallLimiter } from "../alerts/convexExtras.js";
 import type { CaseState, Level, Utterance } from "@lastwell/core";
 import { api } from "./convexApi.js";
 import type { AlertPatch, AlertRow, CallPatch, CallRow, NewAlert, NewCall, QaTurnRow, Store, StoredCall } from "./types.js";
@@ -61,7 +65,9 @@ function alertRow(d: Doc): AlertRow {
   };
 }
 
-export class ConvexStore implements Store {
+const UploadReply = z.object({ storageId: z.string().min(1) });
+
+export class ConvexStore implements Store, BriefingAudioStore, CallLimiter {
   readonly kind = "convex" as const;
   private readonly client: ConvexHttpClient;
   private readonly secret: string;
@@ -125,5 +131,39 @@ export class ConvexStore implements Store {
   async listAlerts(sinceMs: number): Promise<AlertRow[]> {
     const rows = await this.client.query(api.store.listAlerts, { secret: this.secret, sinceMs });
     return (rows as Doc[]).map(alertRow);
+  }
+  /** Proposed D-57: a read token for the board's Convex live query (convex/board.ts). Not part of Store. */
+  async issueBoardToken(): Promise<{ token: string; expiresInS: number }> {
+    const token = randomBytes(32).toString("hex");
+    const { expiresAtMs } = await this.client.mutation(api.board.issueToken, { secret: this.secret, token });
+    return { token, expiresInS: Math.max(1, Math.floor((expiresAtMs - Date.now()) / 1000)) };
+  }
+  /**
+   * Proposed D-57 (CONVEX_AUDIO_STORAGE): upload the µ-law bytes to file storage, then link them to the
+   * alert. The upload URL comes from a mutation queued after insertAlert, so the row exists by then.
+   */
+  async saveBriefingAudio(alertId: string, audio: Buffer): Promise<void> {
+    const uploadUrl = await this.client.mutation(api.audio.generateUploadUrl, { secret: this.secret });
+    const res = await fetch(uploadUrl, {
+      method: "POST",
+      headers: { "content-type": "audio/basic" },
+      body: new Uint8Array(audio),
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!res.ok) throw new Error(`upload failed with ${res.status}`);
+    const { storageId } = UploadReply.parse(await res.json());
+    const linked = await this.client.mutation(api.audio.attachBriefingAudio, { secret: this.secret, alertId, storageId: storageId as GenericId<"_storage"> });
+    if (!linked) throw new Error(`alert ${alertId} not in the store; upload discarded`);
+  }
+  async loadBriefingAudio(alertId: string): Promise<Buffer | null> {
+    const url = await this.client.query(api.audio.briefingAudioUrl, { secret: this.secret, alertId });
+    if (url === null) return null;
+    const res = await fetch(url, { signal: AbortSignal.timeout(10_000) });
+    if (!res.ok) throw new Error(`download failed with ${res.status}`);
+    return Buffer.from(await res.arrayBuffer());
+  }
+  /** Proposed D-57 (CONVEX_CALL_RATE_LIMIT): one outbound-call credit for `phone` (convex/limits.ts). */
+  async takeAlertCall(phone: string): Promise<{ ok: true } | { ok: false; retryAfterMs: number }> {
+    return await this.client.mutation(api.limits.takeAlertCall, { secret: this.secret, phone });
   }
 }

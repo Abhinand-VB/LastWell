@@ -8,7 +8,7 @@
   "scripts": {
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
-    "verify": "pnpm scan:secrets && pnpm -r typecheck && pnpm -r test && pnpm --filter @lastwell/eval validate",
+    "verify": "pnpm scan:secrets && pnpm -r typecheck && pnpm -r test && pnpm --filter @lastwell/eval validate && pnpm --filter @lastwell/eval validate scripts-heldout",
     "scan:secrets": "node scripts/scan-secrets.mjs",
     "e2e": "pnpm --filter @lastwell/e2e e2e",
     "e2e:ui": "pnpm --filter @lastwell/e2e ui",

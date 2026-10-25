@@ -1,0 +1,28 @@
+{
+  "id": "B11", "type": "chameleon", "title": "Wife, interrupting: husband's left hand clumsy, she's sure it's a pinched nerve", "sourceId": null,
+  "callStartLocal": "2026-10-25T13:05:00",
+  "turns": [
+    { "speaker": "dispatcher", "atMs": 0,     "text": "911, what's the address of your emergency?" },
+    { "speaker": "caller",     "atMs": 4000,  "text": "4021 Irving, upstairs. Look, I'm probably overreacting, my husband's hand is acting up." },
+    { "speaker": "dispatcher", "atMs": 10000, "text": "Okay, tell me what's happening with his—" },
+    { "speaker": "caller",     "atMs": 14000, "text": "His left hand. He keeps dropping his keys, he couldn't do his shirt buttons, and he says the hand feels clumsy and kind of fuzzy. It's that pinched nerve in his neck again, he had it last spring." },
+    { "speaker": "dispatcher", "atMs": 29000, "text": "Is it only the hand, or the whole arm?" },
+    { "speaker": "caller",     "atMs": 33000, "text": "The hand mostly, maybe up to the wrist. He can lift the arm. Honestly, I think he just slept on it wrong." },
+    { "speaker": "dispatcher", "atMs": 42000, "text": "When was the last time his hand was completely normal?" },
+    { "speaker": "caller",     "atMs": 47000, "text": "He was up on the ladder cleaning the gutters this morning, no problem. He came in about twenty past twelve and he was fine then, he made a sandwich." },
+    { "speaker": "dispatcher", "atMs": 59000, "text": "How old is he? Any blood thinners?" },
+    { "speaker": "caller",     "atMs": 63000, "text": "Sixty-nine. He takes a cholesterol pill, nothing for the blood." },
+    { "speaker": "dispatcher", "atMs": 68000, "text": "Okay. I'm sending help to check him. Keep him sitting down." }
+  ],
+  "truth": {
+    "isStroke": true, "expectedLevel": "possible", "signs": ["arms"],
+    "lkw": { "localTime": "2026-10-25T12:20:00", "toleranceMin": 10 },
+    "bloodThinner": "none", "lookalike": null,
+    "facts": [ { "kind": "age", "value": "69" },
+               { "kind": "sex", "value": "male" },
+               { "kind": "blood_thinner", "value": "none" },
+               { "kind": "medication", "value": "cholesterol pill" },
+               { "kind": "address", "value": "4021 Irving, upstairs" } ]
+  },
+  "audio": null, "group": "native"
+}

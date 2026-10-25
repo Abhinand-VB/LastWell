@@ -1,0 +1,28 @@
+{
+  "id": "C09", "type": "lookalike", "title": "Home aide: woman 86 confused over two days, burning when she pees, running warm", "sourceId": null,
+  "callStartLocal": "2026-10-25T09:40:00",
+  "turns": [
+    { "speaker": "dispatcher", "atMs": 0,     "text": "911, what's the address of your emergency?" },
+    { "speaker": "caller",     "atMs": 4000,  "text": "I'm a home aide at 77 Palm Avenue, I'm here with my client, Mrs. Feld. She's 86." },
+    { "speaker": "dispatcher", "atMs": 11000, "text": "What's going on with her?" },
+    { "speaker": "caller",     "atMs": 14000, "text": "She's been getting more and more mixed up since Friday. Today she thinks it's 1985 and she's asking for her mother. When she talks it doesn't really hang together." },
+    { "speaker": "dispatcher", "atMs": 26000, "text": "Has anything else changed?" },
+    { "speaker": "caller",     "atMs": 29000, "text": "She's been running warm, and yesterday she said it burns when she pees. She's barely drinking anything." },
+    { "speaker": "dispatcher", "atMs": 36000, "text": "Any weakness on one side, or her face looking different?" },
+    { "speaker": "caller",     "atMs": 41000, "text": "No, she's moving both arms and legs fine, her face looks like her face. She's just foggy and tired." },
+    { "speaker": "dispatcher", "atMs": 49000, "text": "When was she last her normal self?" },
+    { "speaker": "caller",     "atMs": 53000, "text": "Thursday evening she was sharp as a tack, we did a crossword together." },
+    { "speaker": "dispatcher", "atMs": 59000, "text": "Okay. Help is on the way. Keep offering her sips of water." }
+  ],
+  "truth": {
+    "isStroke": false, "expectedLevel": "possible", "signs": ["speech"],
+    "lkw": { "localTime": "2026-10-22T19:00:00", "toleranceMin": 180 },
+    "bloodThinner": null, "lookalike": "infection",
+    "facts": [ { "kind": "age", "value": "86" },
+               { "kind": "sex", "value": "female" },
+               { "kind": "fever_or_infection", "value": "running warm, burns when she pees" },
+               { "kind": "onset", "value": "gradual" },
+               { "kind": "address", "value": "77 Palm Avenue" } ]
+  },
+  "audio": null, "group": "native"
+}

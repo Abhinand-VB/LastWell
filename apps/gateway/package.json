@@ -5,12 +5,15 @@
   "scripts": {
     "dev": "tsx watch src/server.ts | pino-pretty",
     "start": "tsx src/server.ts",
+    "qa:bench": "tsx scripts/qaBench.ts",
+    "smoke:convex": "tsx scripts/convexSmoke.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json && tsc --noEmit -p convex/tsconfig.json",
     "test": "vitest run",
     "convex:dev": "convex dev",
     "convex:deploy": "convex deploy"
   },
   "dependencies": {
+    "@convex-dev/rate-limiter": "0.4.2",
     "@fastify/formbody": "^8.0.0",
     "@fastify/websocket": "^11.0.0",
     "@lastwell/core": "workspace:*",

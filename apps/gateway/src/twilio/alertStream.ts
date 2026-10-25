@@ -9,7 +9,7 @@ import type { SttSession, SttSessionFactory } from "../stt/sessions.js";
 import { briefingMessages, type TwilioOutMessage } from "../tts/audioChunks.js";
 import type { TtsStream, TtsStreamFactory } from "../tts/sonicWs.js";
 import { QA_FALLBACK } from "@lastwell/core";
-import { classifyQa, QA_CLOSING, QA_NOT_MENTIONED, QA_SYSTEM, QA_UNCLEAR } from "../alerts/qaIntent.js";
+import { classifyQa, isFragment, QA_CLOSING, QA_FILLERS, QA_NOT_MENTIONED, QA_SYSTEM, QA_UNCLEAR } from "../alerts/qaIntent.js";
 
 export interface AlertStreamDeps {
   alerts: AlertService;
@@ -20,7 +20,14 @@ export interface AlertStreamDeps {
   ttsStream?: TtsStreamFactory;
   /** Hang up after this long without a question (docs/05 §8: 60 s). */
   qaIdleMs?: number;
+  /** Speak a filler when the answer is not ready this long after the final (default 700). */
+  fillerAfterMs?: number;
+  /** How long a short fragment waits for the rest of the question (default 700). */
+  fragmentHoldMs?: number;
 }
+
+type Answer = Awaited<ReturnType<AlertService["answerQuestion"]>>;
+const key = (t: string) => t.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim();
 
 type Phase = "briefing" | "qa" | "answering";
 
@@ -37,6 +44,15 @@ export class AlertStreamSession {
   private idle: NodeJS.Timeout | null = null;
   private notMentioned = 0;
   private closing = false;
+  /** Answer started on Ink's eager end-of-turn; reused when the final transcript matches. */
+  private spec: { key: string; result: Promise<Answer> } | null = null;
+  /** Filler audio (base64 µ-law chunks), synthesized once when Q&A opens. */
+  private fillers: Array<string[] | null> = QA_FILLERS.map(() => null);
+  private fillerIdx = 0;
+  /** A short fragment held briefly in case the speaker continues after a pause (Ink split the turn). */
+  private fragment: { text: string; timer: NodeJS.Timeout } | null = null;
+  /** The held fragment, once the speaker continued: prefixed to the next final. */
+  private prefix: string | null = null;
 
   constructor(
     private readonly deps: AlertStreamDeps,
@@ -111,8 +127,21 @@ export class AlertStreamSession {
     this.deps.alerts.onQaOpen(alert);
     const ink = this.deps.stt!({ speaker: "caller", encoding: "pcm_mulaw", sampleRate: 8000, profile: "qa", getTs: () => this.lastInboundTs });
     this.ink = ink;
-    ink.on("final", (f) => void this.onQuestion(alert, f.text).catch((err: unknown) => this.logError(err)));
-    ink.on("turn.start", () => this.bargeIn());
+    ink.on("final", (f) => this.onFinal(alert, f.text, f.sttMs, f.confidence));
+    ink.on("eager", (e) => this.onEager(alert, e.text));
+    ink.on("resume", () => {
+      this.spec = null;
+    });
+    ink.on("turn.start", () => {
+      if (this.fragment) {
+        // The speaker went on: join the held fragment to what comes next.
+        clearTimeout(this.fragment.timer);
+        this.prefix = this.fragment.text;
+        this.fragment = null;
+      }
+      this.bargeIn();
+    });
+    void this.cacheFillers();
     ink.on("error", (e) => this.deps.log.warn({ event: "qa.stt_error", alertId: alert.id, ...e }, "qa stt error"));
     this.armIdle();
   }
@@ -140,10 +169,58 @@ export class AlertStreamSession {
     this.idle.unref?.();
   }
 
-  private async onQuestion(alert: AlertRecord, question: string): Promise<void> {
+  private onFinal(alert: AlertRecord, raw: string, eotMs: number, confidence?: number): void {
+    const text = this.prefix === null ? raw : `${this.prefix} ${raw}`;
+    this.prefix = null;
+    const run = () => void this.onQuestion(alert, text, eotMs, confidence).catch((err: unknown) => this.logError(err));
+    if (isFragment(text)) {
+      const t = setTimeout(() => {
+        this.fragment = null;
+        run();
+      }, this.deps.fragmentHoldMs ?? 700);
+      t.unref?.();
+      this.fragment = { text, timer: t };
+      return;
+    }
+    run();
+  }
+
+  /** Synthesize the fillers once, off the answer path, so playing one costs no Sonic round trip. */
+  private async cacheFillers(): Promise<void> {
+    for (const [i, text] of QA_FILLERS.entries()) {
+      const chunks: string[] = [];
+      try {
+        await this.tts?.speak(text, `filler-${i}`, (b64) => chunks.push(b64));
+        if (chunks.length > 0) this.fillers[i] = chunks;
+      } catch {
+        // no filler for this phrase: answers simply start when ready
+      }
+    }
+  }
+
+  /** Ink's eager end-of-turn: start preparing the answer before the turn is final. */
+  private onEager(alert: AlertRecord, text: string): void {
+    if (this.ended || this.closing || classifyQa(text) !== "question") return;
+    this.spec = { key: key(text), result: this.deps.alerts.answerQuestion(alert, text) };
+  }
+
+  /** Play a cached filler at once (alternating phrasings). Returns false when none is cached. */
+  private playFiller(): boolean {
+    const n = QA_FILLERS.length;
+    for (let k = 0; k < n; k++) {
+      const chunks = this.fillers[(this.fillerIdx + k) % n];
+      if (!chunks) continue;
+      this.fillerIdx = (this.fillerIdx + k + 1) % n;
+      for (const b64 of chunks) this.send({ event: "media", streamSid: this.streamSid!, media: { payload: b64 } });
+      return true;
+    }
+    return false;
+  }
+
+  private async onQuestion(alert: AlertRecord, question: string, eotMs: number | null = null, confidence?: number): Promise<void> {
     if (this.ended || this.streamSid === null || this.closing) return;
     // D-49: code sorts the utterance first; only real questions reach the Q&A model.
-    const intent = classifyQa(question);
+    const intent = classifyQa(question, confidence);
     this.deps.log.info({ event: "qa.intent", alertId: alert.id, intent }, "qa intent");
     if (intent === "ack") {
       if (this.phase === "qa") this.armIdle(); // say nothing, keep listening
@@ -171,12 +248,41 @@ export class AlertStreamSession {
       }
       return;
     }
-    const raw = await this.deps.alerts.answerQuestion(alert, question);
+    // Reuse the answer started on the eager end-of-turn when the final says the same thing.
+    const spec = this.spec;
+    this.spec = null;
+    const speculative = spec !== null && spec.key === key(question);
+    const prep = speculative ? spec.result : this.deps.alerts.answerQuestion(alert, question);
+    // Not ready within ~700 ms (a model call): play a short filler so the line is not silent.
+    let fillerMs: number | null = null;
+    const ready = await Promise.race([prep.then(() => true), new Promise<false>((r) => setTimeout(() => r(false), this.deps.fillerAfterMs ?? 700).unref?.())]);
+    if (!ready && seq === this.answerSeq && this.phase === "answering" && this.playFiller()) fillerMs = Date.now() - turnEnd;
+    const raw = await prep;
+    const prepMs = Date.now() - turnEnd;
     if (seq !== this.answerSeq || this.ended) return; // superseded by a newer question
     // "Not mentioned" rotates among fixed phrasings (D-49); it never adds a fact.
     const r = raw.answer === QA_FALLBACK ? { ...raw, answer: QA_NOT_MENTIONED[this.notMentioned++ % QA_NOT_MENTIONED.length]! } : raw;
+    const speakAt = Date.now();
     const first = await this.speak(alert, seq, r.answer, turnEnd, r);
     if (first === false) return;
+    // Per-turn breakdown (docs/01 §10): end-of-turn wait (Ink), prep (fast path or model), Sonic first audio.
+    this.deps.log.info(
+      {
+        event: "qa.timing",
+        alertId: alert.id,
+        seq,
+        path: r.path,
+        speculative,
+        eotMs: eotMs === null ? null : Math.round(eotMs),
+        prepMs,
+        modelMs: r.modelMs,
+        ttsFirstMs: first === null ? null : turnEnd + first - speakAt,
+        fillerMs,
+        ms: first,
+        heardMs: eotMs === null || first === null ? null : Math.round(eotMs) + (fillerMs ?? first),
+      },
+      "qa timing",
+    );
     this.deps.alerts.recordQaTurn(alert, seq, question, r, first);
     if (seq === this.answerSeq && this.phase === "answering") this.send({ event: "mark", streamSid: this.streamSid, mark: { name: `answer-${seq}` } });
     else if (seq === this.answerSeq) this.armIdle();
@@ -249,6 +355,7 @@ export class AlertStreamSession {
     if (this.ended) return;
     this.ended = true;
     if (this.idle) clearTimeout(this.idle);
+    if (this.fragment) clearTimeout(this.fragment.timer);
     void this.ink?.close();
     this.tts?.close();
     if (this.alert) this.deps.alerts.onStreamEnded(this.alert);

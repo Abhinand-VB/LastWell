@@ -47,7 +47,7 @@ caller phone ──Twilio──► <Start><Stream both_tracks> ──wss──�
 - **Native telephony audio**: Ink 2 takes Twilio's µ-law 8 kHz frames as is (`encoding=pcm_mulaw&sample_rate=8000`). There is no resampling code in the repo.
 - **Two concurrent Ink sessions per call**, one per Twilio track, so the transcript is speaker-labelled (caller / dispatcher) without diarization.
 - **Sonic 3.6 TTS Bytes**: the briefing is synthesized as raw `pcm_mulaw` 8 kHz when the alert is approved and streamed into a Twilio bidirectional media stream as soon as the stroke team answers, so no synthesis happens while they wait. The same cached bytes, decoded to a WAV, feed the laptop-speaker fallback (`ALERT_DELIVERY=local`).
-- **Sonic WebSocket** with per-answer `context_id` and cancel for barge-in, for spoken Q&A on the briefing call. Q&A ships **off** (`FEATURE_QA_ENABLED=false`, decision D-32) until it passes rehearsals.
+- **Sonic WebSocket** with per-answer `context_id` and cancel for barge-in, for spoken Q&A on the briefing call. Q&A is off by default in code (`FEATURE_QA_ENABLED=false`) and switched on for the demo after it worked on a live test call (decision D-52). Non-questions ("ok", "thank you") are sorted out by code first, and common questions (last seen normal, blood thinners, age, signs, address) are answered from the validated case state with no model call: about 0.9 s from the end of the question to the first answer audio (bench median, no phone network), against 2.1 s through the model.
 
 ## Claude models
 
@@ -83,6 +83,21 @@ pnpm e2e                                      # offline end-to-end test of the d
 pnpm --filter @lastwell/eval eval --mode text # scripted eval: LastWell vs keyword baseline (needs ANTHROPIC_API_KEY)
 ```
 
+### Convex usage
+
+Convex is the store: the gateway writes calls, utterances, case states, alerts and Q&A turns through as they happen (`apps/gateway/convex/store.ts`), and the console reads history back through the gateway.
+
+**Experimental live board (proposed D-57, off by default).** Set `FEATURE_CONVEX_BOARD=true` on the gateway and `NEXT_PUBLIC_BOARD_LIVE=convex` plus `NEXT_PUBLIC_CONVEX_URL` (the `CONVEX_URL` value) for the web app. The stroke-team board then subscribes to the Convex query `board.listAlerts` with `useQuery`, so an approved alert and every status change appear without a reload or a gateway read. The header shows "live: Convex". The browser gets only a 10-minute read token: the gateway writes it to the `boardTokens` table, and a scheduled Convex mutation deletes it at expiry, which re-runs every open subscription and returns `unauthorized` instead of data. Without the flags, the board uses the gateway WebSocket as before.
+
+Two more opt-in experiments under the same proposal, both off by default:
+
+- **`CONVEX_AUDIO_STORAGE=true`**: each Sonic briefing is uploaded to **Convex file storage** and linked from its alert row. After a gateway restart, "Call again" and "Play briefing" replay the stored file instead of calling Sonic again.
+- **`CONVEX_CALL_RATE_LIMIT=true`**: the **`@convex-dev/rate-limiter` component** allows at most 3 alert calls per target number per 10 minutes, checked in addition to `ALERT_ALLOWED_NUMBERS`. Over the limit, the console shows "Rate limit reached … try again in N s" and no call is placed.
+- **Live evidence page** (with the board flags): each board card links to the call's evidence page, a Convex live query that shows only the quoted signs, facts and last-known-well time, updating while the caller is still on the line. It never shows the transcript, phone numbers or the address.
+- **Board history export** (with the board flags): "Export history (24 h)" on the board downloads the last 24 hours of alerts as CSV (level, briefing status, paramedic confirmation, last-known-well time and blood thinner with their quotes, quoted signs, look-alikes). It reads a paginated Convex query (`board.alertHistory`) with the same board token and the same privacy rules as the evidence page; cells that start like a spreadsheet formula are written as text.
+
+**Check it end to end** (with the gateway running with those flags, `LASTWELL_FAKES` including `twilio`, and phone delivery): `SMOKE_CONVEX_URL=<CONVEX_URL> SMOKE_INTERNAL_KEY=<INTERNAL_API_KEY> pnpm --filter @lastwell/gateway smoke:convex` replays a call through real Claude and Sonic, approves it, and prints PASS/FAIL for the live board push, live status changes, the evidence page, the paginated export (no private data), stored briefing audio, the rate limit and wrong-token refusal. Add `SMOKE_EXPIRY=1` to also wait out the 10-minute token expiry.
+
 ## Results
 
 The scripted eval (20 calls written by the team: 12 strokes including chameleons, 5 stroke look-alikes, 3 other emergencies) compares LastWell with a keyword alert of the kind general 911 tools ship ("stroke", "droop", "slur", "numb", …). Numbers below are copied from the eval run's own output (E-03 run 2, the final allowed full run, `apps/eval/results/E-03-run2-table.md`), not typed by hand:
@@ -99,10 +114,15 @@ The scripted eval (20 calls written by the team: 12 strokes including chameleons
 | Invented facts shown | 0 | — |
 | Dropped by the quote validator | 0 items | — |
 
-20 scripted calls (text mode), written by the team; real-world precision will be lower. The 5 non-stroke flags at Possible are the 5 look-alike scripts, each shown with its look-alike panel (e.g. "low blood sugar"); the 3 other emergencies stayed at None. The keyword baseline caught only 3 of 12 strokes, which is why its time to first flag ties ours. Every script ended at its expected level (20/20). Run 2 used prompt versions `fast-3`/`reasoner-3`; the later guardrail revisions (`fast-5`/`reasoner-5`) were spot-checked live on fixture calls and 5 scripts with the same results. Median model latency in the run: fast pass 1.3 s, reasoner 2.9 s.
+20 scripted calls (text mode), written by the team; real-world precision will be lower. The 5 non-stroke flags at Possible are the 5 look-alike scripts, each shown with its look-alike panel (e.g. "low blood sugar"); the 3 other emergencies stayed at None. The keyword baseline caught only 3 of 12 strokes, which is why its time to first flag ties ours. **Blind test (8 scripts, run once):** after the prompts were final, we wrote 8 new scripts that the people tuning the prompts never saw (new callers, new look-alikes, docs/07 §5b) and ran them exactly once (`apps/eval/results/heldout-run1.md`): strokes flagged 4/4 (keyword baseline 3/4), every script at its expected level (8/8), 0 invented facts, blood thinner 2/2, median first flag 16 s (baseline 31 s). **Last-known-well was right on only 3 of 6**: our time parser does not understand "ten past three" or "twenty past twelve" (one of the two became a confident wrong time), and a weekday phrase ("Thursday evening") stays unknown by design. All 28 scripts were written by our team.
+
+**Through real speech recognition:** the same pipeline on 6 scripts spoken by Sonic in three deliveries (calm, accented, panicked), sent as phone audio through Ink 2, flagged 4/4 strokes in every voice, with LKW 6/6, blood thinner 3/3 and 0 invented facts (`apps/eval/results/audio-robustness.md`). Synthetic speech is cleaner than a real 911 caller (no line noise, crosstalk or crying), so treat this as a transcription check, not a field result.
+
+Every script ended at its expected level (20/20). **Consistency:** two further runs on the same 20 scripts (Oct 25, ~1:30 and ~1:37 AM) gave identical per-script results on level, last-known-well, blood thinner and invented facts, again 20/20 (docs/07). Run 2 used prompt versions `fast-3`/`reasoner-3`; the later guardrail revisions (`fast-5`/`reasoner-5`) were spot-checked live on fixture calls and 5 scripts with the same results. Median model latency in the run: fast pass 1.3 s, reasoner 2.9 s.
 
 ## Honest limits
 
+- **Clinical truth labels are partly unverified.** An EMT gave us feedback on the idea, but the expected answers for scripts A05 (an aspirin case) and B08 (a migraine-history case) have not been reviewed by a clinician.
 - **Scripted calls, not real 911 audio.** The test calls were written by us, so our numbers will look better than reality. For a real-world reference: in a Copenhagen study, an AI model recognized 63.0% of strokes with 24.9% precision, against 52.7% / 17.1% for human call handlers.
 - **Fallback without the phone line.** If the phone path fails at the table, the caller speaks into the browser microphone and the Sonic briefing plays from the laptop speaker (`ALERT_DELIVERY=local`); the rest of the pipeline is identical.
 - **The demo phones belong to teammates.** At the judging table, teammates play the caller, the dispatcher and the on-call clinician. The judge draws the case card and checks the sealed answer.
@@ -113,6 +133,39 @@ The scripted eval (20 calls written by the team: 12 strokes including chameleons
 - **Signs are append-only.** If the caller corrects themselves after a sign was quoted ("no wait, his arm is fine"), the earlier sign stays on the card with its quote; the dispatcher sees both sentences in the transcript.
 - **Sex from a bare pronoun is not extracted.** "He" or "she" alone does not set the patient's sex; words like "my father" or "my wife" do.
 - No audio is stored in phone mode. Transcripts live in the demo database only for the event and are wiped afterwards.
+
+## Path to production
+
+LastWell is a hackathon prototype tested on scripted calls. Getting it near a real 911 floor takes three stages, each with numbers fixed in advance and a clear stop-or-go. The measures are the ones our eval already computes, plus one only a hospital can provide:
+
+- **Sensitivity**: strokes flagged ÷ all strokes; **precision**: strokes ÷ all flags.
+- **Seconds to flag** from the start of the call.
+- **LKW accuracy**: last-known-well time within tolerance of the chart.
+- **Invented facts**: anything shown that the caller did not say. Must stay 0.
+- **Door-to-CT time** at the stroke center (stage 3 only).
+
+**Stage 1: retrospective, on archived calls.** Run LastWell offline over a 911 center's recorded calls, matched to stroke-registry outcomes, the design the Copenhagen and Bergen studies used. Nobody is affected; it answers "does it work on real audio?"
+- Measure: sensitivity, precision, seconds to flag, LKW accuracy against the chart, invented facts, and results broken down by caller accent, language and call quality.
+- Exit: agreed in advance with the center's medical director. For example: sensitivity at least the center's own call-handler rate (Copenhagen's call handlers recognized 52.7% of strokes), precision no worse than the Copenhagen AI model's 24.9%, invented facts 0, and no caller group doing clearly worse than the rest.
+
+**Stage 2: shadow mode, live.** LastWell listens to live calls, but dispatchers see nothing; its flags are compared with outcomes afterwards.
+- Measure: the same numbers on live audio, plus uptime and latency under real load and how often it would have pre-alerted a call that turned out not to be a stroke.
+- Exit: stage 1 numbers hold on live calls for a pre-agreed period, and the center's security review passes.
+
+**Stage 3: supervised pilot.** One 911 center and one stroke center. Dispatchers see the console and **approve every pre-alert**, as they do in the demo.
+- Measure: everything above, plus door-to-CT time for pre-alerted patients against the center's baseline, and dispatcher feedback (alert fatigue, trust).
+- Exit: a door-to-CT improvement the stroke team considers worthwhile, no safety events attributable to LastWell, and the go-ahead of both centers' clinical leads.
+
+**What is already built for this.**
+- **An audit trail per call** (`GET /api/calls/:callId/audit`): the transcript with timestamps, every quoted sign and fact, each level change with its reason, and who approved, retried or confirmed what, with phone numbers masked.
+- **Dispatcher approval on every alert.** LastWell never dispatches, changes call priority or speaks to the caller.
+- **Quote-or-drop:** 0 invented facts in every eval run so far.
+- **A first bias check** (`apps/eval/results/audio-robustness.md`): 6 scripts in calm, accented and panicked synthetic voices through real speech recognition gave the same results. Synthetic voices are not real callers; stage 1 is where this check becomes real.
+
+**Open questions we cannot answer yet.**
+- **Regulatory review:** whether decision support on a 911 call needs clearance as a medical device, and under which rules.
+- **911 security requirements:** call audio and transcripts leaving the center's network, vendor access, data retention.
+- **Real-audio performance:** every number we have comes from scripted calls written by our team, so we don't know how it performs on real 911 audio. Stage 1 exists to find out.
 
 ## For contributors and coding agents
 

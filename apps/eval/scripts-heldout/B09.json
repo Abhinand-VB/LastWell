@@ -1,0 +1,27 @@
+{
+  "id": "B09", "type": "chameleon", "title": "Husband, unsure of the time: room tilting, two of his wife's face, lists to one side", "sourceId": null,
+  "callStartLocal": "2026-10-25T18:45:00",
+  "turns": [
+    { "speaker": "dispatcher", "atMs": 0,     "text": "911, what is your emergency? What's the address?" },
+    { "speaker": "caller",     "atMs": 4000,  "text": "It's 1550 Funston Avenue. My husband, Roy, something's off with him, I'm not sure what." },
+    { "speaker": "dispatcher", "atMs": 11000, "text": "Tell me exactly what you're seeing." },
+    { "speaker": "caller",     "atMs": 14000, "text": "He says the whole room is tilting, he can't stand up without hanging on to the counter, and when he looks at me he says there's two of me, one on top of the other." },
+    { "speaker": "dispatcher", "atMs": 28000, "text": "When he walks, what happens?" },
+    { "speaker": "caller",     "atMs": 31000, "text": "He leans hard to one side, like he's on a boat. He nearly went into the fridge." },
+    { "speaker": "dispatcher", "atMs": 38000, "text": "When was he last completely normal?" },
+    { "speaker": "caller",     "atMs": 41000, "text": "I don't know exactly. Maybe forty minutes? No, wait. The six o'clock news had just started, he was fine then, he was making a joke about the weatherman." },
+    { "speaker": "dispatcher", "atMs": 53000, "text": "How old is he, and does he take any blood thinners?" },
+    { "speaker": "caller",     "atMs": 58000, "text": "He's 77. He takes Pradaxa for his heart rhythm." },
+    { "speaker": "dispatcher", "atMs": 62000, "text": "Okay. Help is on the way. Have him sit or lie down." }
+  ],
+  "truth": {
+    "isStroke": true, "expectedLevel": "possible", "signs": ["balance", "eyes"],
+    "lkw": { "localTime": "2026-10-25T18:00:00", "toleranceMin": 15 },
+    "bloodThinner": "Pradaxa", "lookalike": null,
+    "facts": [ { "kind": "age", "value": "77" },
+               { "kind": "sex", "value": "male" },
+               { "kind": "blood_thinner", "value": "Pradaxa" },
+               { "kind": "address", "value": "1550 Funston Avenue" } ]
+  },
+  "audio": null, "group": "native"
+}

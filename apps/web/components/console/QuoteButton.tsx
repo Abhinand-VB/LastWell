@@ -13,10 +13,10 @@ export function QuoteButton({ quoteRef, className = "" }: { quoteRef: QuoteRef; 
       title="Show in transcript"
       className={`group inline-flex items-baseline gap-2 text-left ${className}`}
     >
-      <span className="text-amber-100 underline decoration-amber-400/80 decoration-2 underline-offset-4 group-hover:decoration-amber-300">
+      <span className="text-lw-evidence underline decoration-lw-evidence-line decoration-2 underline-offset-4 group-hover:decoration-amber-600">
         “{quoteRef.quote}”
       </span>
-      <span className="shrink-0 font-mono text-sm text-slate-500 tabular-nums">{mmss(quoteRef.tMs)}</span>
+      <span className="shrink-0 font-mono text-sm text-lw-ink-3 tabular-nums">{mmss(quoteRef.tMs)}</span>
     </button>
   );
 }

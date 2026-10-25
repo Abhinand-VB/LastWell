@@ -65,12 +65,15 @@ const id = (s: string) => encodeURIComponent(s);
 
 export const gateway = {
   wsToken: () => request(WsTokenResponse, "GET", "ws-token"),
+  /** Proposed D-57: read token for the board's Convex live query (same shape as the ws token). */
+  boardToken: () => request(WsTokenResponse, "GET", "board-token"),
   listCalls: () => request(CallsListResponse, "GET", "calls"),
   getCall: (callId: string) => request(CallSnapshotResponse, "GET", `calls/${id(callId)}`),
   startBrowserCall: () => request(BrowserCallResponse, "POST", "calls/browser", {}),
   endCall: (callId: string) => request(OkResponse, "POST", `calls/${id(callId)}/end`, {}),
-  sendAlert: (callId: string, targetPhone: string) =>
-    request(AlertResponse, "POST", `calls/${id(callId)}/alert`, { targetPhone, confirm: true }),
+  /** D-53 extras (`notes`, `override`) are not in core's CreateAlertBody yet; docs/03 §6 has them. */
+  sendAlert: (callId: string, targetPhone: string, extras: { notes?: string; override?: true } = {}) =>
+    request(AlertResponse, "POST", `calls/${id(callId)}/alert`, { targetPhone, confirm: true, ...extras }),
   emsConfirm: (alertId: string, confirmed: boolean) =>
     request(AlertResponse, "POST", `alerts/${id(alertId)}/ems-confirm`, { confirmed }),
   hangup: (alertId: string) => request(OkResponse, "POST", `alerts/${id(alertId)}/hangup`, {}),

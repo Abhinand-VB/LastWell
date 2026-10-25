@@ -3,8 +3,18 @@
 Maintained by the integration session (task X-05).
 
 - **Checkpoint merge:** PR #1 (https://github.com/Abhinand-VB/LastWell/pull/1) was merged into `main` on 2026-10-24 at ~18:10 PT by human decision, as merge commit d341ae5 (version1 at 830e196: `pnpm verify` green, `pnpm e2e` 23/0/0). It is **not** tagged `demo-ready`: the live gates have not run (no Twilio number, D-43).
-- **Sync merges (D-48):** the live gateway runs from `main`, so integration merges `version1 → main` (regular merge) at every 20-minute loop when `version1` is green and ahead; never red.
-- **Final release:** later work keeps landing on `version1`; a second PR `version1 → main` is opened after the live demo flow (docs/08 §0 or §3) passes, merged by a human, then tagged `demo-ready`. The title and body below are reused for it.
+- **Sync merges (D-48, ended by D-50):** PRs #2–#5 synced `main` to a green `version1`; the last was #5 (dcc4d93, 21:20 PT). Since D-50 everything runs from `version1` and `main` is not touched until the end.
+- **Final release (D-50):** one PR `version1 → main` at the end, after the final green check on the tip, merged with a regular merge, then tagged `demo-ready`. The title and body below are reused for it.
+
+## Devpost draft (C-05; humans finalize)
+
+**Inspiration.** An EMT we spoke with was intrigued by the idea of catching strokes that nobody on the call recognizes and getting the stroke team alerted early. They were also skeptical: classic strokes are usually obvious, and public education may matter more.
+
+**What we learned.** That skepticism changed our focus. A clear-cut stroke usually gets recognized; the ones that slip through are strokes that don't look like strokes: dizziness and double vision, "he sounds drunk", "maybe it's her glasses". We put those chameleons first: in our scripted set LastWell flagged all 5 (a keyword alert caught 1), and the demo opens with one.
+
+**Path to production (Microsoft "Built for the Real World").** Three stages, each with numbers set in advance and a stop-or-go. (1) **Retrospective:** run on a 911 center's archived calls matched to stroke-registry outcomes, as the Copenhagen and Bergen studies did; measure sensitivity, precision, seconds to flag, LKW accuracy and invented facts, broken down by caller group. (2) **Shadow mode:** live, with dispatchers seeing nothing, flags compared afterwards. (3) **Supervised pilot:** one 911 center and one stroke center, the dispatcher approves every pre-alert; adds door-to-CT time. Already built: a per-call audit trail, dispatcher approval on every alert, quote-or-drop (0 invented facts so far), a first audio robustness check with synthetic voices. Open: regulatory review, 911 security requirements, performance on real audio. Full text in the README.
+
+**Honest limits to keep in the submission.** Scripted calls written by us; the clinical truth labels for A05 (aspirin case) and B08 (migraine-history case) were not reviewed by a clinician; the EMT interview did not cover last-known-well reliability or antiplatelets.
 
 ## PR title
 
@@ -32,7 +42,11 @@ The whole demo path, built during Cal Hacks 13.0 by four parallel lanes landing 
 
 The account owns no number (Trust Hub pending). The primary demo is phone-free: browser mic in, briefing played from the laptop speaker (`ALERT_DELIVERY=local`, tasks V-12/W-12, docs/08 §0). The phone path stays intact behind its flags.
 
-### Not yet verified live (needs people, phones or ngrok)
+### Live gates (D-52)
+
+Test 1 passed on real phones, 2026-10-24 ~21:30–22:00 PT: inbound call → transcript → Likely with quotes → LKW + Eliquis → Send pre-alert → briefing call rang the medical phone → Q&A answered and handled an interruption (M-01…M-04). Morning tests: chameleon, look-alike, Q&A rerun.
+
+### Originally not verified live (now covered by Test 1 except where noted)
 
 | What | Command / step once unblocked |
 | --- | --- |
@@ -44,7 +58,7 @@ The account owns no number (Trust Hub pending). The primary demo is phone-free: 
 
 ### Deliberately not in v1
 
-- Spoken Q&A on the briefing call is built (V-08, 63555e3) but ships off: `FEATURE_QA_ENABLED=false` by default until two clean rehearsals with it on (D-32).
+- Spoken Q&A on the briefing call (V-08, D-49, D-51) is on for the demo (D-52) after the live Test 1; off by default in code; keep/kill after the morning rehearsals.
 - Audio-mode eval (D-33).
 - SMS (D-03).
 

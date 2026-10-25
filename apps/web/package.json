@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@lastwell/core": "workspace:*",
+    "convex": "1.48.0",
     "next": "15.5.28",
     "react": "19.1.0",
     "react-dom": "19.1.0",

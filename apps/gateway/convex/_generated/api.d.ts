@@ -8,7 +8,10 @@
  * @module
  */
 
+import type * as audio from "../audio.js";
+import type * as board from "../board.js";
 import type * as lib from "../lib.js";
+import type * as limits from "../limits.js";
 import type * as store from "../store.js";
 
 import type {
@@ -18,7 +21,10 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  audio: typeof audio;
+  board: typeof board;
   lib: typeof lib;
+  limits: typeof limits;
   store: typeof store;
 }>;
 
@@ -48,4 +54,6 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  rateLimiter: import("@convex-dev/rate-limiter/_generated/component.js").ComponentApi<"rateLimiter">;
+};

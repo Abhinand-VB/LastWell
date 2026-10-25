@@ -2,7 +2,7 @@
 // apps/gateway/src/store/ with ConvexHttpClient (`api.store.*` once `npx convex dev` has generated
 // convex/_generated, or `anyApi.store.*` before that).
 import { v } from "convex/values";
-import type { GenericDatabaseWriter } from "convex/server";
+import type { GenericDatabaseWriter, StorageWriter } from "convex/server";
 import { alertStatus, callMode, callStatus, speaker } from "./schema.js";
 import { assertSecret, mutation, query, type DataModel } from "./lib.js";
 
@@ -186,13 +186,14 @@ export const insertQaTurn = mutation({
   },
 });
 
-async function deleteCallCascade(db: GenericDatabaseWriter<DataModel>, callId: string): Promise<string[]> {
+async function deleteCallCascade(db: GenericDatabaseWriter<DataModel>, storage: StorageWriter, callId: string): Promise<string[]> {
   const alertIds: string[] = [];
   for (const a of await db.query("alerts").withIndex("by_callId", (q) => q.eq("callId", callId)).collect()) {
     for (const t of await db.query("qaTurns").withIndex("by_alert_seq", (q) => q.eq("alertId", a.alertId)).collect()) {
       await db.delete(t._id);
     }
     alertIds.push(a.alertId);
+    if (a.audioStorageId !== undefined) await storage.delete(a.audioStorageId); // proposed D-57
     await db.delete(a._id);
   }
   for (const u of await db.query("utterances").withIndex("by_call_seq", (q) => q.eq("callId", callId)).collect()) {
@@ -214,7 +215,7 @@ export const deleteTestCalls = mutation({
     assertSecret(secret);
     const calls = await ctx.db.query("calls").withIndex("by_label", (q) => q.eq("label", "TEST")).collect();
     const alertIds: string[] = [];
-    for (const c of calls) alertIds.push(...(await deleteCallCascade(ctx.db, c.callId)));
+    for (const c of calls) alertIds.push(...(await deleteCallCascade(ctx.db, ctx.storage, c.callId)));
     return { deletedCalls: calls.length, deletedAlerts: alertIds.length, alertIds };
   },
 });
@@ -230,6 +231,7 @@ export const wipe = mutation({
     let deleted = 0;
     for (const table of TABLES) {
       for (const doc of await ctx.db.query(table).take(n)) {
+        if ("audioStorageId" in doc && doc.audioStorageId !== undefined) await ctx.storage.delete(doc.audioStorageId); // proposed D-57
         await ctx.db.delete(doc._id);
         deleted++;
       }

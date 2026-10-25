@@ -12,6 +12,7 @@ import type { Logger } from "./log.js";
 import { CallRegistry } from "./pipeline/callRegistry.js";
 import { CallService } from "./pipeline/calls.js";
 import type { Services } from "./services.js";
+import { ConvexStore } from "./store/convex.js";
 import { Repo } from "./store/repo.js";
 import { AlertStreamSession } from "./twilio/alertStream.js";
 import { FakeTelephony } from "./twilio/fake.js";
@@ -78,6 +79,8 @@ export function buildApp(env: Env, services: Services, log: Logger): Gateway {
     timezone: env.CALL_TIMEZONE,
     qaEnabled: env.FEATURE_QA_ENABLED,
     delivery: env.ALERT_DELIVERY,
+    audioStore: env.CONVEX_AUDIO_STORAGE && services.store instanceof ConvexStore ? services.store : null,
+    callLimiter: env.CONVEX_CALL_RATE_LIMIT && services.store instanceof ConvexStore ? services.store : null,
     model: services.model,
   });
   snapshotFn = (id) => callSnapshot({ calls, alerts, repo }, id);
@@ -128,6 +131,7 @@ export function buildApp(env: Env, services: Services, log: Logger): Gateway {
     featureQa: env.FEATURE_QA_ENABLED,
     callTimezone: env.CALL_TIMEZONE,
     alertDefaultTargetPhone: env.ALERT_DEFAULT_TARGET_PHONE ?? null,
+    alertAllowedNumbers: env.ALERT_ALLOWED_NUMBERS,
     alertDelivery: env.ALERT_DELIVERY,
   };
 
@@ -140,6 +144,7 @@ export function buildApp(env: Env, services: Services, log: Logger): Gateway {
     config,
     evalScriptsDir: path.resolve(GATEWAY_DIR, env.EVAL_SCRIPTS_DIR),
     devRoutes: env.fakes.size > 0 && !env.DEMO_MODE,
+    boardTokens: env.FEATURE_CONVEX_BOARD && services.store instanceof ConvexStore ? services.store : null,
   });
   registerTwilioRoutes(app, {
     calls,

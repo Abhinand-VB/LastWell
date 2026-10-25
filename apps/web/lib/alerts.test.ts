@@ -1,7 +1,50 @@
 import { describe, expect, it } from "vitest";
-import { isActive, latestAlert, sendErrorText, statusSteps, stepIndex } from "./alerts";
+import {
+  NOTE_MAX,
+  OVERRIDE_REQUIRED_TEXT,
+  alertExtras,
+  belowPossible,
+  isActive,
+  latestAlert,
+  phoneChoices,
+  sendErrorText,
+  statusSteps,
+  stepIndex,
+} from "./alerts";
 import { GatewayError } from "./gateway";
 import { alert } from "./testFixtures";
+
+describe("D-53 send extras", () => {
+  it("note trimmed, empty dropped, never over 200; override only when asked", () => {
+    expect(alertExtras("", false)).toEqual({});
+    expect(alertExtras("   ", true)).toEqual({ override: true });
+    const note = `  Wife says "he slurred at breakfast", 7 AM.  `;
+    expect(alertExtras(note, false)).toEqual({ notes: `Wife says "he slurred at breakfast", 7 AM.` });
+    expect(alertExtras("x".repeat(250), false).notes).toHaveLength(NOTE_MAX);
+  });
+
+  it("only level none is below possible", () => {
+    expect(belowPossible("none")).toBe(true);
+    expect(belowPossible("possible")).toBe(false);
+    expect(belowPossible("likely")).toBe(false);
+  });
+
+  it("409 override_required gets its own wording", () => {
+    expect(sendErrorText(new GatewayError(409, "override_required", "No stroke signs heard yet"))).toBe(OVERRIDE_REQUIRED_TEXT);
+  });
+});
+
+describe("phoneChoices (D-58)", () => {
+  it("puts the default target first and drops duplicates", () => {
+    expect(phoneChoices("+14086905907", ["+19162338165", "+14086905907"])).toEqual(["+14086905907", "+19162338165"]);
+  });
+
+  it("works without a default or without an allowed list", () => {
+    expect(phoneChoices(null, ["+19162338165"])).toEqual(["+19162338165"]);
+    expect(phoneChoices("+19162338165", [])).toEqual(["+19162338165"]);
+    expect(phoneChoices(null, [])).toEqual([]);
+  });
+});
 
 describe("alert helpers", () => {
   it("steps follow featureQa", () => {
@@ -43,5 +86,18 @@ describe("local delivery (D-43, W-12)", () => {
     expect(canPlay(alert({ status: "completed" }), "local")).toBe(true);
     expect(canPlay(alert({ status: "failed" }), "local")).toBe(false);
     expect(canPlay(alert({ status: "queued" }), "phone")).toBe(false);
+  });
+});
+
+describe("home pre-alert column", () => {
+  it("shows the newest alert's status, or why there is none", async () => {
+    const { preAlertCell } = await import("./alerts");
+    expect(preAlertCell([], true)).toEqual({ text: "Not sent yet", tone: "none" });
+    expect(preAlertCell([], false)).toEqual({ text: "No pre-alert", tone: "none" });
+    expect(preAlertCell([alert({ status: "calling" })], false)).toEqual({ text: "Calling stroke team…", tone: "active" });
+    expect(preAlertCell([alert({ status: "completed" })], false)).toEqual({ text: "Briefed · completed", tone: "done" });
+    expect(preAlertCell([alert({ status: "failed" })], false).tone).toBe("failed");
+    const older = alert({ status: "failed", createdAt: "2026-10-25T14:40:00-07:00" });
+    expect(preAlertCell([older, alert({ id: "b0100000-0000-4000-8000-000000000002", status: "ringing" })], false).text).toBe("Ringing");
   });
 });

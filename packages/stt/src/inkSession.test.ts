@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { WebSocketServer, type WebSocket } from "ws";
 import type { AddressInfo } from "node:net";
 import type { IncomingMessage } from "node:http";
-import { InkSession, inkUrl, silence, type InkFinal, type InkSessionOptions } from "./inkSession.js";
+import { InkSession, inkUrl, PROFILES, silence, type InkFinal, type InkSessionOptions } from "./inkSession.js";
 import { buildWav, paceChunks, parseWav } from "./wav.js";
 
 interface Conn {
@@ -85,8 +85,15 @@ describe("inkUrl", () => {
   it("uses the qa profile thresholds", () => {
     const u = new URL(inkUrl({ ...opts(), profile: "qa" }));
     expect(u.searchParams.get("turn_eager_end_threshold")).toBe("0.5");
-    expect(u.searchParams.get("turn_end_threshold")).toBe("0.2");
+    expect(u.searchParams.get("turn_end_threshold")).toBe("0.3");
     expect(u.searchParams.get("turn_end_timeout_ms")).toBe("1600");
+  });
+
+  it("a per-session turn override wins over the profile", () => {
+    const u = new URL(inkUrl({ ...opts(), profile: "qa", turn: { end: 0.1, timeoutMs: 900 } }));
+    expect(u.searchParams.get("turn_end_threshold")).toBe("0.1");
+    expect(u.searchParams.get("turn_end_timeout_ms")).toBe("900");
+    expect(u.searchParams.get("turn_start_threshold")).toBe(String(PROFILES.qa.start));
   });
 });
 
@@ -107,8 +114,12 @@ describe("InkSession against a mock Ink server", () => {
     const s = new InkSession(opts({ getTs: () => ts }));
     const partials: { text: string; tStartMs: number }[] = [];
     const finals: InkFinal[] = [];
+    const eagers: string[] = [];
+    let resumes = 0;
     s.on("partial", (p) => partials.push(p));
     s.on("final", (f) => finals.push(f));
+    s.on("eager", (e) => eagers.push(e.text));
+    s.on("resume", () => resumes++);
     await until(() => conns.length === 1 && s.isOpen);
     const c = conns[0]!;
     send(c, { type: "connected", request_id: "r1" });
@@ -122,8 +133,11 @@ describe("InkSession against a mock Ink server", () => {
     send(c, { type: "some.future.event" });
     await until(() => partials.length === 3);
     ts = 3200;
-    send(c, { type: "turn.end", transcript: " He can't lift his coffee cup. " });
+    send(c, { type: "turn.end", transcript: " He can't lift his coffee cup. ", confidence: 0.42 });
     await until(() => finals.length === 1);
+    expect(eagers).toEqual(["He can't lift his coffee cup"]);
+    expect(resumes).toBe(1);
+    expect(finals[0]!.confidence).toBe(0.42);
     expect(partials.map((p) => p.text)).toEqual(["He can't", "He can't lift his coffee cup", "He can't lift his coffee cup"]);
     expect(partials.every((p) => p.tStartMs === 1000)).toBe(true);
     expect(finals[0]).toMatchObject({ text: "He can't lift his coffee cup.", tStartMs: 1000, tEndMs: 3200 });

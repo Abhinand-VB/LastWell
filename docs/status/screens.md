@@ -3,12 +3,36 @@
 Only the screens session edits this file.
 
 ## Current task
-- done for tonight: all buildable screens tasks landed; waiting on human steps (W-08 speak-into-mic, W-11 approval)
+- W-13 (D-53) and the console auto-open landed on version1 2026-10-25 ~05:45 PT after the freeze, by human decision (W-13 is a listed freeze exception; auto-open was requested by the same human). Rebased on 2914daa: `pnpm verify` exit 0 (web 54 tests), `pnpm e2e` 23 passed, 0 failed.
 
 ## Last green commit on version1
 - W-08 real-gateway check + W-11 polish (see below)
 
 ## Acceptance evidence (pasted command output per task)
+
+### Send modal: pick an allowed number, formatted (D-58; human request 2026-10-25 ~05:55 PT; not landed)
+- `/api/config` gains `alertAllowedNumbers` (core `ConfigResponse`, gateway `app.ts`, web `lib/config.ts` defaults to []). The modal lists `phoneChoices(default, allowed)` as radio cards formatted by `formatPhone` (`+1 (916) 233-8165`), the default first, preselected and labelled "On-call stroke team (default)", plus "Other number" (typed field, formatted on blur). One number per Send; ringing several at once was not built (D-58).
+- `pnpm verify` exit 0 (web 57 tests: +1 `formatPhone`, +2 `phoneChoices`); `pnpm e2e` 23 passed, 0 failed.
+- Observed on the live stack (real Claude/Cartesia/Convex, Twilio faked, `ALERT_DELIVERY=local`): B01 replay → modal shows the 3 numbers of `ALERT_ALLOWED_NUMBERS`, default preselected; Other → typed "415 555 0100" → blur → "+1 (415) 555-0100"; picked the second number, confirmed, Send → alert `queued` with `targetPhoneMasked` "•••5907" (the picked one).
+
+### Auto-open the console for an incoming call (human request, 2026-10-25 ~02:35 PT; landed ~05:45 PT)
+- Update ~02:50 PT (human: "not working" on :3000 under dev:fake): replays now count too (only mic calls are excluded); incoming calls reuse one tab named `lastwell-console`, or a separate tab while that tab shows a live call (`localStorage` `lastwell:console-tab-live`); Home's Replay buttons claim their call so it is not opened twice. Chrome blocks `window.open` without a click unless pop-ups are allowed for the origin: observed in the user's Chrome (B01 replay via `POST /api/calls/replay` → banner, no tab). One-time fix per laptop: allow pop-ups for the web origin.
+- Update ~02:52 PT: the banner is gone; when the new tab is blocked the console opens in the current tab (`router.push`). Observed in the user's Chrome (pop-ups still blocked for localhost:3000: `window.open` → null for both `_blank` and the named target): Home → C01 replay via `POST /api/calls/replay` → the same tab showed `/console/{id}` live within ~6 s. A real second tab was seen once (09:38 UTC, `_blank`) before pop-ups were blocked.
+- `hooks/useIncomingCall.ts` + `lib/incoming.ts` (`newLivePhoneCall`, 3 tests): Home, and a console whose call has ended or is unknown, poll `GET /api/calls` every 2 s; a live `mode: "phone"` call that was not in the list at page load opens `/console/{id}` in a new tab (`window.open`). Replays and mic calls never trigger it; a console whose call is still live never does. One tab per call across open LastWell tabs (`localStorage` key `lastwell:opened:{id}`). If the pop-up is blocked, `components/IncomingCallBanner.tsx` shows "Incoming 911 call … Open console".
+- Observed on `pnpm dev:fake` (:3000/:8787) with `POST /api/dev/calls` (mode phone): Home → console of the new call within ~2 s (the built-in browser pane loads `_blank` in the same tab); second call while the first was live → no jump; after the first ended, a third call → opened. `window.open` stubbed to return null → Home stayed on `/`, banner with `href=/console/{id}`.
+- Real Chrome 155 (Claude in Chrome, Home at http://localhost:3000/): `POST /api/dev/calls` → a second tab opened at `/console/{id}` within ~4 s, Home stayed on `/`, no banner (pop-up not blocked); the new tab showed the live transcript, Possible stroke with the quoted face sign, Send enabled. If a laptop's Chrome blocks it, allow pop-ups for the web origin once, or use the banner link.
+
+### W-13 Send at every level + notes field (D-53) — built 2026-10-25 ~02:20 PT (after the 02:00 freeze; landed ~05:45 PT by human decision)
+- `components/console/SendAlert.tsx`: Send enabled at every level; at `none` the tooltip and a hint line read "LastWell has not detected stroke signs; the briefing will say this is a dispatcher-initiated pre-alert". Modal: amber override notice quoting the opening sentence, optional "Dispatcher note" textarea (`maxLength` 200 + slice, live `n/200` counter), confirm text "…dispatcher-initiated pre-alert … without LastWell stroke signs" below possible. A 409 `override_required` (stale console level) switches the modal into override mode and unticks confirm. `lib/alerts.ts`: `NOTE_MAX`, `belowPossible`, `alertExtras(note, override)` (trimmed, empty = absent), wording for `override_required`; `lib/gateway.ts` `sendAlert(callId, phone, extras)` (core's `CreateAlertBody` has no `notes`/`override` yet → wired-to-fake below).
+- `pnpm --filter @lastwell/web test` → 50 passed (adds 3 D-53 tests). `pnpm verify` exit 0; `pnpm e2e` 23 passed, 0 failed.
+- `pnpm dev:fake` (GATEWAY_PORT=28787 WEB_PORT=23000), D01 replay at speed 4, 1920×1080: level None, `send-button` enabled with the tooltip; typed 223 chars → textarea 200, counter "200/200"; ticked confirm → `POST …/alert` 200; pill Completed. Audit: approve `override: true`, detail "level none (dispatcher override: below possible) … with a dispatcher note", `dispatcherNote` = the 200 chars with quote marks intact; `briefingText` starts "Dispatcher-initiated pre-alert. LastWell has not detected stroke signs on this call." and ends "Goodbye. The dispatcher adds: Wife says \"he slurred his words at breakfast\", …".
+- X-03 (`pnpm e2e:ui`) not run here.
+
+### W-11 light redesign (D-54, D-55, D-56) — 2026-10-25 ~01:20 PT
+- Design and theme in Figma: [LastWell — Screens](https://www.figma.com/design/uijhd1gyfCg693qBeXo1zs) (pages Home, Console, Board, Mic, Components; variables "LastWell light" = the `--color-lw-*` tokens in `apps/web/app/globals.css`).
+- Every page light with one nav (Calls / Pre-alert board; mic tab hidden; link badge only when not live). Console sized for 1920×1080: Ask next while live → code-built Summary after the call; Signs grouped by kind; Facts with LKW large and age · sex on one row; send bar "Calls the on-call stroke team (phone ending 0100)". Latency + test links only on `?debug`; test links also on `/preflight`. Home = recent-calls table (source icon, duration, level, pre-alert, status; live pinned) + replay strip A01/B01/C01/D01. Board: light cards, window bar, briefing steps.
+- Observed under `pnpm dev:fake` at 1920×1080: console right column `scrollHeight 969 = clientHeight 969`, page 1080 (completed alert); in-progress alert shows one status line; A01 summary "Arm and speech signs heard. Last known well yesterday 2:00 PM? Blood thinner: Eliquis. 78 · male."; send → Answered → Completed on fake telephony.
+- `pnpm verify` exit 0 (web 47 tests); `pnpm e2e` 23 passed, 0 failed; `pnpm --filter @lastwell/web build` ok. Playwright `e2e:ui` not run here (Chromium not installed on this laptop).
 
 ### W-08 against the real gateway — 2026-10-24 ~20:05 PT (speak-into-mic step: human)
 - Real gateway from this worktree (`GATEWAY_PORT=28787 WEB_PORT=23000 node scripts/dev-fake.mjs`; no `.env` here, so STT is FakeSttSession, which discards audio). Edge via Playwright with Chromium's fake microphone (`--use-fake-device-for-media-stream`, a test tone): `/mic` → Start → `getUserMedia` ok → `POST /api/calls/browser` → WS `ws://localhost:28787/browser/media/{callId}?token=…`; after ~3 s 163 binary frames sent, every one 640 bytes; level bar 84 %. Console tab opened at `/console/{callId}`: "Browser mic | Caller still on the line | Live"; gateway `GET /api/calls/{id}` → mode `browser`, status `live`.
@@ -85,6 +109,7 @@ Only the screens session edits this file.
 - W-12 real audio: same gateway with `ALERT_DELIVERY=local`, Send on a Likely call, ▶ Play briefing → Sonic voice from the laptop speaker, pill Completed.
 
 ## wired-to-fake (replace when the named task lands)
+- `apps/web/lib/gateway.ts`: `sendAlert` sends `notes`/`override` (D-53) outside core's `CreateAlertBody` until reasoning adds them there.
 - `apps/web/lib/config.ts`: `alertDelivery` (D-43) is read as an optional field (default `phone`) until reasoning adds it to core's `ConfigResponse`.
 
 ## Requests to other lanes
