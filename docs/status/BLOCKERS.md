@@ -10,13 +10,14 @@ Integration copies open blockers from the four lane files here at each merge, ne
 
 ## Open (newest first)
 
-- [ ] **IDLE · reasoning** · No commit or status since 20:22 PT (checked 21:53 PT: 1 h 31). Build work is done; open: review voice's core LKW edit (007fc26, `lkw/widen.ts` + reducer line) and a prompt line asking for the whole time expression (test:live within §7.4). → nudge lw-reasoning to post the review.
+- [ ] **IDLE · reasoning** · No commit or status since 20:22 PT (re-checked 22:15 PT: 1 h 53). Build work is done; open: review voice's core LKW edit (007fc26, `lkw/widen.ts` + reducer line) and a prompt line asking for the whole time expression (test:live within §7.4). → nudge lw-reasoning to post the review.
 
+- [ ] **voice · D-51 (human glance, non-blocking)** · Q&A answers common questions from the validated case state without a model call (0.9 s vs 2.1 s median), a "One moment." filler, and a gate that only lets question-shaped speech reach the answer path. Extends D-10; Q&A ships off. → approve with D-49, or ask voice to revert to model-only answers.
 - [ ] **voice · D-49 needs a human yes/no** · Voice implemented Q&A utterance sorting (11eb6ef): fixed goodbye on "thank you", silence on "ok", a fixed reprompt, a fixed self-description, and **three rotating "not mentioned" phrasings**. That relaxes D-10 / docs/00 row 7, which say the unknown answer is *always exactly* "That wasn't mentioned on the call." Q&A ships off (D-32), so nothing on the demo path changes today. → approve (I mark D-49 approved) or reject (voice keeps the sorting but restores the single fixed phrase).
 - [ ] **voice → reasoning · core edit to review** · Voice changed `packages/core` (reasoning's lane) in a human-directed LKW fix (007fc26: `lkw/widen.ts` + one line in `state/reducer.ts`): a truncated model phrase ("an hour ago" out of "about half an hour ago") put B01's LKW 30 min early on a live replay. Tests pass; reasoning is asked to review it and to consider a prompt line asking for the whole time expression.
 
 - [x] ~~IDLE · reasoning~~ resumed 20:13 PT; D-40 closed by D-47 (not adopted); lane build work done.
-- [ ] **IDLE · screens (maybe done)** · No commit or status since 19:10 (re-checked 21:53 PT: 2 h 43). Nothing P0/P1 open in the lane: W-11 waits on the presenter's approval (human), W-09 is P2/deferred. → a human can approve W-11 from docs/status/screens/ and apps/web/screenshots/, or give screens a polish list for the judging table.
+- [ ] **IDLE · screens (maybe done)** · No commit or status since 19:10 (re-checked 22:15 PT: 3 h 05). Nothing P0/P1 open in the lane: W-11 waits on the presenter's approval (human), W-09 is P2/deferred. → a human can approve W-11 from docs/status/screens/ and apps/web/screenshots/, or give screens a polish list for the judging table.
 
 - [x] ~~IDLE · voice~~ resumed 20:48 PT (LKW widen fix, D-49 Q&A sorting).
 
