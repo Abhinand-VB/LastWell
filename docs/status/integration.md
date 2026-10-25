@@ -2,7 +2,7 @@
 
 Only the integration session edits this file.
 
-## Remaining work (snapshot 2026-10-25 01:37 PT; refreshed every 20-minute loop)
+## Remaining work (snapshot 2026-10-25 01:58 PT; refreshed every 20-minute loop)
 
 Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live eval on the 20 scripts, numbers on the slide → (c) browser-mic fallback + play-briefing-locally on the live gateway → (d) W-11 polish for the judging table. Q&A (D-32: R-08, V-08 live) only after all of that is green. No real phone calls 9 PM–8 AM (FakeTelephony overnight).
 
@@ -12,7 +12,6 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 | V-09 | browser mic live check (gateway side in, 998f166) | P1 | voice | needs a person at the laptop |
 | V-10 | live Ink kill/reconnect check | P1 | voice | no |
 | W-11 | polish list from Liang → screens; approved once it lands | P1 | screens | waits on the list |
-| V-13 | landed 0fed720; fix wording + field name to D-53 | P1 | voice | no (by 1:45 AM or morning) |
 | W-13 | notes field + Send at every level | P1 | screens | held until the morning (D-53 deadline) |
 | C-04 | print deck, slide, two timed pitch runs | P1 | humans | human |
 | LKW "N past H" | parser misses "ten past three" (blind set A11) — fix or leave is a human decision (BLOCKERS) | P1 | humans → reasoning | waits on the decision |
@@ -83,6 +82,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - `pnpm dev:fake` replays A01 through `POST /api/calls/replay`; it logs a 404 until V-11 lands, and the gateway runs without fakes until X-01b lands (it ignores `LASTWELL_FAKES` today).
 
 ## Periodic version1 checks (newest first)
+- 2026-10-25 01:58 PT · version1 32049eb (V-13 D-53 fixes, W-11 board rename) · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50).
 - 2026-10-25 01:35 PT · version1 10c46e5 (voice V-13 note/override, screens W-11 light theme D-54…D-56) · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50).
 - 2026-10-25 01:13 PT · version1 967dfd3 · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50). All lanes quiet (voice 57 min, nothing open for it until the 8 AM tests; reasoning and screens have nothing open). Waiting: parser-gap decision; freeze 2 AM.
 - 2026-10-25 00:51 PT · version1 6311fb2 · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50). Voice 35 min, reasoning 4 h 29, screens 5 h 41. Waiting: the parser-gap decision; freeze at 2 AM.
