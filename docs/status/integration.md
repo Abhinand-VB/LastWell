@@ -2,7 +2,7 @@
 
 Only the integration session edits this file.
 
-## Remaining work (snapshot 2026-10-24 20:46 PT; refreshed every 20-minute loop)
+## Remaining work (snapshot 2026-10-24 21:08 PT; refreshed every 20-minute loop)
 
 Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live eval on the 20 scripts, numbers on the slide → (c) browser-mic fallback + play-briefing-locally on the live gateway → (d) W-11 polish for the judging table. Q&A (D-32: R-08, V-08 live) only after all of that is green. No real phone calls 9 PM–8 AM (FakeTelephony overnight).
 
@@ -84,6 +84,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - `pnpm dev:fake` replays A01 through `POST /api/calls/replay`; it logs a 404 until V-11 lands, and the gateway runs without fakes until X-01b lands (it ignores `LASTWELL_FAKES` today).
 
 ## Periodic version1 checks (newest first)
+- 2026-10-24 21:08 PT · version1 11eb6ef (voice LKW widen fix, D-49 Q&A sorting) · verify exit 0 · e2e 23/0/0 (strict) · **synced to main: PR #4, a10249f**. Idle: screens 2 h (nothing P0/P1 open); voice active 20:52; reasoning 20:22.
 - 2026-10-24 20:45 PT · version1 7634766 = main (6b572d0, PR #3) · verify exit 0 · e2e 23/0/0 (strict) · no sync needed. Idle: voice 2 h (18:47), screens 1 h 35 (19:10, nothing P0/P1 open); reasoning 20:22.
 - 2026-10-24 20:23 PT · version1 32fe31a (D-46 compact guardrails, R-08, D-47 human decisions, fast-5/reasoner-5) · verify exit 0 · e2e 23/0/0 (strict). Idle: reasoning active (20:20) and its build work is done; voice 96 min; screens 73 min (nothing P0/P1 open).
 - 2026-10-24 20:00 PT · version1 e6d3aff (no new commits) · verify exit 0 · e2e 23/0/0 (strict). Idle: voice 73 min, reasoning 48 min, screens 50 min → all three in BLOCKERS (screens likely just finished).
@@ -100,6 +101,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - 2026-10-24 15:58 PT · df3e7a7 · verify exit 0 · e2e 2 pending.
 
 ## Handled requests from other lanes
+- [x] from voice: D-49 recorded in docs/09 (proposed, flagged for human approval because it relaxes D-10), notes in docs/04 §4 (outside the prompt block) and docs/05 §8.
 - [x] from reasoning (D-47): README "Honest limits" gains append-only signs and no sex from a bare pronoun; D-40 marked not adopted in docs/09; slide/README footnote names the prompt versions of E-03 run 2 and the fast-5/reasoner-5 spot check.
 - [x] from screens (W-12): X-03 now runs dev:fake with `ALERT_DELIVERY=local` and clicks send-button → confirm-checkbox → modal-send → play-briefing until `alert-status[data-status=completed]` (A02 replay); the phone path stays covered by `pnpm e2e`.
 - [x] from reasoning: E-03 run 2 (slide numbers) → README Results + docs/08 §3; all 16 card scripts still match truth (final and peak) in run 2.

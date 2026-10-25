@@ -3,6 +3,7 @@
 import { existsSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { z } from "zod";
+import { DEFAULT_KEYTERMS, parseKeyterms } from "@lastwell/stt";
 
 const ROOT_ENV = fileURLToPath(new URL("../../../.env", import.meta.url));
 
@@ -18,6 +19,13 @@ export const EvalEnv = z.object({
   CALL_TIMEZONE: z.string().default("America/Los_Angeles"),
   LIKELY_MIN_DISTINCT_SIGNS: z.coerce.number().int().min(1).default(2),
   EVAL_CONCURRENCY: z.coerce.number().int().min(1).max(8).default(2),
+  // Audio robustness run (src/audio): Sonic generates the calls, Ink 2 transcribes them.
+  CARTESIA_API_KEY: z.string().optional(),
+  CARTESIA_VERSION: z.string().default("2026-08-14"),
+  CARTESIA_STT_MODEL: z.string().default("ink-2"),
+  CARTESIA_TTS_MODEL: z.string().default("sonic-3.6"),
+  CARTESIA_VOICE_ID: z.string().default("db6b0ed5-d5d3-463d-ae85-518a07d3c2b4"),
+  STT_KEYTERMS: z.string().default(DEFAULT_KEYTERMS).transform(parseKeyterms),
 });
 export type EvalEnv = z.infer<typeof EvalEnv>;
 
@@ -31,6 +39,13 @@ export function loadEnv(source: NodeJS.ProcessEnv = process.env, loadFile = true
     throw new Error(`Invalid eval environment:\n${lines.join("\n")}`);
   }
   return r.data;
+}
+
+export function requireCartesiaKey(env: EvalEnv): string {
+  if (env.CARTESIA_API_KEY === undefined || env.CARTESIA_API_KEY.trim() === "") {
+    throw new Error("CARTESIA_API_KEY is not set: put it in the repo-root .env (see .env.example).");
+  }
+  return env.CARTESIA_API_KEY;
 }
 
 /** docs/07 §6 item 5: a live run refuses to start without a key. */

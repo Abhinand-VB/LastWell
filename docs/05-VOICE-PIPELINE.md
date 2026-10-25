@@ -200,6 +200,8 @@ stop / close: ink.close(); tts.close(); status = completed (or failed if before 
 
 Silence while we speak: the Q&A Ink session receives the neurologist's inbound audio continuously from Twilio anyway (our playback is on the outbound side), so no synthetic silence is needed.
 
+Utterance sorting (D-49, proposed, pending human approval): `onQuestion` first sorts the utterance by code; closing/thanks → fixed goodbye + `hangup()`; acknowledgment → no answer; unclear → fixed reprompt; questions about LastWell → fixed self-description; only the rest goes to `qa()`. The unknown answer rotates among three fixed phrasings, `QA_FALLBACK` first.
+
 Hang-up: when the neurologist hangs up, Twilio sends `stop`. Timeout: if no question arrives for 60 s after the last answer, `hangup()` (`calls(sid).update({status:"completed"})`) to save credits.
 
 ## 9. Failure handling and degradation

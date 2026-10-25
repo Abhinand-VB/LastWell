@@ -5,6 +5,7 @@
   "scripts": {
     "eval": "tsx src/run.ts",
     "validate": "tsx src/validate.ts",
+    "audio:robustness": "tsx src/audio/robustness.ts",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run"
   },

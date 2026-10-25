@@ -2,6 +2,7 @@
 // call; WS /browser/media/:callId?token= carries pcm_s16le 16 kHz frames from one laptop mic, so every
 // utterance is speaker `mixed`. A {"type":"end"} text frame or socket close ends the call.
 import type { FastifyInstance } from "fastify";
+import { actorOf } from "../audit/auditTrail.js";
 import type { Logger } from "pino";
 import { BrowserMediaControl } from "@lastwell/core";
 import type { CallService } from "../pipeline/calls.js";
@@ -38,6 +39,7 @@ export function registerBrowserMedia(app: FastifyInstance, deps: BrowserMediaDep
     const call = deps.calls.registry.get(callId);
     if (!call) return reply.code(404).send({ error: { code: "unknown_call", message: `unknown call ${callId}` } });
     if (call.mode !== "browser") return reply.code(409).send({ error: { code: "bad_mode", message: "only browser calls end this way" } });
+    call.audit.push({ at: new Date().toISOString(), type: "dispatcher", action: "end_call", actor: actorOf(req.headers["x-lastwell-actor"]), alertId: null, targetPhoneMasked: null, detail: "browser call ended from the console" });
     void deps.calls.end(call);
     return { ok: true };
   });

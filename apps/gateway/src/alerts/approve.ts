@@ -7,6 +7,8 @@ import type { Logger } from "pino";
 import { CaseState, composeBriefing, type AlertStatus, type AlertSummary, type ModelClient } from "@lastwell/core";
 import { finalizeQa, type QaFinal } from "./qaAnswer.js";
 import type { CallService } from "../pipeline/calls.js";
+import { maskNumber } from "../pipeline/callRegistry.js";
+import type { AuditEvent, DispatcherAction } from "../audit/auditTrail.js";
 import type { Repo } from "../store/repo.js";
 import type { TtsClient } from "../tts/sonic.js";
 import { NotAllowedError, type TelephonyClient } from "../twilio/client.js";
@@ -57,6 +59,16 @@ export class AlertService {
     this.deps.hub.toCallAndBoard(a.callId, { type: "alert.updated", alert: toSummary(a) });
   }
 
+  /** Append to the call's audit trail (in memory while the call is resident). */
+  private audit(callId: string, ev: AuditEvent): void {
+    this.deps.calls.registry.get(callId)?.audit.push(ev);
+  }
+
+  private action(callId: string, action: DispatcherAction, actor: string, alertId: string | null, detail: string | null = null, targetPhone: string | null = null): void {
+    this.audit(callId, { at: this.now().toISOString(), type: "dispatcher", action, actor, alertId, targetPhoneMasked: maskNumber(targetPhone), detail });
+    this.deps.log.info({ event: "audit.action", callId, alertId, action, actor }, "dispatcher action");
+  }
+
   /** Apply a status change (forward only unless forced) + store + broadcast. Returns false if refused. */
   setStatus(a: AlertRecord, to: AlertStatus, opts: { lastError?: string | null; force?: boolean; ms?: number } = {}): boolean {
     if (!opts.force && !canTransition(a.status, to)) return false;
@@ -66,6 +78,7 @@ export class AlertService {
     a.updatedAt = this.now().toISOString();
     this.deps.repo.patchAlert(a.id, { status: to, ...(opts.lastError !== undefined ? { lastError: opts.lastError } : {}) }, a.updatedAt);
     this.deps.log.info({ event: `alert.${to}`, alertId: a.id, callId: a.callId, from, ...(opts.ms !== undefined ? { ms: opts.ms } : {}) }, `alert ${to}`);
+    this.audit(a.callId, { at: a.updatedAt, type: "alert.status", alertId: a.id, from, to, lastError: a.lastError });
     this.broadcast(a);
     return true;
   }
@@ -79,10 +92,13 @@ export class AlertService {
   }
 
   /** POST /api/calls/:callId/alert */
-  async approve(callId: string, targetPhone: string): Promise<ActionResult<AlertSummary>> {
+  async approve(callId: string, targetPhone: string, actor = "dispatcher console"): Promise<ActionResult<AlertSummary>> {
     const t0 = Date.now();
-    if (!this.allowed(targetPhone)) return this.notAllowed(targetPhone);
     const call = this.deps.calls.registry.get(callId);
+    if (!this.allowed(targetPhone)) {
+      if (call) this.action(callId, "approve", actor, null, "refused: number not on ALERT_ALLOWED_NUMBERS, no call placed", targetPhone);
+      return this.notAllowed(targetPhone);
+    }
     if (!call || !call.runner) return fail(404, "unknown_call", `unknown call ${callId}`);
     const state = call.runner.state;
     if (state.level === "none") return fail(409, "no_signs", "No stroke signs heard yet: nothing to pre-alert");
@@ -90,6 +106,7 @@ export class AlertService {
       return fail(409, "alert_active", "an alert for this call is already in progress");
     }
     const a = this.create(callId, call.label, targetPhone, state, [...call.utterances]);
+    this.action(callId, "approve", actor, a.id, `level ${state.level}; briefing composed from the state at approval (version ${state.version})`, targetPhone);
     const r = await this.synthesizeAndDial(a);
     if (!r.ok) return r;
     this.deps.log.info({ event: "alert.created", alertId: a.id, callId, ms: Date.now() - t0, words: a.briefingText.split(/\s+/).length }, "alert created");
@@ -205,9 +222,10 @@ export class AlertService {
   }
 
   /** POST /api/alerts/:id/played: the browser finished playing the briefing → briefed → completed. */
-  async played(alertId: string): Promise<ActionResult<AlertSummary>> {
+  async played(alertId: string, actor = "dispatcher console"): Promise<ActionResult<AlertSummary>> {
     const a = await this.load(alertId);
     if (!a) return fail(404, "unknown_alert", `unknown alert ${alertId}`);
+    if (a.status !== "completed") this.action(a.callId, "played_locally", actor, a.id);
     if (a.status === "completed") return { ok: true, value: toSummary(a) };
     if (a.status === "failed") return fail(409, "bad_state", "the briefing failed; retry first");
     if (a.status !== "briefed") this.setStatus(a, "briefed");
@@ -358,17 +376,19 @@ export class AlertService {
   }
 
   /** POST /api/alerts/:id/hangup */
-  async hangup(alertId: string): Promise<ActionResult<true>> {
+  async hangup(alertId: string, actor = "dispatcher console"): Promise<ActionResult<true>> {
     const a = await this.load(alertId);
     if (!a) return fail(404, "unknown_alert", `unknown alert ${alertId}`);
+    this.action(a.callId, "hangup", actor, a.id);
     await this.hangupSid(a);
     return { ok: true, value: true };
   }
 
   /** POST /api/alerts/:id/retry ("Call again"): from calling, ringing or failed; same alert row. */
-  async retry(alertId: string): Promise<ActionResult<AlertSummary>> {
+  async retry(alertId: string, actor = "dispatcher console"): Promise<ActionResult<AlertSummary>> {
     const a = await this.load(alertId);
     if (!a) return fail(404, "unknown_alert", `unknown alert ${alertId}`);
+    this.action(a.callId, "retry", actor, a.id, `from ${a.status}`, a.targetPhone);
     const retryable = this.deps.delivery === "local" ? ["queued", "failed"] : ["calling", "ringing", "failed"];
     if (!retryable.includes(a.status)) return fail(409, "bad_state", `cannot retry from ${a.status}`);
     if (!this.allowed(a.targetPhone)) return this.notAllowed(a.targetPhone);
@@ -381,9 +401,10 @@ export class AlertService {
   }
 
   /** POST /api/alerts/:id/ems-confirm */
-  async emsConfirm(alertId: string, confirmed: boolean): Promise<ActionResult<AlertSummary>> {
+  async emsConfirm(alertId: string, confirmed: boolean, actor = "dispatcher console"): Promise<ActionResult<AlertSummary>> {
     const a = await this.load(alertId);
     if (!a) return fail(404, "unknown_alert", `unknown alert ${alertId}`);
+    this.action(a.callId, confirmed ? "ems_confirm" : "ems_unconfirm", actor, a.id);
     a.emsConfirmedAt = confirmed ? this.now().toISOString() : null;
     a.updatedAt = this.now().toISOString();
     this.deps.repo.patchAlert(a.id, { emsConfirmedAt: a.emsConfirmedAt }, a.updatedAt);
