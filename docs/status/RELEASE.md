@@ -6,6 +6,14 @@ Maintained by the integration session (task X-05).
 - **Sync merges (D-48, ended by D-50):** PRs #2–#5 synced `main` to a green `version1`; the last was #5 (dcc4d93, 21:20 PT). Since D-50 everything runs from `version1` and `main` is not touched until the end.
 - **Final release (D-50):** one PR `version1 → main` at the end, after the final green check on the tip, merged with a regular merge, then tagged `demo-ready`. The title and body below are reused for it.
 
+## Devpost draft (C-05; humans finalize)
+
+**Inspiration.** An EMT we spoke with was intrigued by the idea of catching strokes that nobody on the call recognizes and getting the stroke team alerted early. They were also skeptical: classic strokes are usually obvious, and public education may matter more.
+
+**What we learned.** That skepticism changed our focus. A clear-cut stroke usually gets recognized; the ones that slip through are strokes that don't look like strokes: dizziness and double vision, "he sounds drunk", "maybe it's her glasses". We put those chameleons first: in our scripted set LastWell flagged all 5 (a keyword alert caught 1), and the demo opens with one.
+
+**Honest limits to keep in the submission.** Scripted calls written by us; the clinical truth labels for A05 (aspirin case) and B08 (migraine-history case) were not reviewed by a clinician; the EMT interview did not cover last-known-well reliability or antiplatelets.
+
 ## PR title
 
 LastWell v1: live 911 stroke flagging with quotes, LKW parser, dispatcher-approved Sonic briefing call

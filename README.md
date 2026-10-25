@@ -105,6 +105,7 @@ Every script ended at its expected level (20/20). Run 2 used prompt versions `fa
 
 ## Honest limits
 
+- **Clinical truth labels are partly unverified.** An EMT gave us feedback on the idea, but the expected answers for scripts A05 (an aspirin case) and B08 (a migraine-history case) have not been reviewed by a clinician.
 - **Scripted calls, not real 911 audio.** The test calls were written by us, so our numbers will look better than reality. For a real-world reference: in a Copenhagen study, an AI model recognized 63.0% of strokes with 24.9% precision, against 52.7% / 17.1% for human call handlers.
 - **Fallback without the phone line.** If the phone path fails at the table, the caller speaks into the browser microphone and the Sonic briefing plays from the laptop speaker (`ALERT_DELIVERY=local`); the rest of the pipeline is identical.
 - **The demo phones belong to teammates.** At the judging table, teammates play the caller, the dispatcher and the on-call clinician. The judge draws the case card and checks the sealed answer.

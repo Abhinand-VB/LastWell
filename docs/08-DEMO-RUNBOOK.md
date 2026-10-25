@@ -19,13 +19,13 @@ Roles: **Presenter** (deck, slide). **Caller** (teammate, sits at the mic and ac
 | Time | What happens | Who | Cue / fallback |
 | --- | --- | --- | --- |
 | 0:00 | Copenhagen hook (same words as §3). | Presenter | — |
-| 0:10 | The judge draws from the **full deck**; for a stroke card the presenter writes the LKW time in the blank (D-20) and hands it to the caller. | Presenter + judge | — |
+| 0:10 | **Open with a chameleon** (EMT feedback, 2026-10-24): the presenter fans the stroke pile's two chameleon cards (B01, B06) face down and the judge picks one; the presenter writes the LKW time in the blank (D-20) and hands it to the caller. "Classic strokes are usually obvious. This one isn't." | Presenter + judge | — |
 | 0:15 | Runner opens `/mic` → **Start** (a new browser call opens on the console). "Our phone line just dropped, so this call comes through this microphone — the pipeline after it is identical." | Runner + presenter | No transcript within 4 s → check the mic level meter, then restart `/mic`. |
 | 0:20 | Dispatcher: "911, what is the address of your emergency?" … "Tell me exactly what happened." The caller acts the card. Console: transcript (speaker `mixed`), quotes underline, Possible → Likely, the "what time exactly" banner. | Caller + dispatcher | The dispatcher asks open questions so the caller's own words carry the signs. |
 | 0:50 | Dispatcher follows the banner (LKW, blood thinners, face/arm check). If the card shows Possible or Likely and the dispatcher judges it a stroke: **Send stroke pre-alert** → confirm. | Dispatcher | Never send at None. |
 | 1:00 | The alert status shows the briefing is ready → Runner (as the medical professional) clicks **Play briefing**: Sonic reads the briefing from the laptop speaker. "This is what the on-call stroke neurologist hears when they pick up." | Runner | No audio → check volume; replay once; else backup video from 1:00. |
 | 1:15 | The judge flips the card; presenter points at the board (quotes, countdown, "Dispatcher pre-alert"). | Judge + presenter | — |
-| 1:25 | Not a stroke on the first card → one draw from the **stroke pile**, short form; otherwise the B01/C01 replays (`/`). | Presenter | — |
+| 1:25 | If there is time: one draw from the **full deck** (strokes, chameleons, look-alikes), short form; otherwise the B01/C01 replays (`/`). | Presenter | — |
 | 1:45 | Slide (§3 numbers). | Presenter | — |
 
 Honest line for judges who ask: "Normally the briefing is a phone call to the stroke team; that path is built and you can see it in the code and the tests."
@@ -77,12 +77,12 @@ Smoke test (two minutes, every time)
 | Time | What happens | Who | Cue / fallback |
 | --- | --- | --- | --- |
 | 0:00 | "In a big Copenhagen study, call handlers caught about half of strokes on the 911 call. And the hospital usually hears only once paramedics are with the patient." | Presenter | — |
-| 0:10 | Presenter fans the **full deck** face down: "Pick any case — some are strokes, some only look like one. The answer is sealed on the back." The judge draws one. If it is a stroke card, the presenter writes the LKW time in the blank (the half-hour mark about one hour before now, D-20) and hands it to the caller; the judge keeps sight of the sealed back. | Presenter + judge | Never let the caller see the back. |
+| 0:10 | **Open with a chameleon** (EMT feedback, 2026-10-24): the presenter fans the stroke pile's two chameleon cards (B01, B06) face down: "Classic strokes are usually obvious — here is one that isn't. The answer is sealed on the back." The judge picks one; the presenter writes the LKW time in the blank (the half-hour mark about one hour before now, D-20) and hands it to the caller; the judge keeps sight of the sealed back. A chameleon holds at **Possible** with a face/arm banner; the dispatcher still sends the pre-alert (Send is enabled at Possible). | Presenter + judge | Never let the caller see the back. |
 | 0:20 | The caller dials the demo number from their own phone and acts the card's front in their own words; the dispatcher answers "911, what is the address of your emergency?" then "Tell me exactly what happened." Console: words underline, the card moves to Possible (and Likely when two quoted signs include a focal one), banner "Ask: what time exactly was he last seen completely normal?" when the time is vague. | Caller + dispatcher | No transcript within 4 s of the first sentence → Runner says "switching to the table mic" and opens `/mic` (§5). |
 | 0:50 | Dispatcher follows the banner (last known well, blood thinners, the face/arm check the card asks for). If the card shows Possible or Likely and the dispatcher judges it a stroke, they click **Send stroke pre-alert** — the caller may still be on the line (D-30) — and confirm the prefilled number (the medical professional's). For a look-alike, the presenter points at the look-alike panel: LastWell names the alternative instead of escalating. | Dispatcher | If LKW didn't parse, the dispatcher asks "so about 9:30 this morning?" to get a clean phrase. Never send for a card the console holds at None. |
 | 1:00 | The medical professional's phone rings (on speaker); Sonic reads the briefing with the LKW time and the blood thinner. | Medical professional | No ring within 20 s → Runner clicks "Call again" once; still nothing → backup video from 1:00. |
 | 1:15 | **The judge flips the card**: the sealed answer (stroke or not, expected level, LKW, blood thinner) next to what LastWell showed. Presenter points at the board: card, quotes, countdown, "Dispatcher pre-alert" status. | Judge + presenter | — |
-| 1:25 | If the first card was not a stroke (no briefing yet), the judge draws again from the **stroke pile** (4 cards) and 0:20–1:15 repeats in short form; otherwise 15 s on the replays ("Replay B01" / "Replay C01" on `/`, task W-10): the chameleon held at **Possible** with two quoted signs and a face-check banner ("no keyword would have fired"), the look-alike held at Possible with "low blood sugar — answered". | Presenter | Replays depend on nothing but Claude; their LKW reads relative to the real clock (docs/05 §13). |
+| 1:25 | If there is time, the judge draws from the **full deck** (12 cards: strokes, chameleons, look-alikes, no-stroke traps) and 0:20–1:15 repeats in short form; otherwise 15 s on the replays ("Replay B01" / "Replay C01" on `/`, task W-10). Classic cards (A01, A02) stay in the stroke pile as the backup for a sure Likely + briefing. | Presenter | Replays depend on nothing but Claude; their LKW reads relative to the real clock (docs/05 §13). |
 | 1:45 | One slide: test-set results vs keyword baseline, labelled "20 scripted calls" (D-33). "What's next: shadow mode with a 911 center." | Presenter | — |
 
 Say these words somewhere in the two minutes: "quote or drop", "the time is computed by code, not by the model", "the dispatcher approves every alert", "we never say not a stroke".
@@ -154,6 +154,16 @@ The brief's hour-by-hour plan (Fri 6 PM → Sun 9 AM) assumed a Friday start. If
 | M-05 | Sun 2 AM | Feature freeze; only bug fixes after this | — |
 | M-06 | Sun 6–8 AM | Ten full rehearsals on the real line; final Devpost edits | — |
 | — | Sun 9 AM | Submission (aim for 8:00); 10:30 whole team at the table | — |
+
+## 10. Judge Q&A (prepared answers)
+
+**"Aren't strokes obvious? EMS usually knows."** (an EMT we spoke with raised exactly this)
+Classic ones often are, and LastWell isn't aimed at those. In a large Copenhagen study of 911 calls, human call handlers recognized only 52.7% of strokes. The misses are mostly the ones that don't look like strokes: dizziness, double vision, "he sounds drunk". In our scripted test set, LastWell flagged all 5 of those chameleons (5/5); a keyword alert caught 1 of 5, and only because that caller literally said "slurred". The point is the call where nobody says "stroke".
+
+**"Isn't public education the real fix?"**
+Education is the bigger lever, and it's slow and uneven: callers will keep describing a stroke as "just tired" or "her glasses". LastWell works on the call as it actually happens, and it never replaces the dispatcher: it shows quotes and suggests one question; the dispatcher decides. Both help, and they don't compete.
+
+Numbers to have ready: Copenhagen: call handlers 52.7% recall vs an AI model 63.0% recall at 24.9% precision; strokes ≈ 4 per 1,000 calls. Ours (20 scripted calls, written by us): strokes flagged 12/12 vs keyword 3/12; chameleons 5/5 vs keyword 1/5; LKW correct 16/16; invented facts 0. Always say "scripted".
 
 ## 9. Submission (brief §13, Hacker Guide)
 

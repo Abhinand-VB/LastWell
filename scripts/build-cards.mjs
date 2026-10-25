@@ -27,13 +27,13 @@ const CARDS = [
     `If asked when he was last normal: “He was fine at about ${BLANK}.”`,
     "If asked about blood thinners: “No, just his blood pressure pills.”",
     "Address: 455 Noriega Street." ] },
-  { id: "A05", pile: "stroke", who: "You are calling about your wife, 75.", lines: [
+  { id: "A05", pile: "deck", who: "You are calling about your wife, 75.", lines: [
     "All of a sudden she can’t see out of her right eye — it just went dark.",
     "Her left hand is numb and weak; she can barely squeeze your fingers.",
     `If asked when she was last normal: “She was fine at about ${BLANK}.”`,
     "If asked about blood thinners: “She takes a baby aspirin every day.”",
     "Address: 3301 Irving Street." ] },
-  { id: "A06", pile: "stroke", who: "You are a caregiver at a care home, calling about Mrs. Lee, 88.", lines: [
+  { id: "A06", pile: "deck", who: "You are a caregiver at a care home, calling about Mrs. Lee, 88.", lines: [
     "She understands you and nods, but she can’t say any words — nothing comes out.",
     "Her right arm is limp; she can’t hold her cup with it at all.",
     `If asked when she was last normal: “She was fine at about ${BLANK}.”`,
@@ -54,7 +54,7 @@ const CARDS = [
     `If asked when he was last normal: “He was fine at about ${BLANK}.”`,
     "If asked about blood thinners: “No, he doesn’t take anything like that.”",
     "Address: 88 Judah Street." ] },
-  { id: "B01", pile: "deck", who: "You are calling about your wife, 74.", lines: [
+  { id: "B01", pile: "stroke", who: "You are calling about your wife, 74.", lines: [
     "She’s dizzy, keeps bumping into the wall, and says she sees double. You think she’s just tired.",
     "If asked to have her smile: her face looks normal. If asked about her arms: both are fine. She just can’t walk straight.",
     `If asked when she was last normal: “She was fine at about ${BLANK}.”`,
@@ -71,7 +71,7 @@ const CARDS = [
     `If asked when she was last normal: “We talked at ${BLANK} and she was fine.”`,
     "She lives alone. You don’t know her medicines.",
     "Her address: 19 Vicente Street." ] },
-  { id: "B06", pile: "deck", who: "You are calling about your wife, 72.", lines: [
+  { id: "B06", pile: "stroke", who: "You are calling about your wife, 72.", lines: [
     "She suddenly can’t see anything on her left side, and keeps bumping into the furniture. Maybe it’s her glasses?",
     "She is awake and talking, just upset.",
     `If asked when she was last normal: “She was fine at about ${BLANK}.”`,
@@ -158,10 +158,14 @@ const scripts = Object.fromEntries(CARDS.map((c) => [c.id, JSON.parse(readFileSy
 const piles = { stroke: CARDS.filter((c) => c.pile === "stroke"), deck: CARDS.filter((c) => c.pile === "deck") };
 if (piles.stroke.length !== 4 || piles.deck.length !== 12) throw new Error(`need 4 + 12 cards, got ${piles.stroke.length} + ${piles.deck.length}`);
 for (const c of piles.stroke) if (!scripts[c.id].truth.isStroke) throw new Error(`${c.id} is in the stroke pile but is not a stroke`);
+// EMT feedback (2026-10-24): lead with strokes that do not look like strokes; the pile carries at least 2 chameleons.
+if (piles.stroke.filter((c) => scripts[c.id].type === "chameleon").length < 2) throw new Error("stroke pile needs at least 2 chameleons");
 for (const c of CARDS) if (scripts[c.id].truth.isStroke && scripts[c.id].truth.lkw !== null && !c.lines.some((l) => l.includes(BLANK))) throw new Error(`${c.id}: stroke card without the LKW blank (D-20)`);
 
 let n = 0;
-const pages = [...piles.deck, ...piles.stroke].map((c) => front(c, ++n) + back(c, scripts[c.id])).join("\n");
+// Stroke pile first in print, chameleons leading, so the presenter can open with a chameleon.
+const order = (c) => (scripts[c.id].type === "chameleon" ? 0 : 1);
+const pages = [...[...piles.stroke].sort((a, b) => order(a) - order(b)), ...piles.deck].map((c) => front(c, ++n) + back(c, scripts[c.id])).join("\n");
 const html = `<!doctype html>
 <html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>LastWell Demo Cards</title>

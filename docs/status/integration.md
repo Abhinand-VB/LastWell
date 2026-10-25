@@ -24,7 +24,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 
 
 ## Current task
-- 2026-10-24 ~21:40 PT: D-50 — everything runs from version1; 20-minute checks of the version1 tip continue, **no per-loop main sync**; one version1 → main merge at the end after the final green check.
+- 2026-10-24 ~22:30 PT: EMT interview input applied (Devpost draft, chameleon-first demo, stroke pile re-cut, judge Q&A); 20-minute version1 checks (D-50, main untouched).
 
 ## Last green commit on version1
 - (X-04, see below)
@@ -105,6 +105,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - 2026-10-24 15:58 PT · df3e7a7 · verify exit 0 · e2e 2 pending.
 
 ## Handled requests from other lanes
+- [x] from a human (EMT interview): Devpost Inspiration + What we learned (RELEASE.md), docs/interview.md, chameleon-first demo (docs/08 §0, §3), stroke pile B01, B06, A01, A02 (≥ 2 chameleons, generator enforces it), judge Q&A (docs/08 §10), README limit on unverified A05/B08 labels. **Correction to the request:** the keyword baseline caught 1/5 chameleons (B08, "slurred"), not 0/5; LastWell 5/5 (E-03 run 2). B08 and A05 kept out of the stroke pile (unverified labels).
 - [x] from voice: Q&A latency numbers → README (Cartesia section, marked as bench numbers, Q&A off by default); decision recorded as D-51 (proposed, human glance wanted, extends D-10).
 - [x] from voice: audio robustness table → README Results + docs/08 slide line, with the synthetic-speech caveat.
 - [x] from voice: D-49 recorded in docs/09 (proposed, flagged for human approval because it relaxes D-10), notes in docs/04 §4 (outside the prompt block) and docs/05 §8.
