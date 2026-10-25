@@ -7,6 +7,7 @@ import { useCallback, useEffect, useState } from "react";
 import type { AlertSummary, CallListItem } from "@lastwell/core";
 import { gateway, GatewayError } from "@/lib/gateway";
 import { useConfig } from "@/hooks/useConfig";
+import { claimCall, useIncomingCall } from "@/hooks/useIncomingCall";
 import { useNow } from "@/hooks/useNow";
 import { AppNav } from "@/components/AppNav";
 import { MicIcon, PhoneIcon, PlayIcon } from "@/components/icons";
@@ -47,6 +48,7 @@ export function HomeView() {
   const [alerts, setAlerts] = useState<AlertSummary[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
+  useIncomingCall(true);
 
   const refresh = useCallback(async () => {
     try {
@@ -70,6 +72,7 @@ export function HomeView() {
     setError(null);
     try {
       const { callId } = await gateway.replay(scriptId);
+      claimCall(callId); // this tab opens it; no other tab auto-opens it too
       router.push(`/console/${callId}`);
     } catch (err) {
       setError(`Replay ${scriptId} failed: ${err instanceof Error ? err.message : "error"}`);

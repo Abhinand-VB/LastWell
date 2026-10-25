@@ -12,6 +12,7 @@ import { StrokeCard } from "@/components/console/StrokeCard";
 import { FactsPanel, LatencyReadout, LookalikePanel, NextQuestionBanner, WarningBanners } from "@/components/console/Panels";
 import { SendAlert, TestLinks } from "@/components/console/SendAlert";
 import { useConfig } from "@/hooks/useConfig";
+import { useConsoleTabBusy, useIncomingCall } from "@/hooks/useIncomingCall";
 import { mmss, stateRefs } from "@/lib/format";
 import { useNow } from "@/hooks/useNow";
 
@@ -22,6 +23,9 @@ export function ConsoleView({ callId }: { callId: string }) {
   const call = view.call;
   const debug = useDebugFlag();
   const [notice, setNotice] = useState<string | null>(null);
+  // A new call opens in the console tab, which this page leaves alone while its own call is live.
+  useIncomingCall(view.notFound || (call !== null && call.status !== "live"));
+  useConsoleTabBusy(callId, call?.status === "live");
 
   return (
     <main className="flex h-screen flex-col bg-lw-page text-lw-ink [color-scheme:light]">

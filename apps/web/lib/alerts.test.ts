@@ -1,7 +1,37 @@
 import { describe, expect, it } from "vitest";
-import { isActive, latestAlert, sendErrorText, statusSteps, stepIndex } from "./alerts";
+import {
+  NOTE_MAX,
+  OVERRIDE_REQUIRED_TEXT,
+  alertExtras,
+  belowPossible,
+  isActive,
+  latestAlert,
+  sendErrorText,
+  statusSteps,
+  stepIndex,
+} from "./alerts";
 import { GatewayError } from "./gateway";
 import { alert } from "./testFixtures";
+
+describe("D-53 send extras", () => {
+  it("note trimmed, empty dropped, never over 200; override only when asked", () => {
+    expect(alertExtras("", false)).toEqual({});
+    expect(alertExtras("   ", true)).toEqual({ override: true });
+    const note = `  Wife says "he slurred at breakfast", 7 AM.  `;
+    expect(alertExtras(note, false)).toEqual({ notes: `Wife says "he slurred at breakfast", 7 AM.` });
+    expect(alertExtras("x".repeat(250), false).notes).toHaveLength(NOTE_MAX);
+  });
+
+  it("only level none is below possible", () => {
+    expect(belowPossible("none")).toBe(true);
+    expect(belowPossible("possible")).toBe(false);
+    expect(belowPossible("likely")).toBe(false);
+  });
+
+  it("409 override_required gets its own wording", () => {
+    expect(sendErrorText(new GatewayError(409, "override_required", "No stroke signs heard yet"))).toBe(OVERRIDE_REQUIRED_TEXT);
+  });
+});
 
 describe("alert helpers", () => {
   it("steps follow featureQa", () => {
