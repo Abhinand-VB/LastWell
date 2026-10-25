@@ -2,7 +2,7 @@
 
 Only the integration session edits this file.
 
-## Remaining work (snapshot 2026-10-25 08:10 PT; refreshed every loop)
+## Remaining work (snapshot 2026-10-25 09:19 PT; refreshed every loop)
 
 Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live eval on the 20 scripts, numbers on the slide → (c) browser-mic fallback + play-briefing-locally on the live gateway → (d) W-11 polish for the judging table. Q&A (D-32: R-08, V-08 live) only after all of that is green. No real phone calls 9 PM–8 AM (FakeTelephony overnight).
 
@@ -81,6 +81,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - `pnpm dev:fake` replays A01 through `POST /api/calls/replay`; it logs a 404 until V-11 lands, and the gateway runs without fakes until X-01b lands (it ignores `LASTWELL_FAKES` today).
 
 ## Periodic version1 checks (newest first)
+- 2026-10-25 09:19 PT · version1 c70c6c5 · verify exit 0 · e2e 23/0/0 (strict) · GREEN. main 2b8f1f8 unchanged since PR #6 (green at 08:57). Submission deadline passed (9:00); waiting on the human decisions in BLOCKERS (canonical branch, D-57 clash, demo media check, demo-ready tag).
 - 2026-10-25 08:57 PT · **main 2b8f1f8 (PR #6 from `version2`, merged by a human 08:47) checked in a temp worktree: verify exit 0 (core 234 + 3 skipped, gateway 173, web 69, eval 58, stt 14; 20 + 8 scripts valid; scan:secrets clean), e2e 23/0/0 (strict) → GREEN.** main has work version1 lacks: Benmath123's Convex track features (flags default off, `smoke:convex`), DEVPOST-GUIDE.md. version1 2891c5c (green, 08:55) has 6 commits main lacks (integration status, voice demo media).
 - 2026-10-25 08:08 PT · version1 644f07b (voice: demo video sources, ~50 MB in media/) · verify exit 0 (scan:secrets clean, text patterns only) · e2e 23/0/0 (strict) · GREEN; main 51 behind. Flagged the media for a personal-data check before the final merge. (07:46 and 07:57 checks: green on b3e0451, not committed to keep the tip merge-ready.)
 - 2026-10-25 07:34 PT · version1 e4bc7fd (no new lane commits) · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main 49 behind (D-50). Final merge waits on the human go; checking every 10 min until 8:00.
