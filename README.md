@@ -117,6 +117,39 @@ Every script ended at its expected level (20/20). Run 2 used prompt versions `fa
 - **Sex from a bare pronoun is not extracted.** "He" or "she" alone does not set the patient's sex; words like "my father" or "my wife" do.
 - No audio is stored in phone mode. Transcripts live in the demo database only for the event and are wiped afterwards.
 
+## Path to production
+
+LastWell is a hackathon prototype tested on scripted calls. Getting it near a real 911 floor takes three stages, each with numbers fixed in advance and a clear stop-or-go. The measures are the ones our eval already computes, plus one only a hospital can provide:
+
+- **Sensitivity**: strokes flagged ÷ all strokes; **precision**: strokes ÷ all flags.
+- **Seconds to flag** from the start of the call.
+- **LKW accuracy**: last-known-well time within tolerance of the chart.
+- **Invented facts**: anything shown that the caller did not say. Must stay 0.
+- **Door-to-CT time** at the stroke center (stage 3 only).
+
+**Stage 1: retrospective, on archived calls.** Run LastWell offline over a 911 center's recorded calls, matched to stroke-registry outcomes, the design the Copenhagen and Bergen studies used. Nobody is affected; it answers "does it work on real audio?"
+- Measure: sensitivity, precision, seconds to flag, LKW accuracy against the chart, invented facts, and results broken down by caller accent, language and call quality.
+- Exit: agreed in advance with the center's medical director. For example: sensitivity at least the center's own call-handler rate (Copenhagen's call handlers recognized 52.7% of strokes), precision no worse than the Copenhagen AI model's 24.9%, invented facts 0, and no caller group doing clearly worse than the rest.
+
+**Stage 2: shadow mode, live.** LastWell listens to live calls, but dispatchers see nothing; its flags are compared with outcomes afterwards.
+- Measure: the same numbers on live audio, plus uptime and latency under real load and how often it would have pre-alerted a call that turned out not to be a stroke.
+- Exit: stage 1 numbers hold on live calls for a pre-agreed period, and the center's security review passes.
+
+**Stage 3: supervised pilot.** One 911 center and one stroke center. Dispatchers see the console and **approve every pre-alert**, as they do in the demo.
+- Measure: everything above, plus door-to-CT time for pre-alerted patients against the center's baseline, and dispatcher feedback (alert fatigue, trust).
+- Exit: a door-to-CT improvement the stroke team considers worthwhile, no safety events attributable to LastWell, and the go-ahead of both centers' clinical leads.
+
+**What is already built for this.**
+- **An audit trail per call** (`GET /api/calls/:callId/audit`): the transcript with timestamps, every quoted sign and fact, each level change with its reason, and who approved, retried or confirmed what, with phone numbers masked.
+- **Dispatcher approval on every alert.** LastWell never dispatches, changes call priority or speaks to the caller.
+- **Quote-or-drop:** 0 invented facts in every eval run so far.
+- **A first bias check** (`apps/eval/results/audio-robustness.md`): 6 scripts in calm, accented and panicked synthetic voices through real speech recognition gave the same results. Synthetic voices are not real callers; stage 1 is where this check becomes real.
+
+**Open questions we cannot answer yet.**
+- **Regulatory review:** whether decision support on a 911 call needs clearance as a medical device, and under which rules.
+- **911 security requirements:** call audio and transcripts leaving the center's network, vendor access, data retention.
+- **Real-audio performance:** every number we have comes from scripted calls written by our team, so we don't know how it performs on real 911 audio. Stage 1 exists to find out.
+
 ## For contributors and coding agents
 
 Start at [`CLAUDE.md`](./CLAUDE.md). The source of truth is [`docs/`](./docs), and [`docs/10-BUILD-SPEC.md`](./docs/10-BUILD-SPEC.md) describes how the four parallel sessions build and land work. `.env.example` lists every variable; keys never go into git (`pnpm scan:secrets` runs inside `pnpm verify`).

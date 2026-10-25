@@ -12,6 +12,8 @@ Maintained by the integration session (task X-05).
 
 **What we learned.** That skepticism changed our focus. A clear-cut stroke usually gets recognized; the ones that slip through are strokes that don't look like strokes: dizziness and double vision, "he sounds drunk", "maybe it's her glasses". We put those chameleons first: in our scripted set LastWell flagged all 5 (a keyword alert caught 1), and the demo opens with one.
 
+**Path to production (Microsoft "Built for the Real World").** Three stages, each with numbers set in advance and a stop-or-go. (1) **Retrospective:** run on a 911 center's archived calls matched to stroke-registry outcomes, as the Copenhagen and Bergen studies did; measure sensitivity, precision, seconds to flag, LKW accuracy and invented facts, broken down by caller group. (2) **Shadow mode:** live, with dispatchers seeing nothing, flags compared afterwards. (3) **Supervised pilot:** one 911 center and one stroke center, the dispatcher approves every pre-alert; adds door-to-CT time. Already built: a per-call audit trail, dispatcher approval on every alert, quote-or-drop (0 invented facts so far), a first audio robustness check with synthetic voices. Open: regulatory review, 911 security requirements, performance on real audio. Full text in the README.
+
 **Honest limits to keep in the submission.** Scripted calls written by us; the clinical truth labels for A05 (aspirin case) and B08 (migraine-history case) were not reviewed by a clinician; the EMT interview did not cover last-known-well reliability or antiplatelets.
 
 ## PR title
