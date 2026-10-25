@@ -3,10 +3,10 @@
 Only the reasoning session edits this file.
 
 ## Current task
-- Landing the compact guardrails prompts (fast-4/reasoner-4) + R-08 (qa-2). Then: report.
+- Lane build work done (R-03, R-06, R-08, R-10, E-01, E-03 ×2, X-01a, C-04 fake, D-39/D-45 contracts, D-41c, D-42/D-44/D-46 prompts). Waiting on human answers to the blockers below; both E-03 runs used.
 
 ## Last green commit on version1
-- E-03 run 1 results (see below)
+- 43930b2 (D-46 + R-08)
 
 ## Acceptance evidence (pasted command output per task)
 
