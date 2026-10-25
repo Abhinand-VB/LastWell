@@ -24,7 +24,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 
 
 ## Current task
-- 2026-10-24 18:35 PT: remaining-work snapshot + lane posts (human update); 20-minute loop with snapshot refresh and idle check.
+- 2026-10-24 ~20:35 PT: D-48 — main follows a green version1; every 20-minute loop: verify + e2e on the version1 tip, then a version1 → main PR with a regular merge when version1 is ahead of main. Never merge red.
 
 ## Last green commit on version1
 - (X-04, see below)
