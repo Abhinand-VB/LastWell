@@ -5,6 +5,7 @@ import { fileURLToPath } from "node:url";
 import { QA_FALLBACK, type CaseState, type Utterance } from "@lastwell/core";
 import type { InkSessionEvents } from "@lastwell/stt";
 import { finalizeQa, LKW_NOT_ESTABLISHED } from "./qaAnswer.js";
+import { QA_CLOSING, QA_NOT_MENTIONED, QA_SYSTEM, QA_UNCLEAR } from "./qaIntent.js";
 import { AlertStreamSession } from "../twilio/alertStream.js";
 import { FakeTtsStream, type TtsStream } from "../tts/sonicWs.js";
 import type { SttSession, SttSessionOptions } from "../stt/sessions.js";
@@ -160,6 +161,55 @@ describe("Q&A loop on the briefing call (V-08)", () => {
     await until(() => alert.qaTurns.length === 1);
     expect((opened[1] as FakeTtsStream).spoken[0]).toMatch(/Eliquis/);
     expect(sent.at(-1)).toEqual({ event: "mark", streamSid: "MZ1", mark: { name: "answer-2" } });
+  });
+
+  it("D-49: 'not mentioned' rotates among fixed phrasings and is never recorded as known", async () => {
+    const { s, alert, stt } = await setup();
+    const asks = ["Any seizure before this?", "Does he have diabetes?", "Any recent surgery?", "Any seizure before this?"];
+    for (const [i, q] of asks.entries()) {
+      stt.emit("final", { text: q, tStartMs: 0, tEndMs: 900, sttMs: 100 });
+      await until(() => alert.qaTurns.length === i + 1);
+      s.handle({ event: "mark", streamSid: "MZ1", mark: { name: `answer-${i + 1}` } });
+    }
+    expect(alert.qaTurns.map((t) => t.answer)).toEqual([...QA_NOT_MENTIONED, QA_NOT_MENTIONED[0]]);
+    expect(alert.qaTurns.every((t) => !t.known && (t.evidence as unknown[]).length === 0)).toBe(true);
+  });
+
+  it("D-49: an acknowledgment says nothing and keeps listening; no model call, no turn", async () => {
+    const { sent, stt, tts, alert } = await setup();
+    stt.emit("final", { text: "Mm-hm.", tStartMs: 0, tEndMs: 300, sttMs: 50 });
+    stt.emit("final", { text: "Ok.", tStartMs: 0, tEndMs: 300, sttMs: 50 });
+    await new Promise((r) => setTimeout(r, 100));
+    expect(sent).toEqual([]);
+    expect(tts.spoken).toEqual([]);
+    expect(alert.qaTurns).toHaveLength(0);
+    expect(alert.status).toBe("qa");
+  });
+
+  it("D-49: unclear → reprompt; who is this → system line; neither is a recorded turn", async () => {
+    const { s, stt, tts, sent, alert } = await setup();
+    stt.emit("final", { text: "Um.", tStartMs: 0, tEndMs: 300, sttMs: 50 });
+    await until(() => sent.some((m) => m.event === "mark"));
+    expect(tts.spoken).toEqual([QA_UNCLEAR]);
+    expect(sent.at(-1)).toEqual({ event: "mark", streamSid: "MZ1", mark: { name: "answer-1" } });
+    s.handle({ event: "mark", streamSid: "MZ1", mark: { name: "answer-1" } });
+    stt.emit("final", { text: "Who is this?", tStartMs: 0, tEndMs: 900, sttMs: 50 });
+    await until(() => tts.spoken.length === 2);
+    expect(tts.spoken[1]).toBe(QA_SYSTEM);
+    expect(alert.qaTurns).toHaveLength(0);
+  });
+
+  it("D-49: 'ok, thank you' → the closing line, then a clean hang-up after its mark → completed", async () => {
+    const { s, stt, tts, sent, alert } = await setup();
+    stt.emit("final", { text: "ok, thank you", tStartMs: 0, tEndMs: 900, sttMs: 50 });
+    await until(() => sent.some((m) => m.event === "mark"));
+    expect(tts.spoken).toEqual([QA_CLOSING]);
+    expect(sent.at(-1)).toEqual({ event: "mark", streamSid: "MZ1", mark: { name: "closing-1" } });
+    stt.emit("final", { text: "Is he on blood thinners?", tStartMs: 0, tEndMs: 900, sttMs: 50 }); // after the closing: ignored
+    s.handle({ event: "mark", streamSid: "MZ1", mark: { name: "closing-1" } });
+    await until(() => alert.status === "completed");
+    expect(tts.spoken).toHaveLength(1);
+    expect(alert.qaTurns).toHaveLength(0);
   });
 
   it("silence after an answer hangs up", async () => {
