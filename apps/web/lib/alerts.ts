@@ -82,6 +82,14 @@ export function alertExtras(note: string, override: boolean): { notes?: string; 
   return { ...(notes ? { notes } : {}), ...(override ? { override: true as const } : {}) };
 }
 
+/**
+ * D-58: the numbers the Send modal offers, the default target first, then the rest of ALERT_ALLOWED_NUMBERS
+ * in env order, without duplicates. Empty when the gateway sends neither (the modal then shows a typed field).
+ */
+export function phoneChoices(defaultPhone: string | null, allowed: readonly string[]): string[] {
+  return [...new Set([...(defaultPhone ? [defaultPhone] : []), ...allowed])];
+}
+
 /** Status wording: in local delivery `queued` means the audio is ready to play. */
 export function statusLabel(status: AlertStatus, delivery: Delivery = "phone"): string {
   if (delivery === "local" && status === "queued") return "Ready to play";

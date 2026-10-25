@@ -221,7 +221,7 @@ Browser authentication: the browser never holds `INTERNAL_API_KEY`. It calls `GE
 | Method & path | Body | Response | Notes |
 | --- | --- | --- | --- |
 | `GET /healthz` | — | `{ok, uptimeS, liveCalls, cartesia, version}` | no auth |
-| `GET /api/config` | — | `{demoAlertToCaller, featureBrowserMic, featureQa, callTimezone, alertDefaultTargetPhone: E164 | null, alertDelivery: "phone" | "local"}` | public flags the web app needs (browser cannot read gateway env) |
+| `GET /api/config` | — | `{demoAlertToCaller, featureBrowserMic, featureQa, callTimezone, alertDefaultTargetPhone: E164 | null, alertAllowedNumbers: E164[], alertDelivery: "phone" | "local"}` | public flags the web app needs (browser cannot read gateway env) |
 | `GET /api/ws-token` | — | `{token, expiresInS}` | §5 browser authentication |
 | `GET /api/calls` | — | `{calls: (CallInfo & {level})[]}` | recent 20, all modes |
 | `GET /api/calls/:callId` | — | same payload as WS `snapshot` | |

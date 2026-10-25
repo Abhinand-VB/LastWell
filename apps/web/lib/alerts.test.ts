@@ -6,6 +6,7 @@ import {
   belowPossible,
   isActive,
   latestAlert,
+  phoneChoices,
   sendErrorText,
   statusSteps,
   stepIndex,
@@ -30,6 +31,18 @@ describe("D-53 send extras", () => {
 
   it("409 override_required gets its own wording", () => {
     expect(sendErrorText(new GatewayError(409, "override_required", "No stroke signs heard yet"))).toBe(OVERRIDE_REQUIRED_TEXT);
+  });
+});
+
+describe("phoneChoices (D-58)", () => {
+  it("puts the default target first and drops duplicates", () => {
+    expect(phoneChoices("+14086905907", ["+19162338165", "+14086905907"])).toEqual(["+14086905907", "+19162338165"]);
+  });
+
+  it("works without a default or without an allowed list", () => {
+    expect(phoneChoices(null, ["+19162338165"])).toEqual(["+19162338165"]);
+    expect(phoneChoices("+19162338165", [])).toEqual(["+19162338165"]);
+    expect(phoneChoices(null, [])).toEqual([]);
   });
 });
 

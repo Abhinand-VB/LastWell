@@ -128,6 +128,7 @@ export function buildApp(env: Env, services: Services, log: Logger): Gateway {
     featureQa: env.FEATURE_QA_ENABLED,
     callTimezone: env.CALL_TIMEZONE,
     alertDefaultTargetPhone: env.ALERT_DEFAULT_TARGET_PHONE ?? null,
+    alertAllowedNumbers: env.ALERT_ALLOWED_NUMBERS,
     alertDelivery: env.ALERT_DELIVERY,
   };
 
