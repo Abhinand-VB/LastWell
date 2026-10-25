@@ -3,12 +3,25 @@
 Only the screens session edits this file.
 
 ## Current task
-- idle: P0/P1 screens tasks landed; next: switch from the mock to `pnpm dev:fake` when V-04/V-11 land, re-run X-03 (`pnpm e2e:ui`)
+- W-08 against the real gateway (D-43 order item 5)
 
 ## Last green commit on version1
-- W-11 (see below)
+- W-12, D-41(c) (see below)
 
 ## Acceptance evidence (pasted command output per task)
+
+### W-12 Play briefing (D-43) — done 2026-10-24 ~19:30 PT
+- `hooks/useBriefingPlayer.ts` (one `<audio>` on `/api/gateway/alerts/:id/audio`, `onended` → `POST …/played`), `components/console/SendAlert.tsx` (local mode: "▶ Play briefing" on the alert status, steps Ready to play → Played → Completed, "Call again"/"Hang up" hidden; footer "Test briefing" + "▶ Play test briefing"), `lib/alerts.ts` (`statusSteps(…, delivery)`, `statusLabel`, `canPlay`), `lib/config.ts` (`alertDelivery` read with default `phone` until core's `ConfigResponse` has it; `alertDefaultTargetPhone` now required, since the gateway serves it), `lib/proxy.ts` (response body passed as bytes, not text). The proxy's path-segment allowlist already admits `alerts/:id/audio` and `alerts/:id/played`.
+- `pnpm --filter @lastwell/web test` → 40 passed (adds proxy WAV byte-for-byte, local steps/labels/canPlay, antiplatelet label).
+- Real gateway (this worktree, `ALERT_DELIVERY=local GATEWAY_PORT=28787 WEB_PORT=23000 node scripts/dev-fake.mjs`; no `.env` here, so every vendor faked, FakeTts silence) → `/api/config` `"alertDelivery":"local"`. Edge (Playwright, 1440×900), A01 replay at speed 4: modal "…will be ready to play from this laptop."; after Send the pill read "Ready to play", `call-again` count 0; clicked Play → `GET /api/gateway/alerts/a381…/audio 200 audio/wav`, `POST …/played 200`; pill "Completed", button "▶ Play briefing again". Footer Test briefing → "Test briefing ready: press Play test briefing." → Play → audio 200 + played 200. Proxy vs direct WAV: identical md5 `8e14024e…`, RIFF/WAVE header, fmt PCM 1 ch 8000 Hz 16-bit. Screenshots `apps/web/screenshots/console-local-{play,played}.png`.
+- blocked-keys: hearing real Sonic audio through the laptop speaker needs the gateway Mac's `.env` (Cartesia key): `ALERT_DELIVERY=local LASTWELL_FAKES=twilio pnpm --filter @lastwell/gateway start` + web, Send, Play.
+
+### D-41(c) antiplatelet label + dev indicator — done 2026-10-24 ~19:35 PT
+- `bloodThinnerLabel(value)` in `lib/consoleText.ts` (core `isAntiplatelet`): the facts panel row and the board `dt` read "Antiplatelet" for aspirin/clopidogrel/…, "Blood thinner" otherwise. A05 replay on the real gateway: facts row "Antiplatelet · aspirin · “aspirin” 00:10", no "Blood thinner" anywhere on the page.
+- `devIndicators: false` in `next.config.ts`: no "N" badge on the console screenshot after the restart.
+
+### X-03 on the real gateway — 2026-10-24 ~19:40 PT
+- `E2E_STRICT=1 pnpm e2e:ui` → "4 passed (34.2s)" (home, console A01 Likely + quoted chips, board approved A01, empty console headline). Playwright's chromium-headless-shell was installed on this machine for it.
 
 ### W-11 Visual polish — done 2026-10-24 ~17:25 PT (presenter approval pending)
 - Dark clinical theme, 17 px root, 20 px transcript and card text, 30 px banner, monospace `mm:ss` column, amber underlines on quotes, partial line in its own row (no shift of earlier rows). Console order: warnings → stroke card → next question → Send → look-alike → facts, so card + banner + Send fit at 1440×900 without scrolling. Header call timer (own component, 1 Hz). Board: single alert uses up to 1024 px width, countdown 48 px, footnote 17 px.
@@ -61,14 +74,16 @@ Only the screens session edits this file.
 - W-08 live speech: gateway with real STT (`LASTWELL_FAKES=` without `stt`, Cartesia key) + `pnpm --filter @lastwell/web dev`, open http://localhost:3000/mic in Chrome, Start, read Card A → console shows Mic utterances and the card reaches Likely.
 
 ## wired-to-fake (replace when the named task lands)
-- `apps/web/lib/config.ts`: `alertDefaultTargetPhone` (D-39) stays optional until voice serves it from `/api/config`; without it the Send modal requires a typed number.
+- `apps/web/lib/config.ts`: `alertDelivery` (D-43) is read as an optional field (default `phone`) until reasoning adds it to core's `ConfigResponse`.
 - `apps/web/scripts/mock-gateway.ts` (`pnpm --filter @lastwell/web mock:gateway`, `MOCK_PORT`, `MOCK_AUTOREPLAY=A01`): a dev-only stand-in for the gateway's UI surface built from the core fixtures. Not used by any test or by `dev:fake`; switch to `pnpm dev:fake` once V-04/V-11 land.
 
 ## Requests to other lanes
 - [x] to reasoning (done 0c53f6b, D-39): add `alertDefaultTargetPhone: E164.nullable()` to `ConfigResponse` in `packages/core/src/contracts/rest.ts` (+ D-log line) (D-30: the Send modal prefills `ALERT_DEFAULT_TARGET_PHONE`, but the browser cannot read gateway env and `/api/config` has no field for it)
-- [ ] to voice: return `alertDefaultTargetPhone` (= `ALERT_DEFAULT_TARGET_PHONE` or null) from `GET /api/config` (contract field landed in 0c53f6b, D-39) (same reason)
-- [ ] to integration: X-03 `board shows the approved A01 alert` approves as soon as "Likely" shows; at speed 4 the approval snapshot (`AlertSummary.caseSnapshot`) predates "fine at about 2 PM" and "takes Eliquis", so the board correctly shows "LKW unknown" / no blood thinner and `getByText(/Eliquis/)` fails. Suggest waiting for `call.ended` (or `getByText("Eliquis")` on the console) before approving. Observed by running `apps/e2e/ui` against the screens mock gateway (`E2E_GATEWAY_PORT=18787`, Edge channel): home + console tests pass, board test fails on this. (X-03)
-- [ ] to integration: the board renders "The treating team makes every treatment decision." under every card's countdown (docs/06 §9), so with ≥ 2 alerts `getByText(...)` hits strict mode; add `.first()`. (X-03)
+- [x] to voice (served by the gateway, seen on /api/config 2026-10-24 19:20): return `alertDefaultTargetPhone` (= `ALERT_DEFAULT_TARGET_PHONE` or null) from `GET /api/config` (contract field landed in 0c53f6b, D-39) (same reason)
+- [x] (fixed by integration: waitEnded) to integration: X-03 `board shows the approved A01 alert` approves as soon as "Likely" shows; at speed 4 the approval snapshot (`AlertSummary.caseSnapshot`) predates "fine at about 2 PM" and "takes Eliquis", so the board correctly shows "LKW unknown" / no blood thinner and `getByText(/Eliquis/)` fails. Suggest waiting for `call.ended` (or `getByText("Eliquis")` on the console) before approving. Observed by running `apps/e2e/ui` against the screens mock gateway (`E2E_GATEWAY_PORT=18787`, Edge channel): home + console tests pass, board test fails on this. (X-03)
+- [x] (fixed by integration: .first()) to integration: the board renders "The treating team makes every treatment decision." under every card's countdown (docs/06 §9), so with ≥ 2 alerts `getByText(...)` hits strict mode; add `.first()`. (X-03)
+
+- [ ] to integration: W-12 acceptance asks for an X-03 step that clicks Play briefing under `pnpm dev:fake`; that needs `ALERT_DELIVERY=local` in the dev:fake/X-03 env (or a second project). Selectors: `[data-testid=send-button]`, `confirm-checkbox`, `modal-send`, then `play-briefing`; done when `[data-testid=alert-status][data-status=completed]`. (W-12)
 
 ## Blockers for humans
 - [ ] W-11 · presenter approval of the console/board look from 2 m (screenshots in `apps/web/screenshots/`) · nothing waits on it; polish continues on request
@@ -77,4 +92,4 @@ Only the screens session edits this file.
 ## Notes and small decisions
 - Lockfile: adding `ws`, `@types/ws`, `tsx` as web devDependencies (mock gateway) changes `pnpm-lock.yaml` (+9 lines, web importer only).
 - Snapshots (WS or poll) clear partial lines and keep any finals/newer state already held, so a poll racing the socket never moves the console backwards.
-- Reasoning's request "drop the `.extend` in `apps/web/lib/config.ts`": deliberately kept (field optional) until voice serves `alertDefaultTargetPhone`; a strict parse would fail against today's gateway and hide every config flag. Will drop it when voice ticks its request.
+- Reasoning's request "drop the `.extend`": `alertDefaultTargetPhone` is now required (58b401b); the `.extend` remains only for `alertDelivery` (D-43) until core has it.
