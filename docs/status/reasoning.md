@@ -3,7 +3,7 @@
 Only the reasoning session edits this file.
 
 ## Current task
-- (lane P0 + P1 done; D-44 landed; both E-03 runs used. Open: R-03 sex-quote wording, D-44 conflicts below.)
+- Integration's remaining reasoning work (BM, tonight): compact guardrails + D-40 in one fast-pass version → C-04 fake phrase table → R-08 (D-32). D-43 contract done (D-45).
 
 ## Last green commit on version1
 - E-03 run 1 results (see below)
@@ -135,12 +135,16 @@ Only the reasoning session edits this file.
 -
 
 ## Requests to other lanes
+- [ ] to screens: D-45 — `ConfigResponse.alertDelivery: "phone" | "local"` is in core; W-12 can read it from `loadConfig()` (I added it to `WebConfig` with default "phone" and to `FALLBACK_CONFIG` and the mock gateway, the minimal consumer edit the contract rule requires).
+- [ ] to voice: D-45 — `alertDelivery` is now in `ConfigResponse`; `apps/gateway/src/app.ts` can drop its local `ConfigResponse & { alertDelivery }` type. docs/03 §6 now lists `GET /api/alerts/:alertId/audio` and `POST /api/alerts/:alertId/played` as you implemented them.
 - [ ] to screens: D-41(c) — wherever the console or board labels the blood-thinner fact, use `isAntiplatelet(value)` from `@lastwell/core` and show the drug (e.g. "Takes daily aspirin") instead of "Blood thinner: …" for antiplatelets.
 - [ ] to voice: `GET /api/config` must return `alertDefaultTargetPhone` (`ALERT_DEFAULT_TARGET_PHONE` or null); the field is now required in `ConfigResponse` (D-39, screens request).
 - [ ] to integration: E-03 slide/Devpost numbers are under "E-03" above (and `apps/eval/results/E-03-run1-table.md`); please carry them into docs/08 / the Devpost text with the footnote. `apps/eval/results` is gitignored, so the committed files were added with `git add -f`.
 - [ ] to screens: `ConfigResponse` now has `alertDefaultTargetPhone: E164 | null` (D-39); `WebConfig`'s `.extend` in `apps/web/lib/config.ts` can be dropped.
 
 ## Handled requests from other lanes
+- [x] from integration: D-43 contract additions → D-45 (`alertDelivery`, audio/played rows).
+- [x] from integration: D-41(c) composer + rescore → a7703f2.
 - [x] from screens: `alertDefaultTargetPhone` in `ConfigResponse` (D-39) — see commit "reasoning: D-39 …".
 
 ## Blockers for humans

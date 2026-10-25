@@ -18,6 +18,7 @@ export const ConfigResponse = z.object({
   featureQa: z.boolean(),
   callTimezone: z.string(),
   alertDefaultTargetPhone: E164.nullable(), // ALERT_DEFAULT_TARGET_PHONE; the Send modal prefills it (D-30, D-39)
+  alertDelivery: z.enum(["phone", "local"]), // ALERT_DELIVERY: "local" = the console plays the briefing (D-43, D-45)
 });
 export type ConfigResponse = z.infer<typeof ConfigResponse>;
 

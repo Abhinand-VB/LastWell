@@ -2,7 +2,7 @@
 import { ConfigResponse } from "@lastwell/core";
 import { z } from "zod/v4";
 
-// alertDelivery (D-43) is served by the gateway but not yet in core's ConfigResponse; phone is the default.
+// alertDelivery (D-43) is in core's ConfigResponse since D-45; default "phone" so an older gateway still loads.
 export const WebConfig = ConfigResponse.extend({
   alertDelivery: z.enum(["phone", "local"]).default("phone"),
 });

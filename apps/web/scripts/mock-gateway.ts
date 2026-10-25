@@ -194,7 +194,7 @@ const server = createServer(async (req, res) => {
   const body = m === "POST" ? await readBody(req) : {};
 
   if (m === "GET" && p === "/api/config")
-    return json(res, 200, { demoAlertToCaller: false, featureBrowserMic: true, featureQa: false, callTimezone: TZ, alertDefaultTargetPhone: ALLOWED[0] ?? null });
+    return json(res, 200, { demoAlertToCaller: false, featureBrowserMic: true, featureQa: false, callTimezone: TZ, alertDefaultTargetPhone: ALLOWED[0] ?? null, alertDelivery: "phone" });
   if (m === "GET" && p === "/api/ws-token") {
     const token = randomBytes(32).toString("hex");
     tokens.add(token);
