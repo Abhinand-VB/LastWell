@@ -42,12 +42,12 @@ caller phone ──Twilio──► <Start><Stream both_tracks> ──wss──�
 
 ## Cartesia features used
 
-- **Ink 2 streaming STT with turn detection** (`/stt/turns/websocket`): `turn.start` / `turn.update` / `turn.end` drive the live transcript and the per-utterance reasoning, with no VAD of our own.
-- **Keyterms**: drug names (Eliquis, Xarelto, warfarin, Plavix…) and stroke vocabulary are passed as `keyterm=`, because a misheard blood thinner is the costliest error in a briefing.
+- **Ink 2 streaming STT with turn detection** (`/stt/turns/websocket`): `turn.start` / `turn.update` / `turn.end` drive the live transcript and the per-utterance reasoning, with no VAD of our own. Turn detection is tuned per use: a `call` profile on the 911 call and a `qa` profile on the briefing call. A dropped Ink socket reconnects once; a second drop puts a "transcription degraded" banner on the console.
+- **Keyterms**: drug names (Eliquis, Xarelto, warfarin, Plavix…) and stroke vocabulary are passed as `keyterm=` on every session by default (`STT_KEYTERMS`), because a misheard blood thinner is the costliest error in a briefing.
 - **Native telephony audio**: Ink 2 takes Twilio's µ-law 8 kHz frames as is (`encoding=pcm_mulaw&sample_rate=8000`). There is no resampling code in the repo.
 - **Two concurrent Ink sessions per call**, one per Twilio track, so the transcript is speaker-labelled (caller / dispatcher) without diarization.
-- **Sonic 3.6 TTS Bytes**: the briefing is synthesized as raw `pcm_mulaw` 8 kHz when the alert is approved and streamed into a Twilio bidirectional media stream, so speech starts within about 1.5 s of the stroke team answering.
-- **Sonic WebSocket** with per-answer `context_id` and cancel for barge-in, for spoken Q&A on the briefing call. Q&A is behind `FEATURE_QA_ENABLED` and was built last.
+- **Sonic 3.6 TTS Bytes**: the briefing is synthesized as raw `pcm_mulaw` 8 kHz when the alert is approved and streamed into a Twilio bidirectional media stream as soon as the stroke team answers, so no synthesis happens while they wait. The same cached bytes, decoded to a WAV, feed the laptop-speaker fallback (`ALERT_DELIVERY=local`).
+- **Sonic WebSocket** with per-answer `context_id` and cancel for barge-in, for spoken Q&A on the briefing call. Q&A ships **off** (`FEATURE_QA_ENABLED=false`, decision D-32) until it passes rehearsals.
 
 ## Claude models
 
@@ -104,7 +104,7 @@ The scripted eval (20 calls written by the team: 12 strokes including chameleons
 ## Honest limits
 
 - **Scripted calls, not real 911 audio.** The test calls were written by us, so our numbers will look better than reality. For a real-world reference: in a Copenhagen study, an AI model recognized 63.0% of strokes with 24.9% precision, against 52.7% / 17.1% for human call handlers.
-- **Our Twilio number is pending carrier verification.** Until it clears, the live demo feeds the caller through the browser microphone and plays the Sonic briefing from the laptop speaker (`ALERT_DELIVERY=local`). The phone path, inbound bridge and outbound briefing call, is built and covered by the offline end-to-end test.
+- **Fallback without the phone line.** If the phone path fails at the table, the caller speaks into the browser microphone and the Sonic briefing plays from the laptop speaker (`ALERT_DELIVERY=local`); the rest of the pipeline is identical.
 - **The demo phones belong to teammates.** At the judging table, teammates play the caller, the dispatcher and the on-call clinician. The judge draws the case card and checks the sealed answer.
 - **Browser-microphone fallback is one mixed track.** One laptop mic hears both people, so that mode has no speaker labels.
 - **No SMS.** US carriers block SMS from unregistered 10DLC numbers, so the alert is a voice call. The SMS path exists behind `ALERT_SMS_ENABLED=false`.

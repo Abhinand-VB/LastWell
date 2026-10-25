@@ -10,8 +10,8 @@ Integration copies open blockers from the four lane files here at each merge, ne
 
 ## Open (newest first)
 
-- [ ] **IDLE · screens** · No commit and no status update since 16:08 PT (checked 18:34 PT); its status says "idle" although W-12 (Play briefing, P1) and W-08 live check were assigned at ~18:00 and X-03 has already moved to the real gateway. → nudge the lw-screens session: "read docs/status/integration.md (Remaining work + Requests) and take W-12, then W-08 live, then W-11".
-- [ ] **IDLE · reasoning** · No commit and no status update since 16:53 PT (checked 18:34 PT). Open: D-40 fast-pass wording (R-03, P0), D-43 contract additions, then E-03 run 2. → nudge the lw-reasoning session: "read docs/status/integration.md Requests; land D-40, the D-43 contract, then E-03 run 2".
+- [ ] **IDLE · screens** · No commit and no status update since 16:08 PT (re-checked 18:52 PT, still silent); its status says "idle" although W-12 (Play briefing, P1; the gateway routes landed at 18:37) and the W-08 live check were assigned at ~18:00 and X-03 has already moved to the real gateway. → nudge the lw-screens session: "read docs/status/integration.md (Remaining work + Requests) and take W-12, then W-08 live, then W-11".
+- [ ] **IDLE · reasoning** · No commit and no status update since 16:53 PT (re-checked 18:52 PT, still silent). Open: D-40 fast-pass wording (R-03, P0), D-43 contract additions, then E-03 run 2. → nudge the lw-reasoning session: "read docs/status/integration.md Requests; land D-40, the D-43 contract, then E-03 run 2".
 
 - [ ] voice + humans · M-01…M-04 · Gate 3 ring observed (~18:30 PT). Full inbound test call (Gates 0–2, Card A) tomorrow morning after 8 AM; no real calls 9 PM–8 AM.
 
