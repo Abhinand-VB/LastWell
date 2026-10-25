@@ -10,6 +10,12 @@ Only the screens session edits this file.
 
 ## Acceptance evidence (pasted command output per task)
 
+### W-11 light redesign (D-54, D-55, D-56) — 2026-10-25 ~01:20 PT
+- Design and theme in Figma: [LastWell — Screens](https://www.figma.com/design/uijhd1gyfCg693qBeXo1zs) (pages Home, Console, Board, Mic, Components; variables "LastWell light" = the `--color-lw-*` tokens in `apps/web/app/globals.css`).
+- Every page light with one nav (Calls / Stroke team board; mic tab hidden; link badge only when not live). Console sized for 1920×1080: Ask next while live → code-built Summary after the call; Signs grouped by kind; Facts with LKW large and age · sex on one row; send bar "Calls the on-call stroke team (phone ending 0100)". Latency + test links only on `?debug`; test links also on `/preflight`. Home = recent-calls table (source icon, duration, level, pre-alert, status; live pinned) + replay strip A01/B01/C01/D01. Board: light cards, window bar, briefing steps.
+- Observed under `pnpm dev:fake` at 1920×1080: console right column `scrollHeight 969 = clientHeight 969`, page 1080 (completed alert); in-progress alert shows one status line; A01 summary "Arm and speech signs heard. Last known well yesterday 2:00 PM? Blood thinner: Eliquis. 78 · male."; send → Answered → Completed on fake telephony.
+- `pnpm verify` exit 0 (web 47 tests); `pnpm e2e` 23 passed, 0 failed; `pnpm --filter @lastwell/web build` ok. Playwright `e2e:ui` not run here (Chromium not installed on this laptop).
+
 ### W-08 against the real gateway — 2026-10-24 ~20:05 PT (speak-into-mic step: human)
 - Real gateway from this worktree (`GATEWAY_PORT=28787 WEB_PORT=23000 node scripts/dev-fake.mjs`; no `.env` here, so STT is FakeSttSession, which discards audio). Edge via Playwright with Chromium's fake microphone (`--use-fake-device-for-media-stream`, a test tone): `/mic` → Start → `getUserMedia` ok → `POST /api/calls/browser` → WS `ws://localhost:28787/browser/media/{callId}?token=…`; after ~3 s 163 binary frames sent, every one 640 bytes; level bar 84 %. Console tab opened at `/console/{callId}`: "Browser mic | Caller still on the line | Live"; gateway `GET /api/calls/{id}` → mode `browser`, status `live`.
 - Transcript path: STT is faked here, so one turn was injected with `POST /api/dev/calls/{id}/utterances` → 201 → console showed "…he can't lift his coffee cup." and the card reached Likely (fake model). Stop → text frame `{"type":"end"}` → console "Call ended" (207 frames in total).

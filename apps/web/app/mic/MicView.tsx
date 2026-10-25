@@ -6,6 +6,8 @@ import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import { gateway } from "@/lib/gateway";
 import { useConfig } from "@/hooks/useConfig";
+import { AppNav } from "@/components/AppNav";
+import { MicIcon } from "@/components/icons";
 
 type Phase = "idle" | "starting" | "live" | "stopping" | "error";
 
@@ -118,76 +120,79 @@ export function MicView() {
   const disabled = loaded && !config.featureBrowserMic;
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-8 p-8">
-      <header className="flex items-baseline justify-between">
-        <Link href="/" className="text-3xl font-bold tracking-tight text-white">
-          LastWell
-        </Link>
-        <span className="text-xl text-slate-400">Browser microphone fallback</span>
-      </header>
+    <main className="min-h-screen bg-lw-page text-lw-ink [color-scheme:light]">
+      <AppNav />
+      <div className="mx-auto flex max-w-3xl flex-col gap-6 px-7 py-10">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Browser microphone</h1>
+          <p className="mt-1 text-lg text-lw-ink-2">
+            For when the phone line fails: one laptop mic hears both people; the transcript is labelled{" "}
+            <span className="font-semibold text-violet-700">Mic</span>.
+          </p>
+        </div>
 
-      <p className="text-xl leading-relaxed text-slate-300">
-        Use this when the phone line fails. Put the laptop between the caller and the dispatcher: one microphone hears both,
-        and the transcript is labelled <span className="font-semibold text-violet-300">Mic</span>.
-      </p>
+        {disabled ? (
+          <p className="rounded-xl border border-lw-border bg-lw-surface p-5 text-xl text-lw-ink-2">
+            The browser-mic fallback is turned off (FEATURE_BROWSER_MIC).
+          </p>
+        ) : (
+          <section className="rounded-3xl border border-lw-border bg-lw-surface p-8">
+            {phase === "live" || phase === "stopping" ? (
+              <button
+                type="button"
+                data-testid="mic-stop"
+                onClick={stop}
+                disabled={phase === "stopping"}
+                className="flex w-full items-center justify-center gap-3 rounded-2xl bg-lw-ink px-6 py-5 text-2xl font-bold text-white hover:bg-slate-700 disabled:opacity-60"
+              >
+                <span className="h-3.5 w-3.5 rounded-full bg-lw-danger" />
+                Stop and end call
+              </button>
+            ) : (
+              <button
+                type="button"
+                data-testid="mic-start"
+                onClick={start}
+                disabled={phase === "starting"}
+                className="flex w-full items-center justify-center gap-3 rounded-2xl bg-lw-accent px-6 py-5 text-2xl font-bold text-white hover:bg-sky-700 disabled:opacity-60"
+              >
+                <MicIcon size={24} />
+                {phase === "starting" ? "Starting…" : "Start microphone call"}
+              </button>
+            )}
 
-      {disabled ? (
-        <p className="rounded-xl bg-slate-800 p-5 text-xl text-slate-300">The browser-mic fallback is turned off (FEATURE_BROWSER_MIC).</p>
-      ) : (
-        <section className="rounded-3xl bg-slate-900/80 p-8 ring-1 ring-slate-700/60">
-          {phase === "live" || phase === "stopping" ? (
-            <button
-              type="button"
-              data-testid="mic-stop"
-              onClick={stop}
-              disabled={phase === "stopping"}
-              className="w-full rounded-2xl bg-slate-200 px-6 py-5 text-2xl font-bold text-slate-900 hover:bg-white disabled:opacity-60"
-            >
-              Stop and end call
-            </button>
-          ) : (
-            <button
-              type="button"
-              data-testid="mic-start"
-              onClick={start}
-              disabled={phase === "starting"}
-              className="w-full rounded-2xl bg-sky-600 px-6 py-5 text-2xl font-bold text-white hover:bg-sky-500 disabled:opacity-60"
-            >
-              {phase === "starting" ? "Starting…" : "Start microphone call"}
-            </button>
-          )}
-
-          <div className="mt-8">
-            <div className="flex items-baseline justify-between text-base text-slate-400">
-              <span>Input level</span>
-              <span className="font-mono tabular-nums" data-testid="mic-frames">
-                {frames} frames sent
-              </span>
+            <div className="mt-8">
+              <div className="flex items-baseline justify-between text-base text-lw-ink-2">
+                <span>Input level</span>
+                <span className="font-mono tabular-nums" data-testid="mic-frames">
+                  {frames} frames sent
+                </span>
+              </div>
+              <div className="mt-2 h-4 overflow-hidden rounded-full bg-lw-subtle ring-1 ring-lw-border" aria-label="Microphone level">
+                <div
+                  data-testid="mic-level"
+                  className="h-full rounded-full bg-emerald-500 transition-[width] duration-100"
+                  style={{ width: `${Math.round(level * 100)}%` }}
+                />
+              </div>
             </div>
-            <div className="mt-2 h-5 overflow-hidden rounded-full bg-slate-800" aria-label="Microphone level">
-              <div
-                data-testid="mic-level"
-                className="h-full rounded-full bg-emerald-400 transition-[width] duration-100"
-                style={{ width: `${Math.round(level * 100)}%` }}
-              />
-            </div>
-          </div>
 
-          {callId && (
-            <p className="mt-6 text-lg text-slate-300">
-              The console for this call is open in another tab.{" "}
-              <Link className="text-sky-300 underline" href={`/console/${callId}`} target="_blank">
-                Open it again
-              </Link>
-            </p>
-          )}
-          {error && (
-            <p role="alert" className="mt-6 rounded-lg bg-red-500/15 px-4 py-3 text-lg text-red-200 ring-1 ring-red-400/60">
-              {error}
-            </p>
-          )}
-        </section>
-      )}
+            {callId && (
+              <p className="mt-6 text-lg text-lw-ink-2">
+                The console for this call is open in another tab.{" "}
+                <Link className="text-lw-accent-text underline" href={`/console/${callId}`} target="_blank">
+                  Open it again
+                </Link>
+              </p>
+            )}
+            {error && (
+              <p role="alert" className="mt-6 rounded-lg bg-red-50 px-4 py-3 text-lg text-red-800 ring-1 ring-red-300">
+                {error}
+              </p>
+            )}
+          </section>
+        )}
+      </div>
     </main>
   );
 }

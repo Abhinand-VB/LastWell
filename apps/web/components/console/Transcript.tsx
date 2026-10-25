@@ -21,9 +21,9 @@ export function flashUtterance(id: string): void {
 }
 
 const SPEAKER_CLS: Record<Utterance["speaker"], string> = {
-  caller: "text-sky-300",
-  dispatcher: "text-slate-400",
-  mixed: "text-violet-300",
+  caller: "text-lw-accent-text",
+  dispatcher: "text-lw-ink-3",
+  mixed: "text-violet-700",
 };
 
 export function Transcript({
@@ -56,9 +56,9 @@ export function Transcript({
   };
 
   return (
-    <section className="flex min-h-0 flex-1 flex-col rounded-2xl bg-slate-900/60 ring-1 ring-slate-700/60">
-      <h2 className="border-b border-slate-700/60 px-6 py-3 text-sm font-semibold uppercase tracking-widest text-slate-400">
-        Live transcript
+    <section className="flex min-h-0 flex-1 flex-col rounded-2xl border border-lw-border bg-lw-surface">
+      <h2 className="border-b border-lw-border px-6 py-3.5 text-sm font-semibold uppercase tracking-widest text-lw-ink-3">
+        Transcript
       </h2>
       <div
         ref={scroller}
@@ -67,7 +67,7 @@ export function Transcript({
         className="min-h-0 flex-1 space-y-1 overflow-y-auto px-4 py-4"
       >
         {utterances.length === 0 && partials.length === 0 && (
-          <p className="px-2 py-6 text-lg text-slate-500">Waiting for the first words…</p>
+          <p className="px-2 py-6 text-lg text-lw-ink-3">Waiting for the first words…</p>
         )}
         {utterances.map((u) => (
           <div
@@ -76,15 +76,15 @@ export function Transcript({
             data-testid="utterance"
             className="grid grid-cols-[4.5rem_7rem_1fr] items-baseline gap-3 rounded-lg px-2 py-2"
           >
-            <span className="font-mono text-base text-slate-500 tabular-nums">{mmss(u.tStartMs)}</span>
+            <span className="font-mono text-base text-lw-ink-3 tabular-nums">{mmss(u.tStartMs)}</span>
             <span className={`text-base font-semibold ${SPEAKER_CLS[u.speaker]}`}>{speakerLabel(u.speaker)}</span>
-            <p className={`text-xl leading-relaxed ${u.speaker === "dispatcher" ? "text-slate-300" : "text-slate-50"}`}>
+            <p className={`text-xl leading-relaxed ${u.speaker === "dispatcher" ? "text-lw-ink-2" : "text-lw-ink"}`}>
               {quoteSegments(u.text, quotesById.get(u.id) ?? []).map((s, i) =>
                 s.quoted ? (
                   <mark
                     key={i}
                     data-testid="quote-mark"
-                    className="bg-transparent text-amber-100 underline decoration-amber-400 decoration-2 underline-offset-[6px]"
+                    className="bg-transparent text-lw-evidence underline decoration-lw-evidence-line decoration-2 underline-offset-[6px]"
                   >
                     {s.text}
                   </mark>
@@ -101,9 +101,9 @@ export function Transcript({
             data-testid="partial"
             className="grid grid-cols-[4.5rem_7rem_1fr] items-baseline gap-3 px-2 py-2"
           >
-            <span className="font-mono text-base text-slate-600 tabular-nums">{mmss(p.tStartMs)}</span>
-            <span className="text-base font-semibold text-slate-500">{speakerLabel(p.speaker)}</span>
-            <p className="text-xl italic leading-relaxed text-slate-500">{p.text}</p>
+            <span className="font-mono text-base text-lw-ink-3 tabular-nums">{mmss(p.tStartMs)}</span>
+            <span className="text-base font-semibold text-lw-ink-3">{speakerLabel(p.speaker)}</span>
+            <p className="text-xl italic leading-relaxed text-lw-ink-3">{p.text}</p>
           </div>
         ))}
       </div>

@@ -66,6 +66,21 @@ export function statusLabel(status: AlertStatus, delivery: Delivery = "phone"): 
   return STATUS_LABEL[status];
 }
 
+export type CellTone = "done" | "active" | "failed" | "none";
+
+/** Home "Pre-alert" column (D-56): the newest alert's status, or why there is none. */
+export function preAlertCell(
+  alerts: AlertSummary[],
+  callLive: boolean,
+  delivery: Delivery = "phone",
+): { text: string; tone: CellTone } {
+  const a = latestAlert(alerts);
+  if (!a) return { text: callLive ? "Not sent yet" : "No pre-alert", tone: "none" };
+  if (a.status === "failed") return { text: "Failed", tone: "failed" };
+  if (a.status === "completed") return { text: "Briefed · completed", tone: "done" };
+  return { text: a.status === "calling" ? "Calling stroke team…" : statusLabel(a.status, delivery), tone: "active" };
+}
+
 /** W-12: Play is offered for a local alert until it fails; after completion it replays without reporting. */
 export function canPlay(a: AlertSummary, delivery: Delivery): boolean {
   return delivery === "local" && a.status !== "failed";

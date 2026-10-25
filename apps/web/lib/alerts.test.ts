@@ -45,3 +45,16 @@ describe("local delivery (D-43, W-12)", () => {
     expect(canPlay(alert({ status: "queued" }), "phone")).toBe(false);
   });
 });
+
+describe("home pre-alert column", () => {
+  it("shows the newest alert's status, or why there is none", async () => {
+    const { preAlertCell } = await import("./alerts");
+    expect(preAlertCell([], true)).toEqual({ text: "Not sent yet", tone: "none" });
+    expect(preAlertCell([], false)).toEqual({ text: "No pre-alert", tone: "none" });
+    expect(preAlertCell([alert({ status: "calling" })], false)).toEqual({ text: "Calling stroke team…", tone: "active" });
+    expect(preAlertCell([alert({ status: "completed" })], false)).toEqual({ text: "Briefed · completed", tone: "done" });
+    expect(preAlertCell([alert({ status: "failed" })], false).tone).toBe("failed");
+    const older = alert({ status: "failed", createdAt: "2026-10-25T14:40:00-07:00" });
+    expect(preAlertCell([older, alert({ id: "b0100000-0000-4000-8000-000000000002", status: "ringing" })], false).text).toBe("Ringing");
+  });
+});

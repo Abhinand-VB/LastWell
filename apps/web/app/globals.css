@@ -13,6 +13,25 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/* Light console theme (Figma "LastWell light" variables). Utilities: bg-lw-page, text-lw-ink, … */
+@theme {
+  --color-lw-page: #f4f6f9;
+  --color-lw-surface: #ffffff;
+  --color-lw-subtle: #f1f4f8;
+  --color-lw-border: #e2e7ee;
+  --color-lw-border-strong: #cbd3de;
+  --color-lw-ink: #0f172a;
+  --color-lw-ink-2: #475569;
+  --color-lw-ink-3: #64748b;
+  --color-lw-accent: #0284c7;
+  --color-lw-accent-text: #0369a1;
+  --color-lw-accent-soft: #eff8ff;
+  --color-lw-accent-border: #b9e2fb;
+  --color-lw-danger: #dc2626;
+  --color-lw-evidence: #7c2d12;
+  --color-lw-evidence-line: #f59e0b;
+}
+
 html {
   font-size: 17px;
 }

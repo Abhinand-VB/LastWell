@@ -12,7 +12,7 @@ Setup (gateway Mac, port 8787; no ngrok needed in this mode):
 - [ ] `.env`: `DEMO_MODE=true`, `LASTWELL_FAKES=` (empty), `ALERT_DELIVERY=local`, `FEATURE_BROWSER_MIC=true`, `FEATURE_QA_ENABLED=true` (D-52). Gateway: `pnpm --filter @lastwell/gateway start`; `curl -s localhost:8787/healthz` → `{"ok":true,…}` with no `fakes`.
 - [ ] Web on the same Mac (`pnpm --filter @lastwell/web dev`); `/` loads; `/api/config` shows `alertDelivery: "local"`.
 - [ ] Laptop speaker volume up; a USB/table mic (or the laptop mic) placed between the caller and the dispatcher; the room is as quiet as you can make it.
-- [ ] Smoke test: open `/mic`, press Start, say "test one two three" → the console shows the utterance within 3 s. Then "Test briefing call" → a `TEST` alert appears → **Play briefing** plays the canned briefing from the speaker; "Clear test alerts" removes it.
+- [ ] Smoke test: open `/mic`, press Start, say "test one two three" → the console shows the utterance within 3 s. Then on `/preflight` (D-54): "Test briefing call" → a `TEST` alert appears → **Play briefing** plays the canned briefing from the speaker; "Clear test alerts" removes it.
 
 Roles: **Presenter** (deck, slide). **Caller** (teammate, sits at the mic and acts the drawn card). **Dispatcher** (teammate, at the console, asks the questions aloud into the same mic). **Medical professional / Runner** (teammate, runs `/board` and the fallback switches; "receives" the briefing from the speaker).
 
@@ -69,8 +69,8 @@ Content
 
 Smoke test (two minutes, every time)
 1. A teammate other than the dispatcher calls the demo number (the dispatcher's phone is the `<Dial>` target and must be free to answer), says "test one two three", hangs up. Console shows the utterance within 3 s.
-2. Runner opens any console page and clicks the **"Test briefing call"** footer link, enters the dispatcher's number. The phone rings, the canned briefing plays and ends with "Goodbye." (with `FEATURE_QA_ENABLED=true`: "Is he on blood thinners?" gets "That wasn't mentioned on the call.") (docs/03 §6 `test-briefing`). Repeat once with the medical professional's number.
-3. `/board` on laptop 2 shows the test alert (label `TEST`); the Runner removes it with the console footer's "Clear test alerts" link.
+2. Runner opens `/preflight` (D-54; the same links show on any console URL with `?debug`) and clicks **"Test briefing call"**, enters the dispatcher's number. The phone rings, the canned briefing plays and ends with "Goodbye." (with `FEATURE_QA_ENABLED=true`: "Is he on blood thinners?" gets "That wasn't mentioned on the call.") (docs/03 §6 `test-briefing`). Repeat once with the medical professional's number.
+3. `/board` on laptop 2 shows the test alert (label `TEST`); the Runner removes it with "Clear test alerts" on `/preflight`.
 
 ## 3. The two-minute script (from the brief §8, adapted to D-30/D-31)
 

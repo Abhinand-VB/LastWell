@@ -1,5 +1,5 @@
 // Display helpers shared by the console and the board. Pure; unit-tested.
-import type { CaseState, QuoteRef, SignKind } from "@lastwell/core";
+import type { CaseState, QuoteRef, Sign, SignKind } from "@lastwell/core";
 
 /** Call-relative ms → "mm:ss" (docs/02 §5). */
 export function mmss(ms: number): string {
@@ -104,6 +104,34 @@ export function windowCountdown(lkwAt: string | null, now: Date): Countdown {
   const h = Math.floor(remaining / 60);
   const m = remaining % 60;
   return { kind: "left", minutes: remaining, text: h > 0 ? `${h} h ${String(m).padStart(2, "0")} m` : `${m} m` };
+}
+
+export type Urgency = "ok" | "soon" | "urgent";
+
+/** Board progress bar: share of the 4.5 h window still left (0..1) and its colour band. */
+export function windowBar(c: Countdown): { remaining: number; urgency: Urgency } {
+  if (c.kind !== "left") return { remaining: 0, urgency: "urgent" };
+  const remaining = Math.min(1, c.minutes / WINDOW_MIN);
+  return { remaining, urgency: c.minutes > 120 ? "ok" : c.minutes > 60 ? "soon" : "urgent" };
+}
+
+/** Clock time the 4.5 h window closes, in the call's timezone ("6:30 PM"). */
+export function windowEndText(lkwAt: string, timeZone: string): string {
+  const end = new Date(Date.parse(lkwAt) + WINDOW_MIN * 60_000);
+  const opts: Intl.DateTimeFormatOptions = { hour: "numeric", minute: "2-digit" };
+  try {
+    return end.toLocaleTimeString("en-US", { ...opts, timeZone });
+  } catch {
+    return end.toLocaleTimeString("en-US", opts);
+  }
+}
+
+/** Signs grouped by kind in BE-FAST order; quotes keep transcript order within a kind. */
+export function groupSigns(signs: Sign[]): { kind: SignKind; refs: QuoteRef[] }[] {
+  return SIGN_ORDER.map((kind) => ({
+    kind,
+    refs: signs.filter((s) => s.kind === kind).map((s) => s.ref).sort((a, b) => a.tMs - b.tMs),
+  })).filter((g) => g.refs.length > 0);
 }
 
 const E164_RE = /^\+[1-9]\d{6,14}$/;

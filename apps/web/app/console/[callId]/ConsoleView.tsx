@@ -1,13 +1,16 @@
 "use client";
-// Dispatcher console (docs/01 §7): left 55 % live transcript, right 45 % stacked card.
+// Dispatcher console (docs/01 §7, D-54): light theme sized for a 1920×1080 screen. Left: live
+// transcript. Right: next question, signs + facts, send bar. Latency and the pre-flight test links
+// show only with ?debug (and the test links on /preflight).
 import Link from "next/link";
-import { useMemo } from "react";
+import { useMemo, useState, useSyncExternalStore } from "react";
+import type { CallInfo } from "@lastwell/core";
 import { useCall } from "@/hooks/useCall";
-import { ConnectionBadge } from "@/components/ConnectionBadge";
+import { AppNav, LinkStatus } from "@/components/AppNav";
 import { Transcript } from "@/components/console/Transcript";
 import { StrokeCard } from "@/components/console/StrokeCard";
 import { FactsPanel, LatencyReadout, LookalikePanel, NextQuestionBanner, WarningBanners } from "@/components/console/Panels";
-import { SendAlert } from "@/components/console/SendAlert";
+import { SendAlert, TestLinks } from "@/components/console/SendAlert";
 import { useConfig } from "@/hooks/useConfig";
 import { mmss, stateRefs } from "@/lib/format";
 import { useNow } from "@/hooks/useNow";
@@ -17,55 +20,39 @@ export function ConsoleView({ callId }: { callId: string }) {
   const { config } = useConfig();
   const refs = useMemo(() => stateRefs(view.state), [view.state]);
   const call = view.call;
+  const debug = useDebugFlag();
+  const [notice, setNotice] = useState<string | null>(null);
 
   return (
-    <main className="flex h-screen flex-col gap-4 p-5">
-      <header className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-baseline gap-4">
-          <Link href="/" className="text-2xl font-bold tracking-tight text-white">
-            LastWell
-          </Link>
-          <span className="text-lg text-slate-400">Dispatcher console</span>
-          {call && (
-            <span data-testid="call-meta" className="text-lg text-slate-300">
-              {call.label ? `${call.label} · ` : ""}
-              {call.mode === "phone" ? `Phone ${call.callerNumberMasked ?? ""}`.trim() : call.mode === "browser" ? "Browser mic" : "Replay"}
-            </span>
-          )}
-        </div>
-        <div className="flex items-center gap-3">
-          {call && <CallTimer startedAt={call.startedAt} endedAt={call.endedAt} />}
-          {call && (
-            <span
-              data-testid="call-status"
-              data-status={call.status}
-              className={`rounded-full px-3 py-1 text-sm font-semibold ${
-                call.status === "live" ? "bg-sky-500/15 text-sky-200 ring-1 ring-sky-400/50" : "bg-slate-700 text-slate-300"
-              }`}
-            >
-              {call.status === "live" ? "Caller still on the line" : call.status === "ended" ? "Call ended" : "Call failed"}
-            </span>
-          )}
-          <ConnectionBadge status={view.connection} />
-        </div>
-      </header>
+    <main className="flex h-screen flex-col bg-lw-page text-lw-ink [color-scheme:light]">
+      <AppNav>
+        <LinkStatus status={view.connection} />
+        {call && <CallState status={call.status} />}
+        {call && <CallTimer startedAt={call.startedAt} endedAt={call.endedAt} />}
+      </AppNav>
 
       {view.notFound ? (
-        <p className="mt-10 text-xl text-slate-300">
+        <p className="mx-7 mt-10 text-xl text-lw-ink-2">
           Unknown call <span className="font-mono">{callId}</span>.{" "}
-          <Link className="text-sky-300 underline" href="/">
+          <Link className="text-lw-accent-text underline" href="/">
             Back to calls
           </Link>
         </p>
       ) : (
-        <div className="grid min-h-0 flex-1 grid-cols-1 gap-5 lg:grid-cols-[55fr_45fr]">
+        <div className="grid min-h-0 flex-1 grid-cols-1 gap-5 px-7 py-5 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
           <div className="flex min-h-0 flex-col">
             <Transcript utterances={view.utterances} partials={view.partials} refs={refs} />
           </div>
-          <div className="flex min-h-0 flex-col gap-4 overflow-y-auto pr-1">
+          <div className="flex min-h-0 flex-col gap-5 overflow-y-auto">
             <WarningBanners state={view.state} />
-            <StrokeCard state={view.state} />
-            <NextQuestionBanner state={view.state} />
+            <NextQuestionBanner state={view.state} live={!call || call.status === "live"} />
+            <div className="grid flex-1 grid-cols-1 gap-5 xl:grid-cols-2">
+              <div className="flex flex-col gap-5 [&>section:first-child]:flex-1">
+                <StrokeCard state={view.state} />
+                <LookalikePanel state={view.state} />
+              </div>
+              <FactsPanel state={view.state} />
+            </div>
             <SendAlert
               callId={callId}
               call={call}
@@ -74,9 +61,20 @@ export function ConsoleView({ callId }: { callId: string }) {
               config={config}
               onAlert={view.upsertAlert}
             />
-            <LookalikePanel state={view.state} />
-            <FactsPanel state={view.state} />
-            <LatencyReadout state={view.state} />
+            {debug && (
+              <section
+                data-testid="debug"
+                className="flex flex-col gap-2 rounded-2xl border border-dashed border-lw-border-strong px-7 py-4"
+              >
+                <LatencyReadout state={view.state} />
+                <TestLinks config={config} onNotice={setNotice} />
+                {notice && (
+                  <p data-testid="test-notice" className="text-sm text-lw-ink-2">
+                    {notice}
+                  </p>
+                )}
+              </section>
+            )}
           </div>
         </div>
       )}
@@ -84,11 +82,36 @@ export function ConsoleView({ callId }: { callId: string }) {
   );
 }
 
+/** `?debug` in the URL; false during server rendering so hydration matches. */
+function useDebugFlag(): boolean {
+  return useSyncExternalStore(
+    () => () => {},
+    () => new URLSearchParams(window.location.search).has("debug"),
+    () => false,
+  );
+}
+
+const CALL_STATE: Record<CallInfo["status"], { text: string; dot: string }> = {
+  live: { text: "On the line", dot: "bg-lw-danger" },
+  ended: { text: "Call ended", dot: "bg-lw-ink-3" },
+  failed: { text: "Call failed", dot: "bg-amber-500" },
+};
+
+function CallState({ status }: { status: CallInfo["status"] }) {
+  const s = CALL_STATE[status];
+  return (
+    <span data-testid="call-status" data-status={status} className="inline-flex items-center gap-2 text-base font-semibold text-lw-ink-2">
+      <span className={`h-2.5 w-2.5 rounded-full ${s.dot}`} />
+      {s.text}
+    </span>
+  );
+}
+
 function CallTimer({ startedAt, endedAt }: { startedAt: string; endedAt: string | null }) {
   const now = useNow(1000);
   const ms = (endedAt ? Date.parse(endedAt) : now.getTime()) - Date.parse(startedAt);
   return (
-    <span data-testid="call-timer" className="font-mono text-2xl font-semibold text-white tabular-nums" title="Call duration">
+    <span data-testid="call-timer" className="font-mono text-2xl font-semibold text-lw-ink tabular-nums" title="Call duration">
       {mmss(ms)}
     </span>
   );
