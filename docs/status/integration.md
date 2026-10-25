@@ -62,6 +62,7 @@ Only the integration session edits this file.
 - `pnpm dev:fake` replays A01 through `POST /api/calls/replay`; it logs a 404 until V-11 lands, and the gateway runs without fakes until X-01b lands (it ignores `LASTWELL_FAKES` today).
 
 ## Periodic version1 checks (newest first)
+- 2026-10-24 17:35 PT · version1 cd32ac8 (no new commits) · verify exit 0 · e2e 23/0/0 (strict).
 - 2026-10-24 17:13 PT · version1 a7703f2 (D-41c antiplatelet wording, E-03 rescore) · verify exit 0 (core 217 + 2 skipped, gateway 50, eval 51, web 37, stt 13; 20 valid) · e2e 23 passed, 0 failed, 0 pending (strict).
 - 2026-10-24 16:50 PT · version1 eb5e836 (R-06 reasoner-2, D-42) · verify exit 0 (core 216 + 2 skipped, gateway 50, eval 51, web 37, stt 13; 20 valid) · e2e 23 passed, 0 failed, 0 pending (strict).
 - 2026-10-24 16:42 PT · version1 63555e3 (V-06 timing, V-09/V-10, V-08 Q&A behind FEATURE_QA_ENABLED, default false confirmed in apps/gateway/src/env.ts) · verify exit 0 (core 216 + 2 skipped, gateway 50, eval 51, web 37, stt 13; 20 valid) · e2e 23 passed, 0 failed, 0 pending (strict).
