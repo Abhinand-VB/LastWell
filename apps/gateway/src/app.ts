@@ -37,6 +37,8 @@ export interface Gateway {
   hub: UiHub;
   tokens: TokenStore;
   services: Services;
+  /** The STT factory every stream uses (health-wrapped: a 401/403 marks `cartesia` degraded). */
+  stt: Services["stt"];
 }
 
 export function buildApp(env: Env, services: Services, log: Logger): Gateway {
@@ -193,5 +195,5 @@ export function buildApp(env: Env, services: Services, log: Logger): Gateway {
 
   app.addHook("onClose", async () => registry.disposeAll());
 
-  return { app, calls, alerts, hub, tokens, services };
+  return { app, calls, alerts, hub, tokens, services, stt };
 }

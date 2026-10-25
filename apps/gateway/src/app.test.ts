@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { validateEnv } from "./env.js";
-import { auth, KEY, testGateway, type TestGateway } from "./testkit.js";
+import { auth, KEY, testEnv, testGateway, type TestGateway } from "./testkit.js";
 import { originAllowed } from "./app.js";
 
 let gw: TestGateway | null = null;
@@ -32,6 +32,16 @@ describe("env (X-01b)", () => {
   it("DEMO_MODE=true refuses any fake; unknown fake names are rejected", () => {
     expect(validateEnv({ PUBLIC_BASE_URL: "https://x.example", INTERNAL_API_KEY: "abcdefgh12", LASTWELL_FAKES: "tts", DEMO_MODE: "true" }).problems.join()).toMatch(/DEMO_MODE=true refuses fakes/);
     expect(validateEnv({ PUBLIC_BASE_URL: "https://x.example", INTERNAL_API_KEY: "abcdefgh12", LASTWELL_FAKES: "all,phone" }).problems.join()).toMatch(/unknown item "phone"/);
+  });
+
+  it("STT_KEYTERMS defaults to the docs/04 §5 list (≤ 100 terms, ≤ 1200 chars); a set value replaces it", () => {
+    const d = testEnv().STT_KEYTERMS;
+    expect(d).toContain("Eliquis");
+    expect(d).toHaveLength(24);
+    expect(d.length).toBeLessThanOrEqual(100);
+    expect(d.join(",").length).toBeLessThanOrEqual(1200);
+    expect(testEnv({ STT_KEYTERMS: "" }).STT_KEYTERMS).toEqual(d); // blank in .env = unset
+    expect(testEnv({ STT_KEYTERMS: "Eliquis, tPA" }).STT_KEYTERMS).toEqual(["Eliquis", "tPA"]);
   });
 
   it("ALERT_ALLOWED_NUMBERS must be E.164", () => {

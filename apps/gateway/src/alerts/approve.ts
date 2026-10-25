@@ -58,14 +58,14 @@ export class AlertService {
   }
 
   /** Apply a status change (forward only unless forced) + store + broadcast. Returns false if refused. */
-  setStatus(a: AlertRecord, to: AlertStatus, opts: { lastError?: string | null; force?: boolean } = {}): boolean {
+  setStatus(a: AlertRecord, to: AlertStatus, opts: { lastError?: string | null; force?: boolean; ms?: number } = {}): boolean {
     if (!opts.force && !canTransition(a.status, to)) return false;
     const from = a.status;
     a.status = to;
     if (opts.lastError !== undefined) a.lastError = opts.lastError;
     a.updatedAt = this.now().toISOString();
     this.deps.repo.patchAlert(a.id, { status: to, ...(opts.lastError !== undefined ? { lastError: opts.lastError } : {}) }, a.updatedAt);
-    this.deps.log.info({ event: `alert.${to}`, alertId: a.id, callId: a.callId, from }, `alert ${to}`);
+    this.deps.log.info({ event: `alert.${to}`, alertId: a.id, callId: a.callId, from, ...(opts.ms !== undefined ? { ms: opts.ms } : {}) }, `alert ${to}`);
     this.broadcast(a);
     return true;
   }
@@ -146,6 +146,7 @@ export class AlertService {
     const before = a.status;
     const audio = a.audio !== null ? Promise.resolve(a.audio) : this.synthesize(a);
     a.audioPending = audio.catch(() => null);
+    a.dialedAtMs = Date.now();
     const dial = this.deps.telephony.placeCall({ to: a.targetPhone, alertId: a.id });
     const [synth, placed] = await Promise.allSettled([audio, dial]);
     if (placed.status === "fulfilled") {
@@ -258,7 +259,8 @@ export class AlertService {
   /** Alert media stream `start`. */
   onAnswered(a: AlertRecord): void {
     a.answeredAtMs = Date.now();
-    this.setStatus(a, "answered");
+    // ms = ring time: outbound call placed → the stream started (the phone was picked up).
+    this.setStatus(a, "answered", a.dialedAtMs != null ? { ms: a.answeredAtMs - a.dialedAtMs } : {});
   }
 
   /** The `briefing` mark came back: the whole briefing was played. */

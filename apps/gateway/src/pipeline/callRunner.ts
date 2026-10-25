@@ -49,6 +49,8 @@ export class CallRunner {
   private rerunAfter = false;
   private dirty = false;
   private reasonerFailures = 0;
+  /** Per-call timings for the `call.latency` summary at the end (corner readout, docs/08 rehearsal step 5). */
+  private readonly samples = { sttMs: [] as number[], fastPassMs: [] as number[], reasonerMs: [] as number[] };
   private timer: NodeJS.Timeout | null = null;
   private ended = false;
   private readonly now: () => Date;
@@ -97,6 +99,7 @@ export class CallRunner {
   }
 
   noteSttMs(ms: number): void {
+    this.samples.sttMs.push(Math.round(ms));
     this.stateValue = setSttLatency(this.stateValue, ms);
   }
 
@@ -123,6 +126,7 @@ export class CallRunner {
     try {
       const r = await this.deps.model.fastPass({ utteranceText: u.text, prevDispatcherText });
       this.log.info({ event: "fastpass.done", ms: Math.round(r.ms), seq: u.seq, empty: r.output === null }, "fast pass");
+      this.samples.fastPassMs.push(Math.round(r.ms));
       if (r.output === null) return;
       const v = validateFastPass(r.output, u);
       for (const d of v.drops) this.log.info({ event: "validator.dropped", pass: "fast", ...d }, "dropped");
@@ -173,6 +177,7 @@ export class CallRunner {
         timezone: this.deps.timezone,
       });
       this.log.info({ event: "reasoner.done", ms: Math.round(r.ms), empty: r.output === null }, "reasoner");
+      this.samples.reasonerMs.push(Math.round(r.ms));
       if (r.output === null) return;
       const v = validateReasoner(r.output, utterances);
       for (const d of v.drops) this.log.info({ event: "validator.dropped", pass: "reasoner", ...d }, "dropped");
@@ -199,6 +204,12 @@ export class CallRunner {
     }
     while (this.reasonerInFlight !== null) await this.reasonerInFlight;
     if (this.call.utterances.length > 0) await this.startReasoner();
+    this.log.info({ event: "call.latency", ...this.latencySummary() }, "latency summary");
+  }
+
+  /** p50/p95/max per stage over this call (ms, integers); null when a stage never ran. */
+  latencySummary(): Record<"sttMs" | "fastPassMs" | "reasonerMs", LatencyStats | null> {
+    return { sttMs: stats(this.samples.sttMs), fastPassMs: stats(this.samples.fastPassMs), reasonerMs: stats(this.samples.reasonerMs) };
   }
 
   /** Stop timers without the final run (eviction, shutdown). */
@@ -207,4 +218,18 @@ export class CallRunner {
     if (this.timer !== null) clearInterval(this.timer);
     this.timer = null;
   }
+}
+
+export interface LatencyStats {
+  n: number;
+  p50: number;
+  p95: number;
+  max: number;
+}
+
+export function stats(xs: readonly number[]): LatencyStats | null {
+  if (xs.length === 0) return null;
+  const sorted = [...xs].sort((a, b) => a - b);
+  const at = (q: number) => sorted[Math.min(sorted.length - 1, Math.ceil(q * sorted.length) - 1)]!;
+  return { n: sorted.length, p50: at(0.5), p95: at(0.95), max: sorted[sorted.length - 1]! };
 }
