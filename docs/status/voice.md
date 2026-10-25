@@ -3,8 +3,7 @@
 Only the voice session edits this file.
 
 ## Current task
-- 2026-10-24 18:05 PT: every voice task is offline-done; waiting on ngrok + the Twilio webhook (human) for the live gates. Meanwhile: demo-path robustness only (bug fixes with tests).
-- **V-01 has landed (bfa43ca):** the human can now start ngrok and point the Twilio number's voice webhook at `{PUBLIC_BASE_URL}/twilio/voice` (integration's keys request).
+- 2026-10-24 18:40 PT: V-12 (local briefing delivery, D-43 fallback) landing now. Next: the live phone gates (V-01, V-03…V-07, M-01…M-04) — the number and webhook exist (D-43 update), so they need only a person to place the call from an unverified phone; commands under blocked-keys.
 
 ## Last green commit on version1
 - 0f8c31a (version1 head at the 18:05 rebase); voice's last landing 0011ef5, `pnpm e2e` 23 passed / 0 failed / 0 pending.
@@ -50,20 +49,28 @@ Only the voice session edits this file.
 - `packages/stt/src/{inkSession,wav}.ts`, `scripts/spike.ts`; package reads no env (the spike reads the repo-root `.env`). Landed 4cafd7c.
 - `pnpm --filter @lastwell/stt test` → 13 passed against an in-process `ws` server: URL params per docs/05 §4 (call and qa profiles, one `keyterm` per term), `X-API-Key` header, audio queued before open then forwarded as binary, turn.start/update/eager_end/end → partial/final with track timestamps and `sttMs`, empty finals ignored, finals never concatenated, `{"type":"close"}` drains the last turn, close timeout, reconnect once then `degraded`, 401 → degraded without reconnect, no throw without error listeners, µ-law silence 0xFF, WAV parse + 20 ms real-time pacing.
 
+### V-12 Local briefing delivery (D-43) — done offline + live (no Twilio call)
+- `ALERT_DELIVERY=phone|local` in env.ts (default `phone`: the Twilio path, its flags and e2e are unchanged). In `local`, approve composes + synthesizes exactly as before and places no call; the alert stays `queued` (audio ready) until `POST /api/alerts/:alertId/played` → `briefed` → `completed` (each `alert.updated`, idempotent once completed, 409 from `failed`). `GET /api/alerts/:alertId/audio` → `audio/wav` 8 kHz mono 16-bit, decoded from the cached µ-law (G.711), re-synthesized from `briefingText` if the cache is gone (restart → store). Retry in local re-synthesizes from `failed`/`queued`. Test briefing works the same way. `GET /api/config` returns `alertDelivery`.
+- Unit: `alerts/localDelivery.test.ts` 4/4 (µ-law reference points; approve → no call, WAV data == decode(cached audio), Sonic called once, broadcasts queued → briefed → completed, store completed; re-synthesis after the registry loses it, 404 unknown; synth failure 502 → retry → queued; test-briefing; config). `app.test.ts` config now includes `alertDelivery: "phone"`.
+- Live (real Claude + real Sonic, `LASTWELL_FAKES=twilio` as a belt so no call is possible, throwaway INTERNAL_API_KEY so Convex writes were refused and logged): A01 replay → likely; approve 200 `queued` in 2728 ms (`alert.created` ms 2725, `tts.synthesized` 2723 — synthesis is serial in local mode, there is no dial to overlap); `GET …/audio` → 200 `audio/wav` 423,724 bytes, 8000 Hz, 1 ch, 16 bit, 26.5 s; `POST …/played` → `completed`. Log: `alert.local_ready`, `alert.briefed`, `alert.completed`, no `alert.dialed`. Still to observe with a person: the same from a live `/mic` Card A call (W-08) and W-12's Play button.
+
 ## blocked-keys (exact command to run once keys exist)
 - Keys are in `.env` now; what is still blocked needs a human or ngrok:
 - V-02 live spike: record ~20 s of Card A (16 kHz mono WAV) to `apps/eval/audio/A01.wav`, then `pnpm --filter @lastwell/stt spike apps/eval/audio/A01.wav` → expect turn.start/update/end lines and a FINAL TRANSCRIPT containing "coffee cup" and "Eliquis".
 - V-01/V-03/V-04 live (Gate 0/1): `ngrok http 8787 --domain $NGROK_DOMAIN`, `pnpm --filter @lastwell/gateway dev` with `LASTWELL_FAKES=` empty, Twilio number webhook → `{PUBLIC_BASE_URL}/twilio/voice`; call from an unverified phone → dispatcher phone rings; log shows `call.webhook` (From masked), `media.start`, `utterance.final` for caller and dispatcher with `ms`; hang up → `call.ended`.
 - V-05 live (Gate 2): same setup, read Card A; console shows possible → likely ≤ 12 s after "coffee cup", LKW question first, card time ±15 min, Eliquis.
+- Twilio number + webhook are set (D-43 update, 18:20 PT); these need only a person placing the call and `ngrok http 8787 --domain $NGROK_DOMAIN` + `pnpm --filter @lastwell/gateway start` on the gateway Mac.
 - V-06/V-07 live (Gate 3): approve on the console to `ALERT_DEFAULT_TARGET_PHONE`; the phone rings ≤ 20 s; log `alert.created` `ms` < 2500, `alert.answered`, `alert.briefing_done`; status `briefed` → `completed`.
 
 ## wired-to-fake (replace when the named task lands)
 - None. Every service has its real implementation behind the fake (Ink, Sonic bytes, Twilio REST, Convex, Claude); which one runs is `LASTWELL_FAKES`.
 
 ## Requests to other lanes
+- [ ] to reasoning: D-43 contract lines — add `alertDelivery: z.enum(["phone","local"])` to `ConfigResponse` (the gateway already returns it; app.ts types it as `ConfigResponse & {alertDelivery}` until then), and to docs/03 §6: `GET /api/alerts/:alertId/audio` → `audio/wav` (8 kHz mono 16-bit PCM, 404 `unknown_alert`, 502 `tts_failed`) and `POST /api/alerts/:alertId/played` `{}` → `{alert}` (409 `bad_state` from `failed`). In local mode an approved alert stays `queued` until played. (V-12)
 - [ ] to integration: in docs/08 (runbook) start the demo gateway with `pnpm --filter @lastwell/gateway start` (plain `tsx`, `.env` from the repo root, LASTWELL_FAKES empty, DEMO_MODE=true), not `dev`: `dev` is `tsx watch` and restarts the gateway, dropping live calls and in-memory alerts, whenever a file is saved. (demo safety)
 
 ## Handled requests from other lanes
+- [x] from integration (D-43, P0 then P1): V-12 local delivery landed (see evidence). V-09 gateway side was already in (998f166); its live `/mic` check needs a person at the laptop. Live phone gates are next and need a caller.
 - [x] from integration (keys): live checks run within §7.4 (one Claude replay, one Sonic briefing, no Twilio call); V-01 landed, ngrok/webhook can be set up — see Current task.
 - [x] from integration (D-41): the gateway never words blood thinners itself; spoken and logged briefing text comes only from core's `composeBriefing`. Pinned end to end by `alerts.test.ts` "D-41: an aspirin caller's briefing names the drug" (approve path → briefing text sent to Sonic and stored matches /aspirin, per the caller\./, no "blood thinner"): 10/10 pass.
 - [x] from integration (X-02): dev routes exactly per docs/10 §4.1 (`POST /api/dev/calls` → 201 `{callId}`, utterances, end → `call.ended`), `/healthz` `fakes`, boots with only the X-02 variables, missing routes stay Fastify's default 404 — bfa43ca.

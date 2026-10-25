@@ -67,6 +67,8 @@ const EnvSchema = z.object({
     .default("")
     .transform((s) => s.split(",").map((x) => x.trim()).filter((x) => x !== ""))
     .pipe(z.array(E164)),
+  /** D-43: `local` synthesizes the briefing but places no call; the browser plays it (fallback). */
+  ALERT_DELIVERY: z.enum(["phone", "local"]).default("phone"),
   FEATURE_QA_ENABLED: bool(false),
   FEATURE_BROWSER_MIC: bool(true),
 

@@ -75,6 +75,7 @@ export function buildApp(env: Env, services: Services, log: Logger): Gateway {
     allowedNumbers: env.ALERT_ALLOWED_NUMBERS,
     timezone: env.CALL_TIMEZONE,
     qaEnabled: env.FEATURE_QA_ENABLED,
+    delivery: env.ALERT_DELIVERY,
     model: services.model,
   });
   snapshotFn = (id) => callSnapshot({ calls, alerts, repo }, id);
@@ -118,12 +119,14 @@ export function buildApp(env: Env, services: Services, log: Logger): Gateway {
     fakes: [...env.fakes],
   }));
 
-  const config: ConfigResponse = {
+  // alertDelivery (D-43) until reasoning adds it to ConfigResponse in core.
+  const config: ConfigResponse & { alertDelivery: "phone" | "local" } = {
     demoAlertToCaller: env.DEMO_ALERT_TO_CALLER,
     featureBrowserMic: env.FEATURE_BROWSER_MIC,
     featureQa: env.FEATURE_QA_ENABLED,
     callTimezone: env.CALL_TIMEZONE,
     alertDefaultTargetPhone: env.ALERT_DEFAULT_TARGET_PHONE ?? null,
+    alertDelivery: env.ALERT_DELIVERY,
   };
 
   registerRest(app, {

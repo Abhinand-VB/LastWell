@@ -20,6 +20,8 @@ import type { CallService } from "../pipeline/calls.js";
 import { callInfo } from "../pipeline/callRegistry.js";
 import { loadReplayScript, ReplayError, startReplay } from "../pipeline/replay.js";
 import type { Repo } from "../store/repo.js";
+import { buildWav } from "@lastwell/stt";
+import { mulawToPcm16 } from "../tts/audioChunks.js";
 import type { TokenStore } from "./tokens.js";
 
 export interface RestDeps {
@@ -156,6 +158,19 @@ export function registerRest(app: FastifyInstance, deps: RestDeps): void {
   app.post("/api/alerts/:alertId/retry", async (req, reply) => {
     const { alertId } = AlertParams.parse(req.params);
     return sendResult(reply, await deps.alerts.retry(alertId), (alert) => ({ alert }));
+  });
+
+  // D-43 local delivery: 8 kHz mono 16-bit WAV of exactly the cached briefing, then the browser reports `played`.
+  app.get("/api/alerts/:alertId/audio", async (req, reply) => {
+    const { alertId } = AlertParams.parse(req.params);
+    const r = await deps.alerts.briefingAudio(alertId);
+    if (!r.ok) return err(reply, r.status, r.code, r.message);
+    return reply.header("content-type", "audio/wav").header("cache-control", "no-store").send(buildWav(mulawToPcm16(r.value), 8000));
+  });
+
+  app.post("/api/alerts/:alertId/played", async (req, reply) => {
+    const { alertId } = AlertParams.parse(req.params);
+    return sendResult(reply, await deps.alerts.played(alertId), (alert) => ({ alert }));
   });
 
   if (!deps.devRoutes) return;
