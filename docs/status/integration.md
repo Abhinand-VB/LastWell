@@ -81,6 +81,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - `pnpm dev:fake` replays A01 through `POST /api/calls/replay`; it logs a 404 until V-11 lands, and the gateway runs without fakes until X-01b lands (it ignores `LASTWELL_FAKES` today).
 
 ## Periodic version1 checks (newest first)
+- 2026-10-25 08:57 PT · **main 2b8f1f8 (PR #6 from `version2`, merged by a human 08:47) checked in a temp worktree: verify exit 0 (core 234 + 3 skipped, gateway 173, web 69, eval 58, stt 14; 20 + 8 scripts valid; scan:secrets clean), e2e 23/0/0 (strict) → GREEN.** main has work version1 lacks: Benmath123's Convex track features (flags default off, `smoke:convex`), DEVPOST-GUIDE.md. version1 2891c5c (green, 08:55) has 6 commits main lacks (integration status, voice demo media).
 - 2026-10-25 08:08 PT · version1 644f07b (voice: demo video sources, ~50 MB in media/) · verify exit 0 (scan:secrets clean, text patterns only) · e2e 23/0/0 (strict) · GREEN; main 51 behind. Flagged the media for a personal-data check before the final merge. (07:46 and 07:57 checks: green on b3e0451, not committed to keep the tip merge-ready.)
 - 2026-10-25 07:34 PT · version1 e4bc7fd (no new lane commits) · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main 49 behind (D-50). Final merge waits on the human go; checking every 10 min until 8:00.
 - 2026-10-25 07:12 PT · version1 7d3c12e · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50, 48 behind). RELEASE.md updated for the final merge; waiting for the human go.

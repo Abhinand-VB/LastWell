@@ -13,6 +13,8 @@ version1 green all night (verify + e2e 23/0/0 every 20 min); tag `freeze` = c5b7
 
 ## Open (newest first)
 
+- [ ] **humans · two branches diverged (08:57 PT)** · `main` (PR #6 from `version2`, 08:47) is **green** (verify + e2e 23/0/0) and has Benmath123's Convex features (default off) + DEVPOST-GUIDE.md that `version1` does not; `version1` has the 6 newest commits (demo media, status) that `main` does not. **D-number clash:** version2's "proposed D-57" (Convex features) vs the D-57 integration recorded on version1 (console auto-open). D-50 says the gateway runs from `version1`, which lacks the Convex code — fine while its flags are off. After submission: decide which branch is canonical; integration can merge `version1 → main` (6 commits) on a go and renumber one D-57.
+
 - [ ] **humans · check the demo video files before the final merge to main (08:10 PT)** · voice committed `media/lastwell-video/` (644f07b, ~50 MB: two phone takes, a 20 MB console screen recording, voice-over WAVs). Since 06:41 the pre-alert board shows the caller number and phone takes can show caller IDs: **watch them for any real teammate phone number or other personal data.** If something must go, removing it from history needs a history rewrite, which no session may do (docs/10 §3) — a human decides (e.g. leave version1 as is but keep the files out of the public submission, or rewrite). Also consider linking the final video on Devpost instead of the repo copy. The final merge waits on this and on the go.
 
 - [x] voice · D-53 wording · fixed 01:39 PT (exact opening sentence, `notes`). W-13 (screens UI) held until the morning.
