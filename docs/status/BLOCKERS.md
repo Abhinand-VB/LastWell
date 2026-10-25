@@ -3,14 +3,17 @@
 Integration copies open blockers from the four lane files here at each merge, newest first, so humans have one place to look. Answer by editing the relevant doc or `.env`, then tick the line in the lane file.
 
 
-## Shift note (integration, 2026-10-24 ~18:20 PT)
-- Answered: Twilio number + webhook (phone path primary again, D-43 updated); PR #1 merged to main as a checkpoint (d341ae5).
-- Still open: the live gates (real calls: M-01…M-04) now that the number exists; Card A recording (V-02 spike); card print; W-11 look approval; D-40 prompt landing by reasoning.
-- Watch: the first real call through the gateway on the Mac; keep docs/08 §0 ready as the fallback.
+## Shift note (integration, 2026-10-24 18:35 PT)
+- Answered: live system proven (Send pre-alert rang the medical phone); full inbound test call tomorrow morning; all vendors live → lanes told to run their blocked-keys checks (no real calls 9 PM–8 AM).
+- Still open: two idle lanes (top), Card A recording, card print, W-11 approval, S-05 credits/voice pick.
+- Watch: D-40 then E-03 run 2 (slide numbers); V-12/W-12 for the fallback.
 
 ## Open (newest first)
 
-- [ ] voice + humans · M-01…M-04 · Run the live gates on the phone path now: call the number from an unverified phone (dispatcher answers), read Card A, approve to ALERT_DEFAULT_TARGET_PHONE. Real calls only to ALERT_ALLOWED_NUMBERS.
+- [ ] **IDLE · screens** · No commit and no status update since 16:08 PT (checked 18:34 PT); its status says "idle" although W-12 (Play briefing, P1) and W-08 live check were assigned at ~18:00 and X-03 has already moved to the real gateway. → nudge the lw-screens session: "read docs/status/integration.md (Remaining work + Requests) and take W-12, then W-08 live, then W-11".
+- [ ] **IDLE · reasoning** · No commit and no status update since 16:53 PT (checked 18:34 PT). Open: D-40 fast-pass wording (R-03, P0), D-43 contract additions, then E-03 run 2. → nudge the lw-reasoning session: "read docs/status/integration.md Requests; land D-40, the D-43 contract, then E-03 run 2".
+
+- [ ] voice + humans · M-01…M-04 · Gate 3 ring observed (~18:30 PT). Full inbound test call (Gates 0–2, Card A) tomorrow morning after 8 AM; no real calls 9 PM–8 AM.
 
 - [x] humans · Twilio number (D-43) · **Done 2026-10-24 ~18:20 PT:** a number exists on the .env account, webhook set to `{PUBLIC_BASE_URL}/twilio/voice` and verified; phone path (docs/08 §3) is primary again, §0 is the fallback. ~~The upgraded Twilio account owns no number; buying one is blocked by Trust Hub verification (pending, may take days); the +1 737 number belongs to another account being located. Meanwhile the demo is phone-free (docs/08 §0: browser mic + briefing from the laptop speaker, `ALERT_DELIVERY=local`). When a number exists: set `TWILIO_PHONE_NUMBER`, its voice webhook → `{PUBLIC_BASE_URL}/twilio/voice`, start ngrok, `ALERT_DELIVERY=phone`, and switch back to docs/08 §3. Live gates M-01/M-02 wait on this.~~
 
