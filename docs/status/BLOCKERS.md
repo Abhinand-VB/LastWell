@@ -13,6 +13,8 @@ version1 green all night (verify + e2e 23/0/0 every 20 min); tag `freeze` = c5b7
 
 ## Open (newest first)
 
+- [ ] **humans · check the demo video files before the final merge to main (08:10 PT)** · voice committed `media/lastwell-video/` (644f07b, ~50 MB: two phone takes, a 20 MB console screen recording, voice-over WAVs). Since 06:41 the pre-alert board shows the caller number and phone takes can show caller IDs: **watch them for any real teammate phone number or other personal data.** If something must go, removing it from history needs a history rewrite, which no session may do (docs/10 §3) — a human decides (e.g. leave version1 as is but keep the files out of the public submission, or rewrite). Also consider linking the final video on Devpost instead of the repo copy. The final merge waits on this and on the go.
+
 - [x] voice · D-53 wording · fixed 01:39 PT (exact opening sentence, `notes`). W-13 (screens UI) held until the morning.
 
 - [ ] **humans · LKW parser gap found by the blind set (decision needed)** · The parser has no "N past H" form: "fine at ten past three" → **10:00 AM** shown as a confident time (truth 3:10 PM, script A11); "twenty past twelve" → "yesterday 8:00 PM? · confirm day" (B11). "quarter past" and "half past" work (docs/06 §3 R7). A live caller can say this. The E-05 protocol says no rule change based on the blind set, so: (a) **fix it** (reasoning adds "N past H" / "N to H" to docs/06 §3 R7 with new docs/06 §7 rows and tests; the blind run 1 numbers stay as reported, and the blind set is no longer blind for LKW), or (b) **leave it** and keep the slide line as is. Note: this is a post-freeze bug fix with a test if done after 2 AM.
