@@ -74,7 +74,7 @@ Lanes: **X** integration (docs/10, session 4) · **S** setup (shared) · **R** r
 | M-02 | Gate 1: live transcript on screen | M | human | done | — | V-04, W-02 | — | 1 | **Live: Test 1 passed** (human, Liang; 2026-10-24 ~21:30–22:00 PT, real inbound call on the Twilio number, D-52). Live transcript on screen. |
 | M-03 | Gate 2: Haiku JSON with quotes on 5 scripts | M | human | done | — | R-03, R-02 | — | 2 | **Live: Test 1 passed** (human, Liang; 2026-10-24 ~21:30–22:00 PT, real inbound call on the Twilio number, D-52). Flags to Likely with quotes; offline/live fixture evidence in docs/status/reasoning.md. |
 | M-04 | Gate 3: approve → Sonic briefing call | M | human | done | — | V-07, W-05 | — | 3 | **Live: Test 1 passed** (human, Liang; 2026-10-24 ~21:30–22:00 PT, real inbound call on the Twilio number, D-52). Send pre-alert → the briefing call rang the medical phone; Q&A answered and handled an interruption. |
-| M-05 | Feature freeze | M |  | todo | — | — | — | — | Sun 2 AM |
+| M-05 | Feature freeze | M | integration | done | — | — | — | — | Tag `freeze` on version1 c5b7f7b, 2026-10-25 02:00 PT (verify exit 0, e2e 23/0/0). After it: bug fixes only, each with a test. Held items that may still land by human decision: W-13 (D-53 notes UI), the LKW "N past H" parser fix (if approved). |
 | M-06 | Ten rehearsals | M |  | todo | — | M-04 | 2 | — | Sun 6–8 AM |
 | M-07 | Teardown after judging | M |  | todo | — | — | 0.5 | — |  |
 

@@ -14,7 +14,7 @@ Integration copies open blockers from the four lane files here at each merge, ne
 
 - [ ] **humans · LKW parser gap found by the blind set (decision needed)** · The parser has no "N past H" form: "fine at ten past three" → **10:00 AM** shown as a confident time (truth 3:10 PM, script A11); "twenty past twelve" → "yesterday 8:00 PM? · confirm day" (B11). "quarter past" and "half past" work (docs/06 §3 R7). A live caller can say this. The E-05 protocol says no rule change based on the blind set, so: (a) **fix it** (reasoning adds "N past H" / "N to H" to docs/06 §3 R7 with new docs/06 §7 rows and tests; the blind run 1 numbers stay as reported, and the blind set is no longer blind for LKW), or (b) **leave it** and keep the slide line as is. Note: this is a post-freeze bug fix with a test if done after 2 AM.
 
-- [ ] **humans · feature freeze at 2:00 AM PT (M-05)** · After it, only bug fixes with tests land (docs/10 §11). Tag `freeze` on version1 then; integration records it. Any exception is a human call.
+- [x] humans · feature freeze (M-05) · **Done: tag `freeze` on version1 c5b7f7b at 02:00 PT** (green). Bug fixes only from here, each with a test. Still waiting on a human: W-13 in the morning (D-53 says hold), the LKW parser decision. ~~After it, only bug fixes with tests land (docs/10 §11). Tag `freeze` on version1 then; integration records it. Any exception is a human call.~~
 
 - [ ] **humans + voice · morning tests (after 8 AM, D-52)** · chameleon card (B01 or B06), look-alike card (C01/C02/C04/C05), Q&A rerun with D-49/D-51 → decide Q&A keep or kill (`FEATURE_QA_ENABLED`). Runbook §7.
 
