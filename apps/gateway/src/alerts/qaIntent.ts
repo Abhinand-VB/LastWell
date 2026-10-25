@@ -5,7 +5,7 @@ import { QA_FALLBACK } from "@lastwell/core";
 
 export type QaIntent = "closing" | "ack" | "unclear" | "system" | "question";
 
-export const QA_CLOSING = "You're welcome. The full call details are on the stroke team board. Goodbye.";
+export const QA_CLOSING = "You're welcome. The full call details are on the pre-alert board. Goodbye.";
 export const QA_UNCLEAR = "Sorry, I didn't catch that. What would you like to know about the call?";
 export const QA_SYSTEM = "This is LastWell, an automated stroke pre-alert from the 911 call. I can answer questions about what the caller said.";
 /** The "not mentioned" answer, rotated per briefing call so repeats sound less robotic. Never adds a fact. */

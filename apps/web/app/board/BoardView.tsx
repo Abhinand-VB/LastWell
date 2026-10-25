@@ -1,5 +1,5 @@
 "use client";
-// W-06: stroke-team board (docs/01 §7, docs/06 §9). One card per alert, legible from 2 m. Light theme (D-56).
+// W-06: pre-alert board for the stroke team (docs/01 §7, docs/06 §9). One card per alert, legible from 2 m. Light theme (D-56).
 import { useEffect, useState } from "react";
 import { isLkwEstablished, type AlertSummary, type Level } from "@lastwell/core";
 import { useBoard } from "@/hooks/useBoard";

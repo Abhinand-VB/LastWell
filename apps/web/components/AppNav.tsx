@@ -6,7 +6,7 @@ import { BoardIcon, PhoneIcon } from "./icons";
 
 const TABS = [
   { href: "/", label: "Calls", Icon: PhoneIcon, active: (p: string) => p === "/" || p.startsWith("/console") },
-  { href: "/board", label: "Stroke team board", Icon: BoardIcon, active: (p: string) => p.startsWith("/board") },
+  { href: "/board", label: "Pre-alert board", Icon: BoardIcon, active: (p: string) => p.startsWith("/board") },
 ];
 
 export function AppNav({ children }: { children?: React.ReactNode }) {
