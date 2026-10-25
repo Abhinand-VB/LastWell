@@ -73,6 +73,7 @@ export default defineSchema({
     lastError: nullable(v.string()),
     createdAt: v.string(),
     updatedAt: v.string(),
+    audioStorageId: v.optional(v.id("_storage")), // proposed D-57, CONVEX_AUDIO_STORAGE: Sonic bytes in file storage
   })
     .index("by_alertId", ["alertId"])
     .index("by_callId", ["callId"]),
@@ -86,4 +87,12 @@ export default defineSchema({
     evidence: v.any(), // validated QuoteRef[] (docs/03 §2)
     ms: nullable(v.number()), // turn.end → first audio chunk sent
   }).index("by_alert_seq", ["alertId", "seq"]),
+
+  // Proposed D-57 (Convex board, behind FEATURE_CONVEX_BOARD / NEXT_PUBLIC_BOARD_LIVE=convex): short-lived
+  // read tokens for board.listAlerts. Written only by the gateway (secret-checked); deleted at expiry
+  // by a scheduled mutation, which re-runs every subscribed query so an expired token stops returning data.
+  boardTokens: defineTable({
+    token: v.string(), // 32 random bytes as hex, from the gateway
+    expiresAtMs: v.number(), // epoch ms, set from the mutation's clock
+  }).index("by_token", ["token"]),
 });

@@ -15,6 +15,7 @@ import type { Repo } from "../store/repo.js";
 import type { TtsClient } from "../tts/sonic.js";
 import { NotAllowedError, type TelephonyClient } from "../twilio/client.js";
 import type { UiHub } from "../ui/wsHub.js";
+import { CALL_LIMIT_TEXT, EXTRAS_TIMEOUT_MS, withTimeout, type BriefingAudioStore, type CallLimiter } from "./convexExtras.js";
 import { ACTIVE_STATUSES, AlertRegistry, canTransition, reachedAnswered, toSummary, type AlertRecord } from "./alertRegistry.js";
 
 const TEST_FIXTURE = fileURLToPath(new URL("../../../../packages/core/src/fixtures/caseState.TEST.json", import.meta.url));
@@ -35,6 +36,10 @@ export interface AlertServiceDeps {
   /** Q&A on the briefing call (V-08, FEATURE_QA_ENABLED). */
   model?: ModelClient;
   now?: () => Date;
+  /** Proposed D-57, CONVEX_AUDIO_STORAGE: keep the Sonic bytes in Convex file storage. Absent = off. */
+  audioStore?: BriefingAudioStore | null;
+  /** Proposed D-57, CONVEX_CALL_RATE_LIMIT: per-number outbound call limit, on top of the allowlist. Absent = off. */
+  callLimiter?: CallLimiter | null;
 }
 
 export type ActionResult<T> = { ok: true; value: T } | { ok: false; status: number; code: string; message: string };
@@ -102,6 +107,26 @@ export class AlertService {
     return fail(409, "not_allowed", `${phone} is not on the allowed list (ALERT_ALLOWED_NUMBERS); no call was placed`);
   }
 
+  /**
+   * Proposed D-57: one outbound-call credit for `phone` from the Convex rate limiter (CONVEX_CALL_RATE_LIMIT).
+   * Checked after the allowlist, never instead of it. No limiter, local delivery (no call) or Convex
+   * unreachable → null (allowed; the allowlist still guards every call).
+   */
+  private async callLimited(phone: string): Promise<ActionResult<never> | null> {
+    const limiter = this.deps.callLimiter;
+    if (!limiter || this.deps.delivery === "local") return null;
+    try {
+      const r = await withTimeout(limiter.takeAlertCall(phone), EXTRAS_TIMEOUT_MS, "rate limit");
+      if (r.ok) return null;
+      const s = Math.max(1, Math.ceil(r.retryAfterMs / 1000));
+      this.deps.log.warn({ event: "alert.rate_limited", retryAfterMs: r.retryAfterMs }, "outbound call refused by the rate limit");
+      return fail(409, "rate_limited", `Rate limit reached for ${phone} (${CALL_LIMIT_TEXT}); try again in ${s} s. No call was placed`);
+    } catch (err) {
+      this.deps.log.warn({ event: "rate_limit.unavailable", err: err instanceof Error ? err.message : String(err) }, "rate limit not checked");
+      return null;
+    }
+  }
+
   /** POST /api/calls/:callId/alert */
   async approve(callId: string, targetPhone: string, actor = "dispatcher console", input: { note?: string | null; override?: boolean } = {}): Promise<ActionResult<AlertSummary>> {
     const t0 = Date.now();
@@ -119,6 +144,11 @@ export class AlertService {
     }
     if (this.deps.alerts.forCall(callId).some((a) => ACTIVE_STATUSES.includes(a.status))) {
       return fail(409, "alert_active", "an alert for this call is already in progress");
+    }
+    const limited = await this.callLimited(targetPhone);
+    if (limited) {
+      this.action(callId, "approve", actor, null, "refused: alert-call rate limit reached, no call placed", targetPhone, { note });
+      return limited;
     }
     const a = this.create(callId, call.label, targetPhone, state, [...call.utterances], note, override);
     this.action(
@@ -187,7 +217,7 @@ export class AlertService {
     if (this.deps.delivery === "local") return this.synthesizeOnly(a);
     const t0 = Date.now();
     const before = a.status;
-    const audio = a.audio !== null ? Promise.resolve(a.audio) : this.synthesize(a);
+    const audio = this.audioFor(a);
     a.audioPending = audio.catch(() => null);
     a.dialedAtMs = Date.now();
     const dial = this.deps.telephony.placeCall({ to: a.targetPhone, alertId: a.id });
@@ -221,7 +251,7 @@ export class AlertService {
 
   /** D-43 local delivery: no call; the alert stays `queued` until the browser reports `played`. */
   private async synthesizeOnly(a: AlertRecord): Promise<ActionResult<AlertSummary>> {
-    const audio = a.audio !== null ? Promise.resolve(a.audio) : this.synthesize(a);
+    const audio = this.audioFor(a);
     a.audioPending = audio.catch(() => null);
     try {
       await audio;
@@ -241,7 +271,7 @@ export class AlertService {
     const cached = a.audio ?? (a.audioPending ? await a.audioPending : null);
     if (cached !== null) return { ok: true, value: cached };
     try {
-      return { ok: true, value: await this.synthesize(a) };
+      return { ok: true, value: await this.audioFor(a) };
     } catch {
       return fail(502, "tts_failed", `Cartesia: ${SYNTH_FAILED}`);
     }
@@ -265,11 +295,42 @@ export class AlertService {
       const buf = await this.deps.tts.synthesize(a.briefingText);
       a.audio = buf;
       this.deps.log.info({ event: "tts.synthesized", alertId: a.id, ms: Date.now() - t, bytes: buf.length }, "briefing synthesized");
+      if (this.deps.audioStore) this.storeAudio(this.deps.audioStore, a, buf);
       return buf;
     } catch (err) {
       this.deps.log.error({ event: "tts.error", alertId: a.id, err: err instanceof Error ? err.message : String(err) }, "sonic failed");
       throw err;
     }
+  }
+
+  /** The cached bytes, else (proposed D-57, CONVEX_AUDIO_STORAGE) the stored file for an alert rehydrated after a restart, else Sonic. */
+  private audioFor(a: AlertRecord): Promise<Buffer> {
+    if (a.audio !== null) return Promise.resolve(a.audio);
+    if (!this.deps.audioStore || !a.rehydrated) return this.synthesize(a);
+    return this.storedOrSynthesize(this.deps.audioStore, a);
+  }
+
+  private async storedOrSynthesize(store: BriefingAudioStore, a: AlertRecord): Promise<Buffer> {
+    const t = Date.now();
+    try {
+      const buf = await withTimeout(store.loadBriefingAudio(a.id), EXTRAS_TIMEOUT_MS, "stored audio");
+      if (buf !== null && buf.length > 0) {
+        a.audio = buf;
+        this.deps.log.info({ event: "audio.from_storage", alertId: a.id, ms: Date.now() - t, bytes: buf.length }, "briefing loaded from Convex storage");
+        return buf;
+      }
+    } catch (err) {
+      this.deps.log.warn({ event: "audio.storage_error", alertId: a.id, err: err instanceof Error ? err.message : String(err) }, "stored audio unavailable");
+    }
+    return this.synthesize(a);
+  }
+
+  /** Write-through like the store: never awaited by the call path, failures only logged. */
+  private storeAudio(store: BriefingAudioStore, a: AlertRecord, buf: Buffer): void {
+    store.saveBriefingAudio(a.id, buf).then(
+      () => this.deps.log.info({ event: "audio.stored", alertId: a.id, bytes: buf.length }, "briefing saved to Convex storage"),
+      (err: unknown) => this.deps.log.warn({ event: "audio.storage_error", alertId: a.id, err: err instanceof Error ? err.message : String(err) }, "briefing not saved"),
+    );
   }
 
   /** POST /twilio/alert-status (docs/03 §6 mapping). Callbacks for a superseded sid are ignored. */
@@ -405,6 +466,7 @@ export class AlertService {
       audio: null,
       audioPending: null,
       answeredAtMs: null,
+      rehydrated: true,
     };
     this.deps.alerts.add(a);
     this.deps.log.info({ event: "alert.rehydrated", alertId, status: a.status }, "alert loaded from the store");
@@ -428,6 +490,8 @@ export class AlertService {
     const retryable = this.deps.delivery === "local" ? ["queued", "failed"] : ["calling", "ringing", "failed"];
     if (!retryable.includes(a.status)) return fail(409, "bad_state", `cannot retry from ${a.status}`);
     if (!this.allowed(a.targetPhone)) return this.notAllowed(a.targetPhone);
+    const limited = await this.callLimited(a.targetPhone);
+    if (limited) return limited;
     // Forget the old sid first so its own completed/canceled callback is ignored.
     const previous = a.twilioCallSid;
     a.twilioCallSid = null;
@@ -451,6 +515,8 @@ export class AlertService {
   /** POST /api/alerts/test-briefing: canned TEST state on a fresh `replay` call labelled TEST. */
   async testBriefing(targetPhone: string): Promise<ActionResult<AlertSummary>> {
     if (!this.allowed(targetPhone)) return this.notAllowed(targetPhone);
+    const limited = await this.callLimited(targetPhone);
+    if (limited) return limited;
     const call = this.deps.calls.create({ mode: "replay", label: "TEST", streamStartedNow: true });
     const raw = JSON.parse(readFileSync(TEST_FIXTURE, "utf8")) as CaseState;
     const utteranceId = randomUUID();

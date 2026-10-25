@@ -1,15 +1,19 @@
 "use client";
 // W-06: pre-alert board for the stroke team (docs/01 §7, docs/06 §9). One card per alert, legible from 2 m. Light theme (D-56).
-import { useEffect, useState } from "react";
+import Link from "next/link";
+import dynamic from "next/dynamic";
+import { useEffect, useState, type ReactNode } from "react";
 import { isLkwEstablished, type AlertSummary, type Level } from "@lastwell/core";
 import { useBoard } from "@/hooks/useBoard";
 import { useConfig } from "@/hooks/useConfig";
 import { useNow } from "@/hooks/useNow";
+import type { ConnectionStatus } from "@/hooks/useCall";
 import { AppNav, LinkStatus } from "@/components/AppNav";
 import { Chip, LevelPill } from "@/components/console/StrokeCard";
 import { gateway } from "@/lib/gateway";
 import type { WebConfig } from "@/lib/config";
 import { sendErrorText, statusLabel, statusSteps, stepIndex } from "@/lib/alerts";
+import { BOARD_LIVE } from "@/lib/boardLive";
 import { bloodThinnerLabel } from "@/lib/consoleText";
 import {
   SIGN_LABEL,
@@ -35,14 +39,44 @@ const URGENCY_TEXT: Record<Urgency, string> = { ok: "text-emerald-700", soon: "t
 const URGENCY_BAR: Record<Urgency, string> = { ok: "bg-emerald-500", soon: "bg-amber-500", urgent: "bg-lw-danger" };
 const QUOTE = "text-lw-evidence underline decoration-lw-evidence-line decoration-2 underline-offset-4";
 
+// Proposed D-57: loaded only with NEXT_PUBLIC_BOARD_LIVE=convex, so the default board never loads the Convex client.
+const ConvexBoardView = dynamic(() => import("./ConvexBoardView").then((m) => m.ConvexBoardView), { ssr: false });
+
 export function BoardView() {
+  return BOARD_LIVE === "convex" ? <ConvexBoardView /> : <WsBoardView />;
+}
+
+/** Default: gateway WebSocket + polling (useBoard), labels from GET /api/calls. */
+function WsBoardView() {
   const { alerts, connection, setAlert } = useBoard();
+  const labels = useCallLabels(alerts);
+  return <BoardLayout alerts={alerts} labels={labels} connection={connection} onAlert={setAlert} />;
+}
+
+export function BoardLayout({
+  alerts,
+  labels,
+  connection,
+  onAlert,
+  indicator,
+  evidenceHref,
+}: {
+  alerts: AlertSummary[];
+  labels: Record<string, string>;
+  connection: ConnectionStatus;
+  onAlert: (a: AlertSummary) => void;
+  /** Proposed D-57, Convex mode only: extra items in the nav bar ("live: Convex", Export history). */
+  indicator?: ReactNode;
+  /** Proposed D-57, Convex mode only: link each card to its live evidence page. */
+  evidenceHref?: (a: AlertSummary) => string;
+}) {
+  const setAlert = onAlert;
   const { config } = useConfig();
   const now = useNow(15_000);
-  const labels = useCallLabels(alerts);
   return (
     <main className="min-h-screen bg-lw-page text-lw-ink [color-scheme:light]">
       <AppNav>
+        {indicator}
         <LinkStatus status={connection} />
         <span data-testid="board-count" className="text-base text-lw-ink-2">
           {alerts.length === 1 ? "1 pre-alert" : `${alerts.length} pre-alerts`}
@@ -56,7 +90,7 @@ export function BoardView() {
         ) : (
           <div className={`grid grid-cols-1 gap-6 ${alerts.length === 1 ? "max-w-4xl" : "xl:grid-cols-2 2xl:grid-cols-3"}`}>
             {alerts.map((a) => (
-              <AlertCard key={a.id} alert={a} label={labels[a.callId] || null} now={now} config={config} onAlert={setAlert} />
+              <AlertCard key={a.id} alert={a} label={labels[a.callId] || null} now={now} config={config} onAlert={setAlert} evidenceHref={evidenceHref?.(a)} />
             ))}
           </div>
         )}
@@ -99,12 +133,14 @@ function AlertCard({
   now,
   config,
   onAlert,
+  evidenceHref,
 }: {
   alert: AlertSummary;
   label: string | null;
   now: Date;
   config: WebConfig;
   onAlert: (a: AlertSummary) => void;
+  evidenceHref?: string;
 }) {
   const s = alert.caseSnapshot;
   const age = fact(alert, "age");
@@ -207,6 +243,11 @@ function AlertCard({
         </button>
       </div>
       {error && <p className="text-sm text-red-700">{error}</p>}
+      {evidenceHref && (
+        <Link data-testid="evidence-link" href={evidenceHref} className="self-start text-base font-semibold text-lw-accent-text underline underline-offset-4">
+          Live evidence →
+        </Link>
+      )}
     </article>
   );
 }

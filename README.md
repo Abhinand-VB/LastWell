@@ -83,6 +83,19 @@ pnpm e2e                                      # offline end-to-end test of the d
 pnpm --filter @lastwell/eval eval --mode text # scripted eval: LastWell vs keyword baseline (needs ANTHROPIC_API_KEY)
 ```
 
+### Convex usage
+
+Convex is the store: the gateway writes calls, utterances, case states, alerts and Q&A turns through as they happen (`apps/gateway/convex/store.ts`), and the console reads history back through the gateway.
+
+**Experimental live board (proposed D-57, off by default).** Set `FEATURE_CONVEX_BOARD=true` on the gateway and `NEXT_PUBLIC_BOARD_LIVE=convex` plus `NEXT_PUBLIC_CONVEX_URL` (the `CONVEX_URL` value) for the web app. The stroke-team board then subscribes to the Convex query `board.listAlerts` with `useQuery`, so an approved alert and every status change appear without a reload or a gateway read. The header shows "live: Convex". The browser gets only a 10-minute read token: the gateway writes it to the `boardTokens` table, and a scheduled Convex mutation deletes it at expiry, which re-runs every open subscription and returns `unauthorized` instead of data. Without the flags, the board uses the gateway WebSocket as before.
+
+Two more opt-in experiments under the same proposal, both off by default:
+
+- **`CONVEX_AUDIO_STORAGE=true`**: each Sonic briefing is uploaded to **Convex file storage** and linked from its alert row. After a gateway restart, "Call again" and "Play briefing" replay the stored file instead of calling Sonic again.
+- **`CONVEX_CALL_RATE_LIMIT=true`**: the **`@convex-dev/rate-limiter` component** allows at most 3 alert calls per target number per 10 minutes, checked in addition to `ALERT_ALLOWED_NUMBERS`. Over the limit, the console shows "Rate limit reached … try again in N s" and no call is placed.
+- **Live evidence page** (with the board flags): each board card links to the call's evidence page, a Convex live query that shows only the quoted signs, facts and last-known-well time, updating while the caller is still on the line. It never shows the transcript, phone numbers or the address.
+- **Board history export** (with the board flags): "Export history (24 h)" on the board downloads the last 24 hours of alerts as CSV (level, briefing status, paramedic confirmation, last-known-well time and blood thinner with their quotes, quoted signs, look-alikes). It reads a paginated Convex query (`board.alertHistory`) with the same board token and the same privacy rules as the evidence page; cells that start like a spreadsheet formula are written as text.
+
 ## Results
 
 The scripted eval (20 calls written by the team: 12 strokes including chameleons, 5 stroke look-alikes, 3 other emergencies) compares LastWell with a keyword alert of the kind general 911 tools ship ("stroke", "droop", "slur", "numb", …). Numbers below are copied from the eval run's own output (E-03 run 2, the final allowed full run, `apps/eval/results/E-03-run2-table.md`), not typed by hand:

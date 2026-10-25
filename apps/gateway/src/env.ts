@@ -72,6 +72,12 @@ const EnvSchema = z.object({
   ALERT_DELIVERY: z.enum(["phone", "local"]).default("phone"),
   FEATURE_QA_ENABLED: bool(false),
   FEATURE_BROWSER_MIC: bool(true),
+  /** Proposed D-57: GET /api/board-token for the board's Convex live query (needs the real store). */
+  FEATURE_CONVEX_BOARD: bool(false),
+  /** Proposed D-57: keep each Sonic briefing in Convex file storage; after a restart, replay it instead of re-synthesizing. */
+  CONVEX_AUDIO_STORAGE: bool(false),
+  /** Proposed D-57: at most 3 outbound alert calls per number per 10 min (Convex rate limiter), on top of ALERT_ALLOWED_NUMBERS. */
+  CONVEX_CALL_RATE_LIMIT: bool(false),
 
   LASTWELL_FAKES: z.string().default(""),
   DEMO_MODE: bool(false),

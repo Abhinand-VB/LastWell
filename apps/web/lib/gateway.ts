@@ -65,6 +65,8 @@ const id = (s: string) => encodeURIComponent(s);
 
 export const gateway = {
   wsToken: () => request(WsTokenResponse, "GET", "ws-token"),
+  /** Proposed D-57: read token for the board's Convex live query (same shape as the ws token). */
+  boardToken: () => request(WsTokenResponse, "GET", "board-token"),
   listCalls: () => request(CallsListResponse, "GET", "calls"),
   getCall: (callId: string) => request(CallSnapshotResponse, "GET", `calls/${id(callId)}`),
   startBrowserCall: () => request(BrowserCallResponse, "POST", "calls/browser", {}),

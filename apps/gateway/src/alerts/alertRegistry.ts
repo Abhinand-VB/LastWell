@@ -32,6 +32,8 @@ export interface AlertRecord {
   override?: boolean;
   /** The note as a dispatcher utterance for Q&A evidence (id used for attribution). */
   noteUtterance?: Utterance | null;
+  /** Loaded from the store after a gateway restart (proposed D-57: stored audio is tried first). */
+  rehydrated?: boolean;
 }
 
 const RANK: Record<AlertStatus, number> = {
