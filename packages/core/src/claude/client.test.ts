@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 import { CaseState, initialCaseState, type Utterance } from "../contracts/index.js";
 import { FAST_PASS_BASE, FAST_PASS_SYSTEM } from "../prompts/fastPass.js";
-import { QA_SYSTEM } from "../prompts/qa.js";
+import { QA_SYSTEM, buildQaUser } from "../prompts/qa.js";
 import { REASONER_BASE, REASONER_SYSTEM, buildReasonerUser, lkwLine } from "../prompts/reasoner.js";
 import { DEFAULT_CLAUDE_CONFIG, createAnthropic, createClaudeClient, warmup } from "./client.js";
 
@@ -196,10 +196,20 @@ describe("reasoner request shape (R-06)", () => {
     expect(content).toContain('NEUROLOGIST\'S QUESTION: "Any seizure?"');
   });
 
+  it("Q&A facts line (D-41c): an antiplatelet is named, never presented as a blood thinner", () => {
+    const state = { ...A01, facts: A01.facts.map((f) => (f.kind === "blood_thinner" ? { ...f, value: "daily aspirin" } : f)) };
+    const user = buildQaUser({ questionText: "Is he on blood thinners?", utterances: utts, state, now: input.now, timezone: input.timezone });
+    expect(user).toContain("- Blood thinner: none mentioned; takes daily aspirin, an antiplatelet, not a blood thinner — caller said");
+    expect(buildQaUser({ questionText: "x", utterances: utts, state: A01, now: input.now, timezone: input.timezone })).toContain(
+      '- Blood thinner: Eliquis — caller said "he takes Eliquis"',
+    );
+  });
+
   it("warmup sends one call per pass and never throws", async () => {
     const { model, calls } = client({ status: 500 });
     const r = await warmup(model);
     expect(r.map((x) => x.pass)).toEqual(["fast", "reasoner"]);
+    expect((await warmup(model, { qa: true })).map((x) => x.pass)).toEqual(["fast", "reasoner", "qa"]);
     expect(r.every((x) => x.error !== null)).toBe(true);
     expect(calls.length).toBeGreaterThanOrEqual(2);
   });

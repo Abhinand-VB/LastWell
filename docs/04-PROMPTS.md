@@ -44,37 +44,19 @@ export async function parseJson<T extends z.ZodTypeAny>(args: {
 - `cache_control` on the system block is harmless if caching is not triggered (prompts shorter than the model's minimum cacheable length simply are not cached). It ships from day one; task R-10 only measures and tunes.
 - Live tests are named `*.live.test.ts` and start with `if (!process.env.LIVE) { it.skip(...); return; }` so that plain `vitest run` passes offline; `pnpm --filter @lastwell/core test:live` sets `LIVE=1`.
 
-## 1.1 Call-evidence hard rules — appended to the fast-pass and reasoner system prompts (D-44)
+## 1.1 Call-evidence rules — appended to the fast-pass and reasoner system prompts (D-44, D-46)
 
-The source of truth is `docs/guardrails/call-evidence-hard-rules.md` (v1.0, copied unchanged from the human-provided file). What Claude receives as the system prompt for the reasoner (§3) is:
+Two files in `docs/guardrails/`: `call-evidence-hard-rules.md` is the human-provided original (v1.0, unchanged, for people); `call-evidence-rules.model.md` is the compact model-facing version (≈ a third of the length: one-line imperative rules grouped A–F, each tagged with the original rule number `[Rn]`, and the eight worked examples as "caller says → emit / never" lines in our schema's terms; no citations, research notes or "Minimal output" field list). Only the compact file is sent. What Claude receives as the system prompt for the fast pass (§2) and the reasoner (§3) is:
 
 ```text
 {the §2 or §3 system prompt below}
 
-{the preamble below}
-
-{docs/guardrails sections A–F: "## A. Attribute every claim…" through rule 30}
-
-{docs/guardrails "## Worked call examples" table}
+{docs/guardrails/call-evidence-rules.model.md, whole}
 ```
 
-The fast pass (§2) gets a condensed subset, because the full set made it slower (measured p50 1536 ms / p95 3265 ms vs 1335 / 2480 without rules; with the subset 1332 / 1749): its base prompt, the same preamble, then sections **A** (attribution), **C** (affirmation, denial, uncertainty) and **E** (time facts), each verbatim. Sections B, D, F and the worked examples are reasoner-only.
+The output schemas (docs/03 §4) do not change; the compact file's own first paragraph tells the model to apply the rules inside them. Q&A (§4) does not get the rules. `packages/core/src/prompts/guardrails.ts` embeds the file as a string constant (core does no file I/O at runtime); regenerate it with `node packages/core/scripts/gen-guardrails.mjs` after editing the file, and `guardrails.test.ts` fails when they drift. The rules are part of the cached system block (`cache_control`), so they cost little after the first call. If the full file makes the fast pass more than ~0.3 s slower at p50, the fast pass gets only the intro and sections A and C (`GUARDRAILS_MODEL_AC`). Measured +0.18 s, so both passes ship the whole file (docs/09 D-46).
 
-For both, the document's intro ("How to use this document"), its "Minimal output for each evaluated call" field list and its evidence notes are **not** sent: our output schemas (docs/03 §4) do not change, and the preamble tells the model to apply the rules inside them. Q&A (§4) does not get the rules. `packages/core/src/prompts/guardrails.ts` embeds the sections as string constants (core does no file I/O at runtime); regenerate it with `node packages/core/scripts/gen-guardrails.mjs` after editing the doc, and `guardrails.test.ts` fails when they drift. The system block keeps `cache_control`, so the longer prompt is read from cache after the first call.
-
-Preamble (`prompts/evidenceRules.ts`):
-
-```
-CALL-EVIDENCE HARD RULES (docs/guardrails/call-evidence-hard-rules.md, v1.0)
-The numbered rules and worked examples below are LastWell's evidence contract. They add to the rules above and never relax them. Apply them inside the JSON schema you were given: do not add fields, statuses, turn numbers, timestamps or confidence values, and do not produce the evidence-record format the source document describes.
-How the rules map onto this schema:
-- Emit a sign only for an affirmed, current finding about this patient in a caller utterance. Leave it out when it is denied, asked about but not answered, tentative ("maybe", "I think", "it looked like"), historical or long-standing, about another person, only heard secondhand and not described as seen, or later corrected by the caller. Where the rules say a finding is unknown, suspected, disputed or absent, it is simply not emitted.
-- A denied fact keeps the value the rules above give it (for example blood_thinner "none" for "No, nothing like that").
-- Time phrases stay as the caller's words; code turns them into clock times.
-- Rules 29 and 30 restate limits you already follow: no diagnosis, no probability, no alert decisions.
-```
-
-Known conflict (open, docs/status/reasoning.md): rule 24 says a wake-up time is not last-known-well, while the §2 fact list still names "woke up like this" as a last_known_well phrase and the parser (docs/06 R11) maps it to a vague previous-evening LKW. Both texts are sent as they are until a human decides.
+Known conflicts (open, docs/status/reasoning.md): R24 (a wake-up time is not last-known-well) vs §2's "woke up like this" example and docs/06 R11; R19 (a corrected claim is not emitted again) vs docs/03 §3 (signs are never removed once added, so a sign the fast pass took before the correction stays on the card).
 
 ## 2. Fast pass — `claude-haiku-5-5`, effort `low`, thinking disabled, `max_tokens 1024`
 
@@ -210,6 +192,7 @@ FACTS (computed by code, trusted):
 - Signs: {kind: "quote" (mm:ss), ...}
 - Last known well: {spokenLkw} — caller said "{quote}"      | not established on the call
 - Blood thinner: {value} — caller said "{quote}"            | not mentioned
+                                                            | none mentioned; takes {value}, an antiplatelet, not a blood thinner — caller said "{quote}"   (D-41c: aspirin, clopidogrel/Plavix, ticagrelor/Brilinta, prasugrel/Effient)
 - Other facts: age 78 ("he's 78"), sex male ("my father"), ...
 
 TRANSCRIPT (mm:ss speaker: text)

@@ -3,12 +3,20 @@
 Only the reasoning session edits this file.
 
 ## Current task
-- Integration's remaining reasoning work (BM, tonight): compact guardrails + D-40 in one fast-pass version → C-04 fake phrase table → R-08 (D-32). D-43 contract done (D-45).
+- Landing the compact guardrails prompts (fast-4/reasoner-4) + R-08 (qa-2). Then: report.
 
 ## Last green commit on version1
 - E-03 run 1 results (see below)
 
 ## Acceptance evidence (pasted command output per task)
+
+### D-46 compact guardrails in the prompts + R-08 Q&A wrapper — 2026-10-25
+- `docs/guardrails/call-evidence-rules.model.md`: 911 words (original 2667), one-line rules A–F tagged [Rn], all 30 covered (test checks every rule line ends in [Rn] and R1–R30 all appear), examples mapped to our schema. Prompts: fast pass `fast-4` and reasoner `reasoner-4` = docs/04 base + the whole compact file (generated `prompts/guardrails.ts`, byte-match test), cached system block.
+- Latency (R-10 bench, 20 sequential calls each): before (D-44 prompts) fast p50 1147 / p95 1987 ms, reasoner 2852 / 4948; after fast p50 1406 then 1253 (avg +0.18 s ≤ 0.3 s gate → full file for both), p95 2703 / 2339; reasoner 2638 / 3326.
+- Live run (with D-40's exact sex line): rows 1, 3, 5 lost the sex fact — row 3 "My wife" had passed in every earlier run.
+- Live run (old sex line, 03:10 UTC): fast rows 2, 3, 4, 6 ✓, rows 1 and 5 miss pronoun-only sex (as with fast-1/fast-3); median 1000 ms; reasoner A01 likely 3453 ms, B01 possible/face, C01 low blood sugar ✓.
+- Eval `--ids A01,B01,C01,C02,D01` (docs/04 §6): identical to E-03 run 2 for these scripts — level 5/5, LKW 4/4, blood thinner 2/2, 0 drops, 0 wrong, 0 invented; fast p50 1202, reasoner 2936 ms.
+- R-08: `qa.live.test.ts` (A01): blood thinners → known, "Yes, he takes Eliquis for his heart.", evidence validates (2374 ms, first call: grammar compile — over the 2 s target); seizure → known false (1222 ms); last normal → "Last seen normal at 2:00 PM, 48 minutes ago…" no parentheses/dashes (1418 ms); address → known, evidence validates (1385 ms). `warmup(model, {qa: true})` now also compiles the Q&A schema. The spoken post-processing (fallback phrase, quote-or-drop, LKW rule) is the gateway's `finalizeQa` (voice). D-41(c) for Q&A: the facts line names an antiplatelet as "none mentioned; takes {value}, an antiplatelet, not a blood thinner" (`qa-2`, offline test); the fake answers likewise. `FEATURE_QA_ENABLED` stays false.
 
 ### D-44 Call-evidence hard rules in the prompts (human request) — done 2026-10-25
 - Doc copied unchanged: `docs/guardrails/call-evidence-hard-rules.md` (`cmp` identical to the provided file). `packages/core/scripts/gen-guardrails.mjs` generates `src/prompts/guardrails.ts`; `guardrails.test.ts` checks the constants against the doc byte for byte, the docs/04 §1.1 preamble verbatim, and that no "Minimal output" / intro / evidence-notes text reaches a prompt. `cache_control` on the system block unchanged.
@@ -135,6 +143,7 @@ Only the reasoning session edits this file.
 -
 
 ## Requests to other lanes
+- [ ] to voice: R-08 — call `warmup(model, { qa: true })` at boot when `FEATURE_QA_ENABLED=true` (the first Q&A answer took 2374 ms cold vs ≈1.4 s warm).
 - [ ] to screens: D-45 — `ConfigResponse.alertDelivery: "phone" | "local"` is in core; W-12 can read it from `loadConfig()` (I added it to `WebConfig` with default "phone" and to `FALLBACK_CONFIG` and the mock gateway, the minimal consumer edit the contract rule requires).
 - [ ] to voice: D-45 — `alertDelivery` is now in `ConfigResponse`; `apps/gateway/src/app.ts` can drop its local `ConfigResponse & { alertDelivery }` type. docs/03 §6 now lists `GET /api/alerts/:alertId/audio` and `POST /api/alerts/:alertId/played` as you implemented them.
 - [ ] to screens: D-41(c) — wherever the console or board labels the blood-thinner fact, use `isAntiplatelet(value)` from `@lastwell/core` and show the drug (e.g. "Takes daily aspirin") instead of "Blood thinner: …" for antiplatelets.
@@ -148,6 +157,8 @@ Only the reasoning session edits this file.
 - [x] from screens: `alertDefaultTargetPhone` in `ConfigResponse` (D-39) — see commit "reasoning: D-39 …".
 
 ## Blockers for humans
+- [ ] D-40 · The exact D-40 sex line ("quote the phrase that makes it certain, with its context … never a bare pronoun") made the fast pass drop the sex fact even for "My wife" (row 3) in a live run; with the old line row 3 passes. Not adopted; the fast pass keeps the old line (fast-4). Pronoun-only sex (rows 1, 5) still fails with every wording tried. Impact: sex then comes from the reasoner's other_facts or a relation word; the banner falls back to they/their. Decide: accept, or try another wording in a later window.
+- [ ] D-46 · Rule R19 (a corrected claim is not emitted again) vs docs/03 §3 (signs are never removed once added): a sign the fast pass took before the caller corrected it stays on the card; the reasoner now omits it but cannot remove it. Decide whether corrections should remove a sign (a reducer + contract change).
 - [ ] D-44 · Rule 24 (a wake-up or discovery time is not last-known-well) conflicts with docs/06 R11 (the parser maps "woke up like this" to a vague previous-evening LKW) and with the docs/04 §2 fact list, which names "woke up like this" as a last_known_well phrase. Both texts are sent unchanged; the parser is unchanged. Decide: keep R11 (then drop rule 24's wake-up clause from the prompt) or follow rule 24 (then R11 and the §2 example change).
 - [ ] D-44 · Rules 26 and 29 ("must not imply a treatment window", "do not state … a treatment eligibility window") vs the stroke-team board's 4.5 h countdown from LKW (docs/00 scope item 6, acceptance row 8) and the briefing's "N minutes ago". These rules bind the model, which never states a window; the countdown is UI. Confirm the board countdown stays.
 - [ ] D-44 · Rule 27 (a possible mimic is a parallel claim, not proof stroke is absent) vs the reasoner's level definition ("likely … and no look-alike explains the whole picture"), under which a look-alike can keep a two-sign call at `possible`. Run 2 shows no case where this lowered a stroke script. Confirm or reword the level definition.

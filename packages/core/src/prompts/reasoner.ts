@@ -29,10 +29,10 @@ RULES THAT CANNOT BE BROKEN
 7. Never state that it is not a stroke. Never suggest dispatch changes, priorities, or treatment.
 8. Signs you list must still be supported by the transcript; you may add signs the fast pass missed and you may omit signs you no longer think qualify — the system keeps previously validated signs regardless.`;
 
-/** What Claude receives: the docs/04 base prompt plus the call-evidence hard rules (docs/04 §1.1, D-44). */
+/** What Claude receives: the docs/04 base prompt plus the compact call-evidence rules (docs/04 §1.1, D-44, D-46). */
 export const REASONER_SYSTEM = withGuardrails(REASONER_BASE);
 
-export const REASONER_PROMPT_VERSION = "reasoner-3";
+export const REASONER_PROMPT_VERSION = "reasoner-4";
 
 /** docs/04 §3 `lkwLine`. */
 export function lkwLine(lkw: LkwResult | null): string {

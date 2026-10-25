@@ -30,10 +30,10 @@ FACT KINDS (value = short normalized value; quote = the caller's words)
 
 OUTPUT: JSON matching the schema. No prose.`;
 
-/** What Claude receives: the docs/04 base prompt plus sections A, C and E of the call-evidence hard rules (docs/04 §1.1, D-44). */
+/** What Claude receives: the docs/04 base prompt plus the compact call-evidence rules (docs/04 §1.1, D-44, D-46). */
 export const FAST_PASS_SYSTEM = withFastGuardrails(FAST_PASS_BASE);
 
-export const FAST_PASS_PROMPT_VERSION = "fast-3";
+export const FAST_PASS_PROMPT_VERSION = "fast-4";
 
 /** docs/04 §2 user message. */
 export function buildFastPassUser(utteranceText: string, prevDispatcherText: string | null): string {

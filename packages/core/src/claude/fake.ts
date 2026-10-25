@@ -3,6 +3,7 @@
 // match on the original text), so the quote validator keeps it; the level guard and the ladder still
 // decide what is shown. Selected by the gateway when LASTWELL_FAKES includes `claude`.
 import type { CaseState, FactKind, FastPassOutput, Level, QaOutput, ReasonerOutput, SignKind } from "../contracts/index.js";
+import { isAntiplatelet } from "../briefing/compose.js";
 import { nextQuestion } from "../state/nextQuestion.js";
 import type { FastPassInput, ModelClient, ModelResult, QaInput, ReasonerInput } from "./types.js";
 
@@ -377,6 +378,10 @@ export function fakeAnswer(input: QaInput): QaOutput {
   for (const kind of topic.kinds) {
     const f = input.state.facts.find((x) => x.kind === kind);
     if (f !== undefined) {
+      if (kind === "blood_thinner" && isAntiplatelet(f.value)) {
+        // D-41(c): an antiplatelet is not a blood thinner; name the drug.
+        return { known: true, answer: `No blood thinner was mentioned; the caller said '${f.ref.quote}'.`, evidence: [{ quote: f.ref.quote }] };
+      }
       const yes = kind === "blood_thinner" ? (f.value.toLowerCase() === "none" ? "No" : "Yes") : null;
       const lead = yes === null ? f.value : `${yes}, ${f.value}`;
       return { known: true, answer: `${lead}. The caller said '${f.ref.quote}'.`, evidence: [{ quote: f.ref.quote }] };

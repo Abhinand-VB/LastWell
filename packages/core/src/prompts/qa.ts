@@ -1,6 +1,6 @@
 // docs/04 §4 system prompt, verbatim. Change protocol: docs/04 §6 (edit here and in docs/04, bump PROMPT_VERSION).
-import type { LkwResult } from "../contracts/index.js";
-import { spokenLkwSentence } from "../briefing/compose.js";
+import type { CaseState, LkwResult } from "../contracts/index.js";
+import { isAntiplatelet, spokenLkwSentence } from "../briefing/compose.js";
 import type { QaInput } from "../claude/types.js";
 import { mmss } from "./reasoner.js";
 export const QA_SYSTEM = `You answer questions from a stroke neurologist about ONE 911 call. You know only two things: the call transcript and the facts already extracted from it (each with its quote). You output JSON only.
@@ -13,7 +13,7 @@ RULES
 5. If the question is not about this call (small talk, "are you an AI"), set known=false.
 6. Never give advice, never recommend treatment, never say it is or is not a stroke.`;
 
-export const QA_PROMPT_VERSION = "qa-1";
+export const QA_PROMPT_VERSION = "qa-2";
 
 /** docs/04 §4 fallback phrase. */
 export const QA_FALLBACK = "That wasn't mentioned on the call.";
@@ -22,6 +22,13 @@ export const QA_FALLBACK = "That wasn't mentioned on the call.";
 export function spokenLkw(lkw: LkwResult | null, now: Date, tz: string): string | null {
   if (lkw === null || lkw.confidence === "unknown" || lkw.lkwAt === null) return null;
   return spokenLkwSentence(lkw, now, tz).replace(/^Last known well:\s*/, "").replace(/\.$/, "");
+}
+
+/** D-41(c): an antiplatelet (aspirin, Plavix, Brilinta…) is named, never presented as a blood thinner. */
+function bloodThinnerLine(bt: CaseState["facts"][number] | undefined): string {
+  if (bt === undefined) return "not mentioned";
+  if (isAntiplatelet(bt.value)) return `none mentioned; takes ${bt.value}, an antiplatelet, not a blood thinner — caller said "${bt.ref.quote}"`;
+  return `${bt.value} — caller said "${bt.ref.quote}"`;
 }
 
 /** docs/04 §4 user message. */
@@ -38,7 +45,7 @@ export function buildQaUser(input: QaInput): string {
     `- Level: ${state.level}`,
     `- Signs: ${signs.length > 0 ? signs.join(", ") : "none heard"}`,
     `- Last known well: ${lkw === null || state.lkw === null ? "not established on the call" : `${lkw} — caller said "${state.lkw.ref.quote}"`}`,
-    `- Blood thinner: ${bt === undefined ? "not mentioned" : `${bt.value} — caller said "${bt.ref.quote}"`}`,
+    `- Blood thinner: ${bloodThinnerLine(bt)}`,
     `- Other facts: ${other.length > 0 ? other.join(", ") : "none"}`,
     "",
     "TRANSCRIPT (mm:ss speaker: text)",
