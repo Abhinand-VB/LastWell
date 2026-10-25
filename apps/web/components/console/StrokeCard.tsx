@@ -18,14 +18,26 @@ const LEVEL_STYLE: Record<Level, { word: string; suffix: string; cls: Record<Ton
   likely: { word: "Likely", suffix: "stroke", cls: { dark: "bg-red-500 text-white", light: "bg-lw-danger text-white" } },
 };
 
-export function LevelPill({ level, title, tone = "dark" }: { level: Level; title?: string; tone?: Tone }) {
+export function LevelPill({
+  level,
+  title,
+  tone = "dark",
+  size = "md",
+}: {
+  level: Level;
+  title?: string;
+  tone?: Tone;
+  size?: "md" | "sm";
+}) {
   const s = LEVEL_STYLE[level];
   return (
     <span
       data-testid="level-pill"
       data-level={level}
       title={title}
-      className={`inline-flex items-center gap-1.5 rounded-full px-4 py-1.5 text-lg font-bold tracking-wide ${s.cls[tone]}`}
+      className={`inline-flex items-center gap-1 rounded-full font-bold tracking-wide ${
+        size === "md" ? "px-4 py-1.5 text-lg" : "px-2.5 py-0.5 text-sm"
+      } ${s.cls[tone]}`}
     >
       <span>{s.word}</span>
       {s.suffix && <span>{s.suffix}</span>}
@@ -62,7 +74,7 @@ export function Chip({
   letter: string;
   label: string;
   state: ChipState;
-  size?: "lg" | "sm";
+  size?: "lg" | "sm" | "xs";
   tone?: Tone;
 }) {
   const cls =
@@ -83,7 +95,11 @@ export function Chip({
       data-state={state}
       title={`${label}${state === "on" ? ": heard" : state === "half" ? ": phrase heard, time not pinned down" : ": not heard"}`}
       className={`flex items-center justify-center font-bold ring-1 ${
-        size === "lg" ? "h-[3.75rem] w-[3.75rem] rounded-2xl text-2xl" : "h-10 w-10 rounded-lg text-lg"
+        size === "lg"
+          ? "h-[3.75rem] w-[3.75rem] rounded-2xl text-2xl"
+          : size === "sm"
+            ? "h-10 w-10 rounded-lg text-lg"
+            : "h-7 w-7 rounded-md text-sm"
       } ${cls}`}
     >
       {letter}

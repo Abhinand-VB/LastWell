@@ -48,13 +48,13 @@ export function BoardView() {
           {alerts.length === 1 ? "1 pre-alert" : `${alerts.length} pre-alerts`}
         </span>
       </AppNav>
-      <div className="px-7 py-6">
+      <div className="px-7 py-5">
         {alerts.length === 0 ? (
           <p data-testid="board-empty" className="mt-16 text-center text-2xl text-lw-ink-3">
             No pre-alerts yet. They appear here the moment a dispatcher sends one.
           </p>
         ) : (
-          <div className={`grid grid-cols-1 gap-6 ${alerts.length === 1 ? "max-w-4xl" : "xl:grid-cols-2 2xl:grid-cols-3"}`}>
+          <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
             {alerts.map((a) => (
               <AlertCard key={a.id} alert={a} label={labels[a.callId] || null} now={now} config={config} onAlert={setAlert} />
             ))}
@@ -131,11 +131,11 @@ function AlertCard({
     <article
       data-testid="alert-card"
       data-alert-id={alert.id}
-      className={`flex flex-col gap-5 rounded-3xl border border-l-8 border-lw-border bg-lw-surface p-7 ${LEVEL_ACCENT[s.level]}`}
+      className={`flex flex-col gap-3 rounded-2xl border border-l-4 border-lw-border bg-lw-surface p-4 ${LEVEL_ACCENT[s.level]}`}
     >
-      <div className="flex flex-wrap items-center gap-3">
-        <LevelPill level={s.level} tone="light" />
-        <span className="text-2xl font-semibold text-lw-ink">
+      <div className="flex flex-wrap items-center gap-2">
+        <LevelPill level={s.level} tone="light" size="sm" />
+        <span className="text-base font-semibold text-lw-ink">
           {[age ? `${age} y` : null, sex].filter(Boolean).join(" · ") || "Age/sex not stated"}
         </span>
         {label && (
@@ -144,22 +144,22 @@ function AlertCard({
           </span>
         )}
       </div>
-      <div className="flex gap-1.5" aria-label="BE-FAST">
+      <div className="flex gap-1" aria-label="BE-FAST">
         {SIGN_ORDER.map((k) => (
-          <Chip key={k} size="sm" tone="light" letter={SIGN_LETTER[k]} label={SIGN_LABEL[k]} state={kinds.has(k) ? "on" : "off"} />
+          <Chip key={k} size="xs" tone="light" letter={SIGN_LETTER[k]} label={SIGN_LABEL[k]} state={kinds.has(k) ? "on" : "off"} />
         ))}
-        <Chip size="sm" tone="light" letter="T" label="Time last known well" state={!s.lkw ? "off" : isLkwEstablished(s.lkw) ? "on" : "half"} />
+        <Chip size="xs" tone="light" letter="T" label="Time last known well" state={!s.lkw ? "off" : isLkwEstablished(s.lkw) ? "on" : "half"} />
       </div>
 
       <WindowPanel alert={alert} now={now} timeZone={config.callTimezone} />
 
-      <dl className="grid grid-cols-[9rem_1fr] gap-x-4 text-xl">
+      <dl className="grid grid-cols-[6.5rem_1fr] gap-x-3 text-sm">
         <dt className="text-lw-ink-2">{bloodThinnerLabel(thinner?.value ?? null)}</dt>
         <dd>
           {thinner ? (
             <>
               <span className="font-semibold text-lw-ink">{thinner.value}</span>{" "}
-              <span className="text-base text-lw-ink-2">
+              <span className="text-xs text-lw-ink-2">
                 “{thinner.ref.quote}” {mmss(thinner.ref.tMs)}
               </span>
             </>
@@ -169,15 +169,15 @@ function AlertCard({
         </dd>
       </dl>
 
-      <ul className="space-y-3" data-testid="board-signs">
+      <ul className="space-y-1.5" data-testid="board-signs">
         {groupSigns(s.signs).map((g) => (
-          <li key={g.kind} data-kind={g.kind} className="flex items-baseline gap-3 text-xl">
-            <span className="w-24 shrink-0 font-semibold text-lw-accent-text">{SIGN_LABEL[g.kind]}</span>
-            <span className="flex flex-col gap-1">
+          <li key={g.kind} data-kind={g.kind} className="flex items-baseline gap-3 text-sm">
+            <span className="w-[6.5rem] shrink-0 font-semibold text-lw-accent-text">{SIGN_LABEL[g.kind]}</span>
+            <span className="flex flex-col gap-0.5">
               {g.refs.map((ref) => (
                 <span key={ref.utteranceId + ref.quote}>
                   <span className={QUOTE}>“{ref.quote}”</span>{" "}
-                  <span className="font-mono text-sm text-lw-ink-3">{mmss(ref.tMs)}</span>
+                  <span className="font-mono text-xs text-lw-ink-3">{mmss(ref.tMs)}</span>
                 </span>
               ))}
             </span>
@@ -187,10 +187,10 @@ function AlertCard({
 
       <BriefingTracker alert={alert} config={config} />
 
-      <div className="mt-auto flex flex-wrap items-center justify-between gap-3">
+      <div className="mt-auto flex flex-wrap items-center justify-between gap-2">
         <span
           data-testid="ems-label"
-          className={`rounded-full px-4 py-1.5 text-lg font-bold ${
+          className={`rounded-full px-2.5 py-0.5 text-sm font-bold ${
             confirmed ? "bg-emerald-600 text-white" : "bg-amber-50 text-amber-900 ring-1 ring-amber-300"
           }`}
         >
@@ -201,7 +201,7 @@ function AlertCard({
           data-testid="ems-toggle"
           disabled={busy}
           onClick={toggle}
-          className="rounded-xl px-4 py-2 text-base font-semibold text-lw-ink-2 ring-1 ring-lw-border-strong hover:bg-lw-subtle disabled:opacity-50"
+          className="rounded-lg px-2.5 py-1 text-xs font-semibold text-lw-ink-2 ring-1 ring-lw-border-strong hover:bg-lw-subtle disabled:opacity-50"
         >
           {confirmed ? "Undo paramedic confirmation" : "Mark paramedic-confirmed"}
         </button>
@@ -217,17 +217,17 @@ function WindowPanel({ alert, now, timeZone }: { alert: AlertSummary; now: Date;
   const countdown = windowCountdown(lkw?.lkwAt ?? null, now);
   const bar = windowBar(countdown);
   return (
-    <div data-testid="countdown" data-kind={countdown.kind} title={lkw?.display ?? "LKW unknown"} className="rounded-2xl bg-lw-subtle p-5">
+    <div data-testid="countdown" data-kind={countdown.kind} title={lkw?.display ?? "LKW unknown"} className="rounded-xl bg-lw-subtle p-3">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         {countdown.kind === "left" && (
-          <p className={`text-5xl font-bold ${URGENCY_TEXT[bar.urgency]}`}>
-            {countdown.text} <span className="text-2xl font-medium text-lw-ink-2">left</span>
+          <p className={`text-2xl font-bold ${URGENCY_TEXT[bar.urgency]}`}>
+            {countdown.text} <span className="text-sm font-medium text-lw-ink-2">left</span>
           </p>
         )}
-        {countdown.kind === "passed" && <p className="text-3xl font-bold text-lw-ink-3">Window passed</p>}
-        {countdown.kind === "unknown" && <p className="text-3xl font-bold text-amber-700">LKW unknown</p>}
+        {countdown.kind === "passed" && <p className="text-lg font-bold text-lw-ink-3">Window passed</p>}
+        {countdown.kind === "unknown" && <p className="text-lg font-bold text-amber-700">LKW unknown</p>}
         {lkw?.lkwAt && (
-          <p className="text-lg text-lw-ink-2">
+          <p className="text-xs text-lw-ink-2">
             {countdown.kind === "passed" ? "closed" : "closes"} {windowEndText(lkw.lkwAt, timeZone)}
           </p>
         )}
@@ -240,20 +240,20 @@ function WindowPanel({ alert, now, timeZone }: { alert: AlertSummary; now: Date;
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={Math.round(bar.remaining * 100)}
-          className="mt-4 h-3 overflow-hidden rounded-full bg-lw-border"
+          className="mt-2 h-1.5 overflow-hidden rounded-full bg-lw-border"
         >
           <div className={`h-full rounded-full ${URGENCY_BAR[bar.urgency]}`} style={{ width: `${bar.remaining * 100}%` }} />
         </div>
       )}
-      <p className="mt-3 text-lg text-lw-ink-2">
+      <p className="mt-2 text-sm text-lw-ink-2">
         LKW{lkw?.lkwAt ? ` ${lkw.display.split(" (")[0]}` : " unknown"}
         {lkw && (
-          <span className="ml-2 text-base text-lw-ink-3">
+          <span className="ml-2 text-xs text-lw-ink-3">
             “{lkw.ref.quote}” {mmss(lkw.ref.tMs)}
           </span>
         )}
       </p>
-      <p className="mt-1 text-base text-lw-ink-3">{TREATMENT_FOOTNOTE}</p>
+      <p className="mt-0.5 text-xs text-lw-ink-3">{TREATMENT_FOOTNOTE}</p>
     </div>
   );
 }
@@ -267,21 +267,21 @@ function BriefingTracker({ alert, config }: { alert: AlertSummary; config: WebCo
   return (
     <section data-testid="call-progress" data-status={alert.status}>
       <div className="flex items-baseline justify-between gap-3">
-        <h3 className="text-sm font-semibold uppercase tracking-widest text-lw-ink-3">
+        <h3 className="text-xs font-semibold uppercase tracking-widest text-lw-ink-3">
           {delivery === "local" ? "Briefing" : "Briefing call"}
         </h3>
-        <span className={`text-base font-semibold ${failed ? "text-red-700" : "text-lw-ink"}`}>{statusLabel(alert.status, delivery)}</span>
+        <span className={`text-xs font-semibold ${failed ? "text-red-700" : "text-lw-ink"}`}>{statusLabel(alert.status, delivery)}</span>
       </div>
       {failed ? (
-        <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-base text-red-800 ring-1 ring-red-300">
+        <p className="mt-1.5 rounded-lg bg-red-50 px-2.5 py-1.5 text-sm text-red-800 ring-1 ring-red-300">
           {alert.lastError ?? "The briefing call failed."}
         </p>
       ) : (
-        <ol className="mt-2 flex gap-1.5">
+        <ol className="mt-1.5 flex gap-1">
           {steps.map((step, i) => (
             <li key={step} className="flex-1">
-              <div className={`h-2 rounded-full ${i <= at ? "bg-lw-accent" : "bg-lw-border"}`} />
-              <div className={`mt-1 text-center text-xs ${i === at ? "font-semibold text-lw-accent-text" : i < at ? "text-lw-accent-text" : "text-lw-ink-3"}`}>
+              <div className={`h-1.5 rounded-full ${i <= at ? "bg-lw-accent" : "bg-lw-border"}`} />
+              <div className={`mt-0.5 text-center text-[11px] ${i === at ? "font-semibold text-lw-accent-text" : i < at ? "text-lw-accent-text" : "text-lw-ink-3"}`}>
                 {statusLabel(step, delivery)}
               </div>
             </li>
