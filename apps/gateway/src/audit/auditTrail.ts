@@ -12,7 +12,7 @@ export type AuditEvent = At &
     | { type: "lkw"; display: string; phrase: string; confidence: string; quote: string; tMs: number }
     | { type: "level"; from: Level; to: Level; modelLevel: Level; reason: string; signKinds: SignKind[] }
     | { type: "warning"; warning: Warning; on: boolean }
-    | { type: "dispatcher"; action: DispatcherAction; actor: string; alertId: string | null; targetPhoneMasked: string | null; detail: string | null }
+    | { type: "dispatcher"; action: DispatcherAction; actor: string; alertId: string | null; targetPhoneMasked: string | null; detail: string | null; note?: string | null; override?: boolean }
     | { type: "alert.status"; alertId: string; from: string; to: string; lastError: string | null }
   );
 

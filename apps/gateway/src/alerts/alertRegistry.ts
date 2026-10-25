@@ -27,6 +27,11 @@ export interface AlertRecord {
   answeredAtMs: number | null;
   /** When the latest outbound call was placed (for `alert.answered` ms: ring time). */
   dialedAtMs?: number | null;
+  /** Dispatcher's note on approve (verbatim, ≤ 200 chars) and whether it was approved below `possible`. */
+  note?: string | null;
+  override?: boolean;
+  /** The note as a dispatcher utterance for Q&A evidence (id used for attribution). */
+  noteUtterance?: Utterance | null;
 }
 
 const RANK: Record<AlertStatus, number> = {

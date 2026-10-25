@@ -22,6 +22,7 @@ import { loadReplayScript, ReplayError, startReplay } from "../pipeline/replay.j
 import type { Repo } from "../store/repo.js";
 import { buildWav } from "@lastwell/stt";
 import { mulawToPcm16 } from "../tts/audioChunks.js";
+import { ApproveExtras } from "../alerts/dispatcherNote.js";
 import { callAudit } from "../audit/auditRecord.js";
 import { actorOf } from "../audit/auditTrail.js";
 import type { TokenStore } from "./tokens.js";
@@ -115,7 +116,9 @@ export function registerRest(app: FastifyInstance, deps: RestDeps): void {
     const { callId } = Params.parse(req.params);
     const body = parse(CreateAlertBody, req.body, reply);
     if (!body) return reply;
-    return sendResult(reply, await deps.alerts.approve(callId, body.targetPhone, actorOf(req.headers["x-lastwell-actor"])), (alert) => ({ alert }));
+    const extra = parse(ApproveExtras, req.body, reply);
+    if (!extra) return reply;
+    return sendResult(reply, await deps.alerts.approve(callId, body.targetPhone, actorOf(req.headers["x-lastwell-actor"]), extra), (alert) => ({ alert }));
   });
 
   // Read-only audit record (path to production): transcript, quoted signs/facts, level changes with the

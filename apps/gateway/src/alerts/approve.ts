@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 import type { Logger } from "pino";
 import { CaseState, composeBriefing, type AlertStatus, type AlertSummary, type ModelClient } from "@lastwell/core";
 import { finalizeQa, type QaFinal } from "./qaAnswer.js";
+import { attributeNote, noteRefs, belowPossible, noteUtterance, withDispatcherInput } from "./dispatcherNote.js";
 import { answerFromState } from "./qaFast.js";
 import type { CallService } from "../pipeline/calls.js";
 import { maskNumber } from "../pipeline/callRegistry.js";
@@ -65,8 +66,17 @@ export class AlertService {
     this.deps.calls.registry.get(callId)?.audit.push(ev);
   }
 
-  private action(callId: string, action: DispatcherAction, actor: string, alertId: string | null, detail: string | null = null, targetPhone: string | null = null): void {
-    this.audit(callId, { at: this.now().toISOString(), type: "dispatcher", action, actor, alertId, targetPhoneMasked: maskNumber(targetPhone), detail });
+  private action(
+    callId: string,
+    action: DispatcherAction,
+    actor: string,
+    alertId: string | null,
+    detail: string | null = null,
+    targetPhone: string | null = null,
+    input: { note?: string | null; override?: boolean } = {},
+  ): void {
+    const extra = action === "approve" ? { note: input.note ?? null, override: input.override === true } : {};
+    this.audit(callId, { at: this.now().toISOString(), type: "dispatcher", action, actor, alertId, targetPhoneMasked: maskNumber(targetPhone), detail, ...extra });
     this.deps.log.info({ event: "audit.action", callId, alertId, action, actor }, "dispatcher action");
   }
 
@@ -93,30 +103,40 @@ export class AlertService {
   }
 
   /** POST /api/calls/:callId/alert */
-  async approve(callId: string, targetPhone: string, actor = "dispatcher console"): Promise<ActionResult<AlertSummary>> {
+  async approve(callId: string, targetPhone: string, actor = "dispatcher console", input: { note?: string | null; override?: boolean } = {}): Promise<ActionResult<AlertSummary>> {
     const t0 = Date.now();
     const call = this.deps.calls.registry.get(callId);
     if (!this.allowed(targetPhone)) {
-      if (call) this.action(callId, "approve", actor, null, "refused: number not on ALERT_ALLOWED_NUMBERS, no call placed", targetPhone);
+      if (call) this.action(callId, "approve", actor, null, "refused: number not on ALERT_ALLOWED_NUMBERS, no call placed", targetPhone, input);
       return this.notAllowed(targetPhone);
     }
     if (!call || !call.runner) return fail(404, "unknown_call", `unknown call ${callId}`);
     const state = call.runner.state;
-    if (state.level === "none") return fail(409, "no_signs", "No stroke signs heard yet: nothing to pre-alert");
+    const note = input.note ? input.note : null;
+    const override = belowPossible(state.level);
+    if (override && input.override !== true) return fail(409, "no_signs", "No stroke signs heard yet: nothing to pre-alert (send override: true to pre-alert on the dispatcher's judgment)");
     if (this.deps.alerts.forCall(callId).some((a) => ACTIVE_STATUSES.includes(a.status))) {
       return fail(409, "alert_active", "an alert for this call is already in progress");
     }
-    const a = this.create(callId, call.label, targetPhone, state, [...call.utterances]);
-    this.action(callId, "approve", actor, a.id, `level ${state.level}; briefing composed from the state at approval (version ${state.version})`, targetPhone);
+    const a = this.create(callId, call.label, targetPhone, state, [...call.utterances], note, override);
+    this.action(
+      callId,
+      "approve",
+      actor,
+      a.id,
+      `level ${state.level}${override ? " (dispatcher override: below possible)" : ""}; briefing composed from the state at approval (version ${state.version})${note ? "; with a dispatcher note" : ""}`,
+      targetPhone,
+      { note, override },
+    );
     const r = await this.synthesizeAndDial(a);
     if (!r.ok) return r;
     this.deps.log.info({ event: "alert.created", alertId: a.id, callId, ms: Date.now() - t0, words: a.briefingText.split(/\s+/).length }, "alert created");
     return { ok: true, value: toSummary(a) };
   }
 
-  private create(callId: string, callLabel: string | null, targetPhone: string, snapshot: CaseState, transcript: AlertRecord["transcriptSnapshot"]): AlertRecord {
+  private create(callId: string, callLabel: string | null, targetPhone: string, snapshot: CaseState, transcript: AlertRecord["transcriptSnapshot"], note: string | null = null, override = false): AlertRecord {
     const now = this.now();
-    const { text } = composeBriefing(snapshot, now, this.deps.timezone, { qaEnabled: this.deps.qaEnabled });
+    const text = withDispatcherInput(composeBriefing(snapshot, now, this.deps.timezone, { qaEnabled: this.deps.qaEnabled }).text, snapshot.level, note);
     const createdAt = now.toISOString();
     const a: AlertRecord = {
       id: randomUUID(),
@@ -136,6 +156,9 @@ export class AlertService {
       audio: null,
       audioPending: null,
       answeredAtMs: null,
+      note,
+      override,
+      noteUtterance: note ? noteUtterance(note, transcript, callId) : null,
     };
     this.deps.alerts.add(a);
     this.deps.repo.insertAlert({
@@ -304,6 +327,8 @@ export class AlertService {
    */
   async answerQuestion(a: AlertRecord, question: string): Promise<QaFinal & { modelMs: number; path: "fast" | "model" }> {
     const now = this.now();
+    const nu = a.noteUtterance ?? null;
+    const transcript = nu ? [...a.transcriptSnapshot, nu] : a.transcriptSnapshot;
     const fast = answerFromState(question, a.caseSnapshot, a.transcriptSnapshot, now, this.deps.timezone);
     if (fast !== null) {
       this.deps.log.info({ event: "qa.fast", alertId: a.id, topics: fast.topics }, "answered from the case state");
@@ -313,13 +338,13 @@ export class AlertService {
     let modelMs = 0;
     try {
       if (!this.deps.model) throw new Error("no model");
-      const r = await this.deps.model.answer({ questionText: question, utterances: a.transcriptSnapshot, state: a.caseSnapshot, now, timezone: this.deps.timezone });
+      const r = await this.deps.model.answer({ questionText: question, utterances: transcript, state: a.caseSnapshot, now, timezone: this.deps.timezone });
       out = r.output;
       modelMs = Math.round(r.ms);
     } catch (err) {
       this.deps.log.warn({ event: "qa.model_error", alertId: a.id, err: err instanceof Error ? err.message : String(err) }, "qa model failed");
     }
-    const final = finalizeQa(question, out, { state: a.caseSnapshot, transcript: a.transcriptSnapshot }, now, this.deps.timezone);
+    const final = attributeNote(finalizeQa(question, out, { state: a.caseSnapshot, transcript: a.transcriptSnapshot }, now, this.deps.timezone), noteRefs(out, nu));
     if (final.evidenceDropped) this.deps.log.info({ event: "qa.evidence_dropped", alertId: a.id }, "qa evidence did not validate");
     return { ...final, modelMs, path: "model" };
   }
