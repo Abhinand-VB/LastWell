@@ -24,7 +24,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 
 
 ## Current task
-- 2026-10-24 ~20:35 PT: D-48 — main follows a green version1; every 20-minute loop: verify + e2e on the version1 tip, then a version1 → main PR with a regular merge when version1 is ahead of main. Never merge red.
+- 2026-10-24 ~21:40 PT: D-50 — everything runs from version1; 20-minute checks of the version1 tip continue, **no per-loop main sync**; one version1 → main merge at the end after the final green check.
 
 ## Last green commit on version1
 - (X-04, see below)
@@ -84,6 +84,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - `pnpm dev:fake` replays A01 through `POST /api/calls/replay`; it logs a 404 until V-11 lands, and the gateway runs without fakes until X-01b lands (it ignores `LASTWELL_FAKES` today).
 
 ## Periodic version1 checks (newest first)
+- 2026-10-24 ~21:40 PT · D-50: per-loop main syncs stopped (last: PR #5, dcc4d93). main stays behind version1 until the final merge.
 - 2026-10-24 21:30 PT · version1 2228586 = main (dcc4d93, PR #5 at 21:20 on request) · verify exit 0 · e2e 23/0/0 (strict) · no sync needed. Idle: screens 2 h 20 (nothing P0/P1 open); reasoning 1 h 08 (build work done; asked to review voice's core LKW edit); voice active 21:19.
 - 2026-10-24 21:08 PT · version1 11eb6ef (voice LKW widen fix, D-49 Q&A sorting) · verify exit 0 · e2e 23/0/0 (strict) · **synced to main: PR #4, a10249f**. Idle: screens 2 h (nothing P0/P1 open); voice active 20:52; reasoning 20:22.
 - 2026-10-24 20:45 PT · version1 7634766 = main (6b572d0, PR #3) · verify exit 0 · e2e 23/0/0 (strict) · no sync needed. Idle: voice 2 h (18:47), screens 1 h 35 (19:10, nothing P0/P1 open); reasoning 20:22.

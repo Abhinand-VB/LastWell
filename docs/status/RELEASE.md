@@ -3,8 +3,8 @@
 Maintained by the integration session (task X-05).
 
 - **Checkpoint merge:** PR #1 (https://github.com/Abhinand-VB/LastWell/pull/1) was merged into `main` on 2026-10-24 at ~18:10 PT by human decision, as merge commit d341ae5 (version1 at 830e196: `pnpm verify` green, `pnpm e2e` 23/0/0). It is **not** tagged `demo-ready`: the live gates have not run (no Twilio number, D-43).
-- **Sync merges (D-48):** the live gateway runs from `main`, so integration merges `version1 → main` (regular merge) at every 20-minute loop when `version1` is green and ahead; never red.
-- **Final release:** later work keeps landing on `version1`; a second PR `version1 → main` is opened after the live demo flow (docs/08 §0 or §3) passes, merged by a human, then tagged `demo-ready`. The title and body below are reused for it.
+- **Sync merges (D-48, ended by D-50):** PRs #2–#5 synced `main` to a green `version1`; the last was #5 (dcc4d93, 21:20 PT). Since D-50 everything runs from `version1` and `main` is not touched until the end.
+- **Final release (D-50):** one PR `version1 → main` at the end, after the final green check on the tip, merged with a regular merge, then tagged `demo-ready`. The title and body below are reused for it.
 
 ## PR title
 

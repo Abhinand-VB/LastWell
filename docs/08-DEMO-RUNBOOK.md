@@ -43,7 +43,7 @@ With four people, the medical professional also runs the board and the fallback 
 
 ## 2. Pre-flight checklist (run it before every rehearsal and 20 minutes before judging)
 
-**Code on the gateway Mac comes from `main` (D-48).** Integration merges a green `version1` into `main` at every 20-minute loop. To pick up the latest: `git checkout main && git pull`, then `pnpm install` and restart the gateway with `pnpm --filter @lastwell/gateway start`. Do this only between rehearsals, never during a demo, and check `curl -s localhost:8787/healthz` afterwards.
+**Code on the gateway Mac comes from `version1` (D-50, amends D-48).** Lanes land on `version1` only after `pnpm verify && pnpm e2e`, and integration re-checks its tip every 20 minutes (docs/status/integration.md, "Periodic version1 checks"). To pick up the latest: `git checkout version1 && git pull`, then `pnpm install` and restart the gateway with `pnpm --filter @lastwell/gateway start`. Do this only between rehearsals, never during a demo, and only from a commit integration last recorded as green; check `curl -s localhost:8787/healthz` afterwards. `main` is merged once, at the end (D-50).
 
 
 Infrastructure
