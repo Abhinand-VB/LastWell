@@ -2,7 +2,7 @@
 
 Only the integration session edits this file.
 
-## Remaining work (snapshot 2026-10-25 06:49 PT; refreshed every 20-minute loop)
+## Remaining work (snapshot 2026-10-25 07:12 PT; refreshed every 20-minute loop)
 
 Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live eval on the 20 scripts, numbers on the slide → (c) browser-mic fallback + play-briefing-locally on the live gateway → (d) W-11 polish for the judging table. Q&A (D-32: R-08, V-08 live) only after all of that is green. No real phone calls 9 PM–8 AM (FakeTelephony overnight).
 
@@ -81,6 +81,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - `pnpm dev:fake` replays A01 through `POST /api/calls/replay`; it logs a 404 until V-11 lands, and the gateway runs without fakes until X-01b lands (it ignores `LASTWELL_FAKES` today).
 
 ## Periodic version1 checks (newest first)
+- 2026-10-25 07:12 PT · version1 7d3c12e · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50, 48 behind). RELEASE.md updated for the final merge; waiting for the human go.
 - 2026-10-25 06:49 PT · version1 2d35d64 (screens: logo/favicon, board as full-width rows; post-freeze UI polish, no decision-log entry — treated as the W-11 polish list) · verify exit 0 · e2e 23/0/0 (strict) · e2e:ui 5 passed (strict) · GREEN; main untouched (D-50).
 - 2026-10-25 06:27 PT · version1 c42b350 (no new lane commits) · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50). Morning order open: parser decision, phone tests + Q&A keep/kill, print/slide/Devpost/video, final merge.
 - 2026-10-25 06:03 PT · version1 69422f7 (screens D-58: allowed numbers in /api/config + Send modal; gateway serves the field) · verify exit 0 · e2e 23/0/0 (strict) · e2e:ui 5 passed (strict) · GREEN; main untouched (D-50). D-57 was missing from the log → recorded the console auto-open as D-57.

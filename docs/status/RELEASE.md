@@ -31,12 +31,14 @@ The whole demo path, built during Cal Hacks 13.0 by four parallel lanes landing 
 - The dispatcher console approves the alert, the code composes the briefing, Sonic 3.6 voices it, and the outbound call goes to the allowlisted medical professional's phone.
 - A stroke-team board, a browser-mic fallback, the replay endpoint, and a scripted eval against a keyword baseline.
 
-### State at the P0 milestone (2026-10-24 ~16:35 PT; re-checked 16:42 PT on 63555e3)
+### State for the final merge (2026-10-25 07:12 PT, version1 7d3c12e)
 
-- `pnpm verify` green: scan:secrets clean, typecheck all packages, tests core 216 (+2 live-only skipped), gateway 50, eval 51, web 37, stt 13; 20 eval scripts valid.
-- `pnpm e2e`: **23 passed, 0 failed, 0 pending** (also with `E2E_STRICT=1`). Offline black-box run of the gateway with every vendor faked: Card A reaches Likely with quoted chips, the LKW is the card time ±15 min, the banner order is right, the allowlist refuses other numbers (409), and the alert reaches `briefed` and is listed on the board. Card B stays Possible with a face/arm banner; Card C shows "low blood sugar — answered".
-- `pnpm e2e:ui`: **4 passed** (Playwright against `pnpm dev:fake`): home, console, board and the empty "No stroke signs heard yet." state. Screenshots: `docs/status/screens/`.
-- Scripted eval, live Claude (E-03 run 1, 20 calls): sensitivity @possible 12/12 vs keyword baseline 3/12; precision @likely 6/7; LKW correct 16/16; blood thinner correct 8/8; invented facts 0.
+- `pnpm verify` green: scan:secrets clean (399 tracked files + history); typecheck all packages; tests core 234 (+3 live-only skipped), gateway 143, eval 58, web 57, stt 14; eval scripts valid: 20 development + 8 blind.
+- `pnpm e2e`: **23 passed, 0 failed, 0 pending** (strict). Offline black-box run of the gateway with every vendor faked: Card A reaches Likely with quoted chips, LKW = card time ±15 min, banner order, allowlist 409, alert reaches `briefed`, board lists it; Card B stays Possible with a face/arm banner; Card C shows "low blood sugar — answered".
+- `pnpm e2e:ui`: **5 passed** (strict, Playwright against `pnpm dev:fake`): home, console (A01), board, Send → Play briefing → completed, the empty "No stroke signs heard yet." state.
+- **Live (D-52):** Test 1 passed on real phones, 2026-10-24 ~21:30–22:00 PT (inbound call → Likely with quotes → LKW + Eliquis → Send → briefing call → Q&A with an interruption).
+- **Eval, live Claude:** 20 development scripts (E-03 run 2 + two consistency runs, identical per script): strokes flagged 12/12 vs keyword 3/12, precision @likely 7/7, LKW 16/16, blood thinner 8/8, invented 0, level agreement 20/20. 8 blind scripts (E-05, run once): strokes 4/4 vs keyword 3/4, level 8/8, invented 0, LKW 3/6 (parser gap on "ten past three"). Audio robustness (synthetic voices through Ink 2): strokes 4/4, LKW 6/6, invented 0 in every voice.
+- **Tags:** `freeze` = c5b7f7b (02:00 PT). Post-freeze changes by human decision: W-13 (D-53), console auto-open (D-57), allowed-number picker (D-58), board/home polish (W-11 list).
 
 ### No Twilio number yet (D-43)
 
