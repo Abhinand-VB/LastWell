@@ -2,7 +2,7 @@
 
 Only the integration session edits this file.
 
-## Remaining work (snapshot 2026-10-25 01:58 PT; refreshed every 20-minute loop)
+## Remaining work (snapshot 2026-10-25 02:21 PT; refreshed every 20-minute loop)
 
 Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live eval on the 20 scripts, numbers on the slide → (c) browser-mic fallback + play-briefing-locally on the live gateway → (d) W-11 polish for the judging table. Q&A (D-32: R-08, V-08 live) only after all of that is green. No real phone calls 9 PM–8 AM (FakeTelephony overnight).
 
@@ -12,7 +12,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 | V-09 | browser mic live check (gateway side in, 998f166) | P1 | voice | needs a person at the laptop |
 | V-10 | live Ink kill/reconnect check | P1 | voice | no |
 | W-11 | polish list from Liang → screens; approved once it lands | P1 | screens | waits on the list |
-| W-13 | notes field + Send at every level | P1 | screens | held until the morning (D-53 deadline) |
+| W-13 | console: Send at every level + notes field (gateway side V-13 is done; until W-13 the dispatcher cannot add a note or send at None from the UI) | P1 | screens | held until the morning (D-53) |
 | C-04 | print deck, slide, two timed pitch runs | P1 | humans | human |
 | LKW "N past H" | parser misses "ten past three" (blind set A11) — fix or leave is a human decision (BLOCKERS) | P1 | humans → reasoning | waits on the decision |
 | X-05 | final PR + `demo-ready` tag after the live gates | P1 | integration | waits on M-01…M-04 |
@@ -82,6 +82,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - `pnpm dev:fake` replays A01 through `POST /api/calls/replay`; it logs a 404 until V-11 lands, and the gateway runs without fakes until X-01b lands (it ignores `LASTWELL_FAKES` today).
 
 ## Periodic version1 checks (newest first)
+- 2026-10-25 02:21 PT · version1 59341ed (since `freeze`: only integration's freeze record) · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50). All lanes quiet (expected after freeze).
 - 2026-10-25 02:00 PT · **M-05 freeze: tag `freeze` on version1 c5b7f7b** (verify exit 0, e2e 23/0/0 on that commit).
 - 2026-10-25 01:58 PT · version1 32049eb (V-13 D-53 fixes, W-11 board rename) · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50).
 - 2026-10-25 01:35 PT · version1 10c46e5 (voice V-13 note/override, screens W-11 light theme D-54…D-56) · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50).
