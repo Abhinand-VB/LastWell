@@ -47,3 +47,13 @@ describe("gateway proxy", () => {
     expect([...res.headers.values()].join(" ")).not.toContain("k-123");
   });
 });
+
+describe("gateway proxy, binary bodies (D-43 audio)", () => {
+  it("passes a WAV through byte for byte with its content type", async () => {
+    const wav = new Uint8Array([0x52, 0x49, 0x46, 0x46, 0xff, 0x00, 0x80, 0xfe]);
+    const fetchImpl = vi.fn(async () => new Response(wav, { status: 200, headers: { "content-type": "audio/wav" } }));
+    const res = await proxyToGateway(new Request("http://web/api/gateway/alerts/a/audio"), ["alerts", "a", "audio"], cfg(fetchImpl as unknown as typeof fetch));
+    expect(res.headers.get("content-type")).toBe("audio/wav");
+    expect(new Uint8Array(await res.arrayBuffer())).toEqual(wav);
+  });
+});

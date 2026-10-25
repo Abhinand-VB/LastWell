@@ -2,19 +2,22 @@
 // W-05: Send stroke pre-alert (docs/01 §7, D-30, D-35). Enabled at level ≠ none, also while the
 // 911 call is live (the target is the medical professional's phone, not the caller's). The modal
 // prefills ALERT_DEFAULT_TARGET_PHONE from /api/config and requires an explicit confirm.
+// W-12 (D-43): with alertDelivery "local" no call is placed; Play briefing plays the WAV here.
 import { useEffect, useRef, useState } from "react";
 import type { AlertSummary, CallInfo, CaseState } from "@lastwell/core";
 import { gateway } from "@/lib/gateway";
 import {
   HANGUP_STATUSES,
   RETRY_STATUSES,
-  STATUS_LABEL,
+  canPlay,
   isActive,
   latestAlert,
   sendErrorText,
+  statusLabel,
   statusSteps,
   stepIndex,
 } from "@/lib/alerts";
+import { useBriefingPlayer } from "@/hooks/useBriefingPlayer";
 import { toE164 } from "@/lib/format";
 import type { WebConfig } from "@/lib/config";
 
@@ -62,7 +65,7 @@ export function SendAlert({
       </button>
       {level === "none" && <p className="mt-2 text-center text-base text-slate-400">{reason}</p>}
 
-      {current && <AlertStatusPanel alert={current} featureQa={config.featureQa} onAlert={onAlert} />}
+      {current && <AlertStatusPanel alert={current} config={config} onAlert={onAlert} />}
 
       <TestLinks config={config} onNotice={setNotice} />
       {notice && (
@@ -144,7 +147,9 @@ function SendModal({
           Send stroke pre-alert
         </h2>
         <p className="mt-2 text-lg text-slate-300">
-          The stroke team&apos;s phone will ring and hear a spoken briefing built from the quotes on this card.
+          {config.alertDelivery === "local"
+            ? "The spoken briefing, built from the quotes on this card, will be ready to play from this laptop."
+            : "The stroke team’s phone will ring and hear a spoken briefing built from the quotes on this card."}
         </p>
         {call.status === "live" && (
           <p data-testid="caller-on-line" className="mt-4 rounded-lg bg-sky-500/10 px-4 py-2 text-base text-sky-200 ring-1 ring-sky-400/40">
@@ -215,18 +220,21 @@ function SendModal({
 
 function AlertStatusPanel({
   alert,
-  featureQa,
+  config,
   onAlert,
 }: {
   alert: AlertSummary;
-  featureQa: boolean;
+  config: WebConfig;
   onAlert: (a: AlertSummary) => void;
 }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const steps = statusSteps(featureQa);
+  const delivery = config.alertDelivery;
+  const player = useBriefingPlayer(onAlert);
+  const steps = statusSteps(config.featureQa, delivery);
   const at = stepIndex(alert.status, steps);
   const failed = alert.status === "failed";
+  const playing = player.playingId === alert.id && (player.state === "playing" || player.state === "loading");
 
   const act = async (fn: () => Promise<void>) => {
     setBusy(true);
@@ -243,14 +251,16 @@ function AlertStatusPanel({
   return (
     <div data-testid="alert-status" data-status={alert.status} className="mt-4">
       <div className="flex items-center justify-between gap-3">
-        <span className="text-base text-slate-400">Pre-alert to {alert.targetPhoneMasked}</span>
+        <span className="text-base text-slate-400">
+          {delivery === "local" ? "Briefing plays from this laptop" : `Pre-alert to ${alert.targetPhoneMasked}`}
+        </span>
         <span
           data-testid="alert-status-pill"
           className={`rounded-full px-3 py-1 text-base font-bold ${
             failed ? "bg-red-500 text-white" : alert.status === "completed" ? "bg-emerald-500 text-slate-950" : "bg-sky-400 text-slate-950"
           }`}
         >
-          {STATUS_LABEL[alert.status]}
+          {statusLabel(alert.status, delivery)}
         </span>
       </div>
       {!failed && (
@@ -258,14 +268,24 @@ function AlertStatusPanel({
           {steps.map((s, i) => (
             <li key={s} className="flex-1">
               <div className={`h-2 rounded-full ${i <= at ? "bg-sky-400" : "bg-slate-700"}`} />
-              <div className={`mt-1 text-center text-xs ${i <= at ? "text-sky-200" : "text-slate-500"}`}>{STATUS_LABEL[s]}</div>
+              <div className={`mt-1 text-center text-xs ${i <= at ? "text-sky-200" : "text-slate-500"}`}>{statusLabel(s, delivery)}</div>
             </li>
           ))}
         </ol>
       )}
       {failed && alert.lastError && <p className="mt-2 text-base text-red-200">{alert.lastError}</p>}
+      {canPlay(alert, delivery) && (
+        <button
+          type="button"
+          data-testid="play-briefing"
+          onClick={() => (playing ? player.stop() : void player.play(alert.id, { report: alert.status !== "completed" }))}
+          className="mt-4 w-full rounded-xl bg-emerald-500 px-6 py-3 text-xl font-bold text-slate-950 hover:bg-emerald-400"
+        >
+          {playing ? "■ Stop" : alert.status === "completed" ? "▶ Play briefing again" : "▶ Play briefing"}
+        </button>
+      )}
       <div className="mt-3 flex gap-2">
-        {RETRY_STATUSES.includes(alert.status) && (
+        {delivery === "phone" && RETRY_STATUSES.includes(alert.status) && (
           <button
             type="button"
             data-testid="call-again"
@@ -276,7 +296,7 @@ function AlertStatusPanel({
             Call again
           </button>
         )}
-        {HANGUP_STATUSES.includes(alert.status) && (
+        {delivery === "phone" && HANGUP_STATUSES.includes(alert.status) && (
           <button
             type="button"
             data-testid="hang-up"
@@ -288,40 +308,60 @@ function AlertStatusPanel({
           </button>
         )}
       </div>
-      {error && <p className="mt-2 text-sm text-red-300">{error}</p>}
+      {(error ?? player.error) && <p className="mt-2 text-sm text-red-300">{error ?? player.error}</p>}
     </div>
   );
 }
 
 function TestLinks({ config, onNotice }: { config: WebConfig; onNotice: (s: string) => void }) {
+  const local = config.alertDelivery === "local";
+  const [testAlert, setTestAlert] = useState<AlertSummary | null>(null);
+  const player = useBriefingPlayer((a) => setTestAlert(a));
   const testCall = async () => {
-    const raw = window.prompt("Test briefing call — phone number to ring:", config.alertDefaultTargetPhone ?? "");
+    const raw = window.prompt(
+      local ? "Test briefing — number on the alert (no call is placed in local mode):" : "Test briefing call — phone number to ring:",
+      config.alertDefaultTargetPhone ?? "",
+    );
     if (raw === null) return;
     const e164 = toE164(raw);
-    if (!e164) return onNotice("Test call not placed: not a valid phone number.");
+    if (!e164) return onNotice("Test briefing not created: not a valid phone number.");
     try {
-      await gateway.testBriefing(e164);
-      onNotice("Test briefing call placed; it shows on the board with label TEST.");
+      const res = await gateway.testBriefing(e164);
+      setTestAlert(res.alert);
+      onNotice(local ? "Test briefing ready: press Play test briefing." : "Test briefing call placed; it shows on the board with label TEST.");
     } catch (err) {
-      onNotice(sendErrorText(err).replace(/^Not sent/, "Test call not placed"));
+      onNotice(sendErrorText(err).replace(/^Not sent/, "Test briefing not created"));
     }
   };
   const clear = async () => {
     try {
       const res = await gateway.clearTestAlerts();
+      setTestAlert(null);
       onNotice(`Cleared ${res.deleted} test alert${res.deleted === 1 ? "" : "s"}.`);
     } catch (err) {
       onNotice(sendErrorText(err).replace(/^Not sent/, "Not cleared"));
     }
   };
+  const playing = testAlert !== null && player.playingId === testAlert.id && (player.state === "playing" || player.state === "loading");
   return (
-    <div className="mt-4 flex justify-center gap-5 border-t border-slate-800 pt-3 text-sm">
+    <div className="mt-4 flex flex-wrap items-center justify-center gap-5 border-t border-slate-800 pt-3 text-sm">
       <button type="button" data-testid="test-briefing" onClick={testCall} className="text-slate-400 underline hover:text-slate-200">
-        Test briefing call
+        {local ? "Test briefing" : "Test briefing call"}
       </button>
+      {local && testAlert && canPlay(testAlert, "local") && (
+        <button
+          type="button"
+          data-testid="play-test-briefing"
+          onClick={() => (playing ? player.stop() : void player.play(testAlert.id, { report: testAlert.status !== "completed" }))}
+          className="rounded-md bg-emerald-500/20 px-3 py-1 font-semibold text-emerald-200 ring-1 ring-emerald-400/60 hover:bg-emerald-500/30"
+        >
+          {playing ? "■ Stop" : "▶ Play test briefing"}
+        </button>
+      )}
       <button type="button" data-testid="clear-test" onClick={clear} className="text-slate-400 underline hover:text-slate-200">
         Clear test alerts
       </button>
+      {player.error && <span className="w-full text-center text-red-300">{player.error}</span>}
     </div>
   );
 }

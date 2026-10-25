@@ -31,3 +31,17 @@ describe("alert helpers", () => {
     expect(sendErrorText(new GatewayError(0, "network", "x"))).toMatch(/unreachable/);
   });
 });
+
+describe("local delivery (D-43, W-12)", () => {
+  it("steps, labels and play availability", async () => {
+    const { canPlay, statusLabel } = await import("./alerts");
+    expect(statusSteps(false, "local")).toEqual(["queued", "briefed", "completed"]);
+    expect(stepIndex("queued", statusSteps(false, "local"))).toBe(0);
+    expect(statusLabel("queued", "local")).toBe("Ready to play");
+    expect(statusLabel("queued", "phone")).toBe("Preparing briefing");
+    expect(canPlay(alert({ status: "queued" }), "local")).toBe(true);
+    expect(canPlay(alert({ status: "completed" }), "local")).toBe(true);
+    expect(canPlay(alert({ status: "failed" }), "local")).toBe(false);
+    expect(canPlay(alert({ status: "queued" }), "phone")).toBe(false);
+  });
+});

@@ -1,9 +1,11 @@
 // Public flags from GET /api/config (docs/03 §6), loaded once per page load.
-import { ConfigResponse, E164 } from "@lastwell/core";
+import { ConfigResponse } from "@lastwell/core";
+import { z } from "zod/v4";
 
-// alertDefaultTargetPhone is in the contract since D-39; it stays optional here so a gateway that
-// predates D-39 still loads (the Send modal then asks for a typed number).
-export const WebConfig = ConfigResponse.extend({ alertDefaultTargetPhone: E164.nullable().optional() });
+// alertDelivery (D-43) is served by the gateway but not yet in core's ConfigResponse; phone is the default.
+export const WebConfig = ConfigResponse.extend({
+  alertDelivery: z.enum(["phone", "local"]).default("phone"),
+});
 export type WebConfig = ReturnType<typeof WebConfig.parse>;
 
 export const FALLBACK_CONFIG: WebConfig = {
@@ -12,6 +14,7 @@ export const FALLBACK_CONFIG: WebConfig = {
   featureQa: false,
   callTimezone: "America/Los_Angeles",
   alertDefaultTargetPhone: null,
+  alertDelivery: "phone",
 };
 
 let pending: Promise<WebConfig> | null = null;
