@@ -2,7 +2,7 @@
 
 Only the integration session edits this file.
 
-## Remaining work (snapshot 2026-10-25 00:06 PT; refreshed every 20-minute loop)
+## Remaining work (snapshot 2026-10-25 00:28 PT; refreshed every 20-minute loop)
 
 Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live eval on the 20 scripts, numbers on the slide → (c) browser-mic fallback + play-briefing-locally on the live gateway → (d) W-11 polish for the judging table. Q&A (D-32: R-08, V-08 live) only after all of that is green. No real phone calls 9 PM–8 AM (FakeTelephony overnight).
 
@@ -13,7 +13,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 | V-10 | live Ink kill/reconnect check | P1 | voice | no |
 | W-11 | polish list from Liang → screens; approved once it lands | P1 | screens | waits on the list |
 | C-04 | print deck, slide, two timed pitch runs | P1 | humans | human |
-| E-05 | held-out blind run (once, by voice) → heldout-run1.md → slide | P1 | voice → integration | waits on voice's current Q&A task |
+| LKW "N past H" | parser misses "ten past three" (blind set A11) — fix or leave is a human decision (BLOCKERS) | P1 | humans → reasoning | waits on the decision |
 | X-05 | final PR + `demo-ready` tag after the live gates | P1 | integration | waits on M-01…M-04 |
 | M-06 | ten rehearsals (Test 1 passed: M-01…M-04 done) | — | humans + voice | morning |
 | C-01, C-05, C-07, C-08 | interview quote, Devpost, backup video, submission | — | humans | human |
@@ -81,6 +81,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - `pnpm dev:fake` replays A01 through `POST /api/calls/replay`; it logs a 404 until V-11 lands, and the gateway runs without fakes until X-01b lands (it ignores `LASTWELL_FAKES` today).
 
 ## Periodic version1 checks (newest first)
+- 2026-10-25 00:28 PT · version1 aa4fd12 (E-05 blind run) · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50). scripts-heldout unchanged since 5541b71.
 - 2026-10-25 00:06 PT · version1 f6ee57a · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50). No lane activity since 22:03. Freeze reminder posted (2 AM).
 - 2026-10-24 23:44 PT · version1 50010bb · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50). No lane activity since 22:03 (voice 1 h 41, E-05 waits).
 - 2026-10-24 23:22 PT · version1 0ee6467 · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50, 11 behind). Idle: voice 1 h 19 (E-05 waits), reasoning 3 h, screens 4 h 12 (W-11 waits on Liang's list).
@@ -108,6 +109,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - 2026-10-24 15:58 PT · df3e7a7 · verify exit 0 · e2e 2 pending.
 
 ## Handled requests from other lanes
+- [x] from voice: E-05 heldout-run1.md → slide (docs/08) and README, unchanged numbers incl. LKW 3/6; LKW misses read against the scripts by integration (2 are a parser gap, 1 is by design) → BLOCKERS decision.
 - [x] from a human: "Path to production" in README (three stages, measures, exit criteria as examples to agree with partners, audit endpoint, dispatcher approval, synthetic-voice robustness as a first check only, open questions) + short version in the Devpost draft (RELEASE.md). No numbers beyond the docs/07 eval results and the Copenhagen figures; the Bergen study is named without figures.
 - [x] from a human (EMT interview): Devpost Inspiration + What we learned (RELEASE.md), docs/interview.md, chameleon-first demo (docs/08 §0, §3), stroke pile B01, B06, A01, A02 (≥ 2 chameleons, generator enforces it), judge Q&A (docs/08 §10), README limit on unverified A05/B08 labels. **Correction to the request:** the keyword baseline caught 1/5 chameleons (B08, "slurred"), not 0/5; LastWell 5/5 (E-03 run 2). B08 and A05 kept out of the stroke pile (unverified labels).
 - [x] from voice: Q&A latency numbers → README (Cartesia section, marked as bench numbers, Q&A off by default); decision recorded as D-51 (proposed, human glance wanted, extends D-10).
