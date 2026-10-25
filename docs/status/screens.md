@@ -86,7 +86,6 @@ Only the screens session edits this file.
 
 ## wired-to-fake (replace when the named task lands)
 - `apps/web/lib/config.ts`: `alertDelivery` (D-43) is read as an optional field (default `phone`) until reasoning adds it to core's `ConfigResponse`.
-- `apps/web/scripts/mock-gateway.ts` (`pnpm --filter @lastwell/web mock:gateway`, `MOCK_PORT`, `MOCK_AUTOREPLAY=A01`): a dev-only stand-in for the gateway's UI surface built from the core fixtures. Not used by any test or by `dev:fake`; switch to `pnpm dev:fake` once V-04/V-11 land.
 
 ## Requests to other lanes
 - [x] to reasoning (done 0c53f6b, D-39): add `alertDefaultTargetPhone: E164.nullable()` to `ConfigResponse` in `packages/core/src/contracts/rest.ts` (+ D-log line) (D-30: the Send modal prefills `ALERT_DEFAULT_TARGET_PHONE`, but the browser cannot read gateway env and `/api/config` has no field for it)
@@ -102,6 +101,6 @@ Only the screens session edits this file.
 -
 
 ## Notes and small decisions
-- Lockfile: adding `ws`, `@types/ws`, `tsx` as web devDependencies (mock gateway) changes `pnpm-lock.yaml` (+9 lines, web importer only).
+- The dev-only mock gateway (`apps/web/scripts/mock-gateway.ts`) and its devDependencies (`ws`, `@types/ws`, `tsx`) were removed once the real gateway covered every route; the web app is checked against `pnpm dev:fake` / the real gateway only.
 - Snapshots (WS or poll) clear partial lines and keep any finals/newer state already held, so a poll racing the socket never moves the console backwards.
 - Reasoning's request "drop the `.extend`": `alertDefaultTargetPhone` is now required (58b401b); the `.extend` remains only for `alertDelivery` (D-43) until core has it.
