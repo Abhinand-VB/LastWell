@@ -2,7 +2,8 @@
 // create → (stream start) → final utterances → end. Wires the registry, the runner, the store and the hub.
 import { randomUUID } from "node:crypto";
 import type { Logger } from "pino";
-import type { CallMode, CallSnapshot, ModelClient, Speaker, Utterance } from "@lastwell/core";
+import { initialCaseState, type CallMode, type CallSnapshot, type CaseState, type ModelClient, type Speaker, type Utterance } from "@lastwell/core";
+import { diffStates } from "../audit/auditTrail.js";
 import type { Repo } from "../store/repo.js";
 import type { UiHub } from "../ui/wsHub.js";
 import { CallRunner } from "./callRunner.js";
@@ -65,6 +66,7 @@ export class CallService {
       streamStartedAt: o.streamStartedNow ? startedAt : null,
     });
     const log = this.deps.log.child({ callId: call.id });
+    let audited: CaseState = initialCaseState(call.id, startedAt);
     call.runner = new CallRunner(call, {
       model: this.deps.model,
       log: this.deps.log,
@@ -73,6 +75,8 @@ export class CallService {
       reasonerIntervalMs: this.deps.reasonerIntervalMs,
       now: this.now,
       onPublish: (state) => {
+        call.audit.push(...diffStates(audited, state, state.updatedAt, this.deps.likelyMinDistinctSigns));
+        audited = state;
         this.deps.repo.upsertCaseState(state);
         this.deps.hub.toCall(call.id, { type: "state.updated", callId: call.id, state });
       },

@@ -1,6 +1,7 @@
 // In-memory calls (docs/05 §3, docs/01 §5 step 10): the source of truth while a call is live; kept
 // 30 minutes after it ends for snapshots and approvals, then evicted.
 import type { CallInfo, CallMode, Utterance } from "@lastwell/core";
+import type { AuditEvent } from "../audit/auditTrail.js";
 import type { CallRunner } from "./callRunner.js";
 
 export const RESIDENT_AFTER_END_MS = 30 * 60 * 1000;
@@ -22,6 +23,8 @@ export interface LiveCall {
   runner: CallRunner | null;
   /** Ends media sources (Ink sessions, replay timers) when the call is ended from outside. */
   onEnd: Array<() => Promise<void> | void>;
+  /** Audit trail (GET /api/calls/:callId/audit), oldest first. */
+  audit: AuditEvent[];
 }
 
 export function maskNumber(n: string | null): string | null {
@@ -46,7 +49,7 @@ export class CallRegistry {
   private calls = new Map<string, LiveCall>();
   private evictions = new Map<string, NodeJS.Timeout>();
 
-  create(init: Omit<LiveCall, "seq" | "utterances" | "runner" | "onEnd" | "endedAt" | "status" | "lastError" | "streamStartedAt"> & { streamStartedAt?: string | null }): LiveCall {
+  create(init: Omit<LiveCall, "seq" | "utterances" | "runner" | "onEnd" | "endedAt" | "status" | "lastError" | "streamStartedAt" | "audit"> & { streamStartedAt?: string | null }): LiveCall {
     const call: LiveCall = {
       ...init,
       streamStartedAt: init.streamStartedAt ?? null,
@@ -57,6 +60,7 @@ export class CallRegistry {
       utterances: [],
       runner: null,
       onEnd: [],
+      audit: [],
     };
     this.calls.set(call.id, call);
     return call;

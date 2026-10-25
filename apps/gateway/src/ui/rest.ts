@@ -22,6 +22,8 @@ import { loadReplayScript, ReplayError, startReplay } from "../pipeline/replay.j
 import type { Repo } from "../store/repo.js";
 import { buildWav } from "@lastwell/stt";
 import { mulawToPcm16 } from "../tts/audioChunks.js";
+import { callAudit } from "../audit/auditRecord.js";
+import { actorOf } from "../audit/auditTrail.js";
 import type { TokenStore } from "./tokens.js";
 
 export interface RestDeps {
@@ -113,7 +115,16 @@ export function registerRest(app: FastifyInstance, deps: RestDeps): void {
     const { callId } = Params.parse(req.params);
     const body = parse(CreateAlertBody, req.body, reply);
     if (!body) return reply;
-    return sendResult(reply, await deps.alerts.approve(callId, body.targetPhone), (alert) => ({ alert }));
+    return sendResult(reply, await deps.alerts.approve(callId, body.targetPhone, actorOf(req.headers["x-lastwell-actor"])), (alert) => ({ alert }));
+  });
+
+  // Read-only audit record (path to production): transcript, quoted signs/facts, level changes with the
+  // guard's reason, dispatcher actions, alert status history, Q&A with evidence quotes.
+  app.get("/api/calls/:callId/audit", async (req, reply) => {
+    const { callId } = Params.parse(req.params);
+    const audit = await callAudit(deps, callId);
+    if (!audit) return err(reply, 404, "unknown_call", `unknown call ${callId}`);
+    return reply.header("cache-control", "no-store").send(audit);
   });
 
   app.post("/api/calls/replay", async (req, reply) => {
@@ -147,17 +158,17 @@ export function registerRest(app: FastifyInstance, deps: RestDeps): void {
     const { alertId } = AlertParams.parse(req.params);
     const body = parse(EmsConfirmBody, req.body, reply);
     if (!body) return reply;
-    return sendResult(reply, await deps.alerts.emsConfirm(alertId, body.confirmed), (alert) => ({ alert }));
+    return sendResult(reply, await deps.alerts.emsConfirm(alertId, body.confirmed, actorOf(req.headers["x-lastwell-actor"])), (alert) => ({ alert }));
   });
 
   app.post("/api/alerts/:alertId/hangup", async (req, reply) => {
     const { alertId } = AlertParams.parse(req.params);
-    return sendResult(reply, await deps.alerts.hangup(alertId), () => ({ ok: true }));
+    return sendResult(reply, await deps.alerts.hangup(alertId, actorOf(req.headers["x-lastwell-actor"])), () => ({ ok: true }));
   });
 
   app.post("/api/alerts/:alertId/retry", async (req, reply) => {
     const { alertId } = AlertParams.parse(req.params);
-    return sendResult(reply, await deps.alerts.retry(alertId), (alert) => ({ alert }));
+    return sendResult(reply, await deps.alerts.retry(alertId, actorOf(req.headers["x-lastwell-actor"])), (alert) => ({ alert }));
   });
 
   // D-43 local delivery: 8 kHz mono 16-bit WAV of exactly the cached briefing, then the browser reports `played`.
@@ -170,7 +181,7 @@ export function registerRest(app: FastifyInstance, deps: RestDeps): void {
 
   app.post("/api/alerts/:alertId/played", async (req, reply) => {
     const { alertId } = AlertParams.parse(req.params);
-    return sendResult(reply, await deps.alerts.played(alertId), (alert) => ({ alert }));
+    return sendResult(reply, await deps.alerts.played(alertId, actorOf(req.headers["x-lastwell-actor"])), (alert) => ({ alert }));
   });
 
   if (!deps.devRoutes) return;
