@@ -2,7 +2,7 @@
 
 Only the integration session edits this file.
 
-## Remaining work (snapshot 2026-10-24 20:25 PT; refreshed every 20-minute loop)
+## Remaining work (snapshot 2026-10-24 20:46 PT; refreshed every 20-minute loop)
 
 Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live eval on the 20 scripts, numbers on the slide → (c) browser-mic fallback + play-briefing-locally on the live gateway → (d) W-11 polish for the judging table. Q&A (D-32: R-08, V-08 live) only after all of that is green. No real phone calls 9 PM–8 AM (FakeTelephony overnight).
 
@@ -84,6 +84,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - `pnpm dev:fake` replays A01 through `POST /api/calls/replay`; it logs a 404 until V-11 lands, and the gateway runs without fakes until X-01b lands (it ignores `LASTWELL_FAKES` today).
 
 ## Periodic version1 checks (newest first)
+- 2026-10-24 20:45 PT · version1 7634766 = main (6b572d0, PR #3) · verify exit 0 · e2e 23/0/0 (strict) · no sync needed. Idle: voice 2 h (18:47), screens 1 h 35 (19:10, nothing P0/P1 open); reasoning 20:22.
 - 2026-10-24 20:23 PT · version1 32fe31a (D-46 compact guardrails, R-08, D-47 human decisions, fast-5/reasoner-5) · verify exit 0 · e2e 23/0/0 (strict). Idle: reasoning active (20:20) and its build work is done; voice 96 min; screens 73 min (nothing P0/P1 open).
 - 2026-10-24 20:00 PT · version1 e6d3aff (no new commits) · verify exit 0 · e2e 23/0/0 (strict). Idle: voice 73 min, reasoning 48 min, screens 50 min → all three in BLOCKERS (screens likely just finished).
 - 2026-10-24 19:38 PT · version1 aabbe6f (no new commits) · verify exit 0 · e2e 23/0/0 (strict). Idle: **voice 51 min (18:47) → BLOCKERS**; reasoning 19:12, screens 19:10 ok.
