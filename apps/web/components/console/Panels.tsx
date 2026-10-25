@@ -1,7 +1,7 @@
 "use client";
 // W-04: next-question banner, look-alike check, critical facts, latency readout, warning banners.
 import type { CaseState, Fact, FactKind } from "@lastwell/core";
-import { lookalikeLine, WARNING_TEXT } from "@/lib/consoleText";
+import { bloodThinnerLabel, lookalikeLine, WARNING_TEXT } from "@/lib/consoleText";
 import { useNow } from "@/hooks/useNow";
 import { agoText, latency, minutesAgo } from "@/lib/format";
 import { QuoteButton } from "./QuoteButton";
@@ -75,7 +75,9 @@ export function FactsPanel({ state }: { state: CaseState | null }) {
   const lkw = state.lkw;
   const mins = lkw ? minutesAgo(lkw.lkwAt, now) : null;
   const rows = FACT_ROWS.flatMap(({ kind, label }) =>
-    state.facts.filter((f) => f.kind === kind).map((f) => ({ label, fact: f })),
+    state.facts
+      .filter((f) => f.kind === kind)
+      .map((f) => ({ label: kind === "blood_thinner" ? bloodThinnerLabel(f.value) : label, fact: f })),
   );
   return (
     <section data-testid="facts" className="rounded-2xl bg-slate-900/80 p-6 ring-1 ring-slate-700/60">
