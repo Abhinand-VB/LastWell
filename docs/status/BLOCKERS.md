@@ -10,6 +10,8 @@ Integration copies open blockers from the four lane files here at each merge, ne
 
 ## Open (newest first)
 
+- [ ] **IDLE · voice** · No commit and no status update since 18:47 PT (checked 19:38 PT). Open voice work: V-06/V-07 live evidence from the gateway log (alert.created ms, ring time, `briefed`); V-10 live Ink reconnect check; V-09 browser-mic live check (needs a person at the laptop). → nudge the lw-voice session: "read docs/status/integration.md Remaining work; post the V-06/V-07 log evidence, then V-10 live; tell integration if anything needs a person". Reminder: no real calls 9 PM–8 AM (`LASTWELL_FAKES=twilio`).
+
 - [x] ~~IDLE · screens~~ resumed 19:00 PT (W-12, W-08 live check, W-11).
 - [x] ~~IDLE · reasoning~~ resumed 18:55 PT (D-44, E-03 run 2, D-45, fake phrase table).
 
