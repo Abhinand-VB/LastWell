@@ -3,11 +3,11 @@
 Only the voice session edits this file.
 
 ## Current task
-- 2026-10-24 17:15 PT: every voice task is offline-done; waiting on ngrok + the Twilio webhook (human) for the live gates. Meanwhile: demo-path robustness only (bug fixes with tests).
+- 2026-10-24 18:05 PT: every voice task is offline-done; waiting on ngrok + the Twilio webhook (human) for the live gates. Meanwhile: demo-path robustness only (bug fixes with tests).
 - **V-01 has landed (bfa43ca):** the human can now start ngrok and point the Twilio number's voice webhook at `{PUBLIC_BASE_URL}/twilio/voice` (integration's keys request).
 
 ## Last green commit on version1
-- bfa43ca (gateway X-01b … V-11), `pnpm e2e` 23 passed / 0 failed / 0 pending. Unit tests for it follow in the next commit.
+- 0f8c31a (version1 head at the 18:05 rebase); voice's last landing 0011ef5, `pnpm e2e` 23 passed / 0 failed / 0 pending.
 
 ## Acceptance evidence (pasted command output per task)
 
@@ -65,7 +65,7 @@ Only the voice session edits this file.
 
 ## Handled requests from other lanes
 - [x] from integration (keys): live checks run within §7.4 (one Claude replay, one Sonic briefing, no Twilio call); V-01 landed, ngrok/webhook can be set up — see Current task.
-- [x] from integration (D-41): the gateway never words blood thinners itself; spoken and logged briefing text comes only from core's `composeBriefing`.
+- [x] from integration (D-41): the gateway never words blood thinners itself; spoken and logged briefing text comes only from core's `composeBriefing`. Pinned end to end by `alerts.test.ts` "D-41: an aspirin caller's briefing names the drug" (approve path → briefing text sent to Sonic and stored matches /aspirin, per the caller\./, no "blood thinner"): 10/10 pass.
 - [x] from integration (X-02): dev routes exactly per docs/10 §4.1 (`POST /api/dev/calls` → 201 `{callId}`, utterances, end → `call.ended`), `/healthz` `fakes`, boots with only the X-02 variables, missing routes stay Fastify's default 404 — bfa43ca.
 - [x] from integration (X-02): `alert.updated` goes to sockets subscribed to the alert's call **and** to `board` (once per socket) — bfa43ca.
 - [x] from screens and reasoning: `GET /api/config` returns `alertDefaultTargetPhone` (ALERT_DEFAULT_TARGET_PHONE or null, D-39) — bfa43ca.

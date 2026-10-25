@@ -103,6 +103,23 @@ describe("approve (V-06)", () => {
     expect(rec.status).toBe("calling");
   });
 
+  it("D-41: an aspirin caller's briefing names the drug, never 'blood thinner' (spoken and stored)", async () => {
+    gw = testGateway({ telephonySpeed: 1000 });
+    const call = gw.calls.create({ mode: "phone", label: "dev", streamStartedNow: true });
+    gw.calls.addFinal(call, { speaker: "caller", text: "It's my father, he's 78.", tStartMs: 0, tEndMs: 900 });
+    gw.calls.addFinal(call, { speaker: "caller", text: "His words come out all mixed up and he can't lift his coffee cup.", tStartMs: 1000, tEndMs: 2000 });
+    gw.calls.addFinal(call, { speaker: "caller", text: "He takes daily aspirin.", tStartMs: 3000, tEndMs: 4000 });
+    await until(() => {
+      const s = gw!.calls.registry.get(call.id)?.runner?.state;
+      return s?.level === "likely" && s.facts.some((f) => f.kind === "blood_thinner");
+    });
+    const res = await gw.app.inject({ method: "POST", url: `/api/calls/${call.id}/alert`, headers: auth, payload: { targetPhone: ALLOWED, confirm: true } });
+    const alert = res.json().alert;
+    expect(alert.briefingText).toMatch(/aspirin, per the caller\./i);
+    expect(alert.briefingText).not.toMatch(/blood thinner/i);
+    expect(gw.tts.calls).toEqual([alert.briefingText]);
+  });
+
   it("test briefing → TEST alert; DELETE /api/alerts/test removes it", async () => {
     gw = testGateway({ telephonySpeed: 1000 });
     const res = await gw.app.inject({ method: "POST", url: "/api/alerts/test-briefing", headers: auth, payload: { targetPhone: ALLOWED } });
