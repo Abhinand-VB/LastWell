@@ -1,20 +1,19 @@
 "use client";
 // W-06: pre-alert board for the stroke team (docs/01 §7, docs/06 §9). One card per alert, legible from 2 m. Light theme (D-56).
 import { useEffect, useState } from "react";
-import { isLkwEstablished, type AlertSummary, type Level } from "@lastwell/core";
+import type { AlertSummary, CallListItem, Level } from "@lastwell/core";
 import { useBoard } from "@/hooks/useBoard";
 import { useConfig } from "@/hooks/useConfig";
 import { useNow } from "@/hooks/useNow";
 import { AppNav, LinkStatus } from "@/components/AppNav";
-import { Chip, LevelPill } from "@/components/console/StrokeCard";
+import { LevelPill } from "@/components/console/StrokeCard";
 import { gateway } from "@/lib/gateway";
 import type { WebConfig } from "@/lib/config";
 import { sendErrorText, statusLabel, statusSteps, stepIndex } from "@/lib/alerts";
 import { bloodThinnerLabel } from "@/lib/consoleText";
 import {
   SIGN_LABEL,
-  SIGN_LETTER,
-  SIGN_ORDER,
+  clockTime,
   groupSigns,
   mmss,
   windowBar,
@@ -39,7 +38,7 @@ export function BoardView() {
   const { alerts, connection, setAlert } = useBoard();
   const { config } = useConfig();
   const now = useNow(15_000);
-  const labels = useCallLabels(alerts);
+  const calls = useCalls(alerts);
   return (
     <main className="min-h-screen bg-lw-page text-lw-ink [color-scheme:light]">
       <AppNav>
@@ -54,9 +53,9 @@ export function BoardView() {
             No pre-alerts yet. They appear here the moment a dispatcher sends one.
           </p>
         ) : (
-          <div className="grid grid-cols-1 items-start gap-4 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4">
+          <div className="flex flex-col gap-3">
             {alerts.map((a) => (
-              <AlertCard key={a.id} alert={a} label={labels[a.callId] || null} now={now} config={config} onAlert={setAlert} />
+              <AlertCard key={a.id} alert={a} call={calls[a.callId] ?? null} now={now} config={config} onAlert={setAlert} />
             ))}
           </div>
         )}
@@ -65,10 +64,13 @@ export function BoardView() {
   );
 }
 
-/** Call labels (TEST, replay script id) come from GET /api/calls: AlertSummary carries none. */
-function useCallLabels(alerts: AlertSummary[]): Record<string, string> {
-  const [labels, setLabels] = useState<Record<string, string>>({});
-  const missing = alerts.some((a) => !(a.callId in labels));
+/**
+ * Call time, caller number and label (TEST, replay script id) come from GET /api/calls: AlertSummary
+ * carries none. A call the list no longer has maps to null (the tile then shows no call line).
+ */
+function useCalls(alerts: AlertSummary[]): Record<string, CallListItem | null> {
+  const [calls, setCalls] = useState<Record<string, CallListItem | null>>({});
+  const missing = alerts.some((a) => !(a.callId in calls));
   useEffect(() => {
     if (!missing) return;
     let cancelled = false;
@@ -76,17 +78,24 @@ function useCallLabels(alerts: AlertSummary[]): Record<string, string> {
       .listCalls()
       .then((res) => {
         if (cancelled) return;
-        const next: Record<string, string> = {};
-        for (const a of alerts) next[a.callId] = "";
-        for (const c of res.calls) if (c.label) next[c.id] = c.label;
-        setLabels((prev) => ({ ...next, ...Object.fromEntries(Object.entries(prev).filter(([, v]) => v)) }));
+        const next: Record<string, CallListItem | null> = {};
+        for (const a of alerts) next[a.callId] = null;
+        for (const c of res.calls) next[c.id] = c;
+        setCalls((prev) => ({ ...next, ...Object.fromEntries(Object.entries(prev).filter(([, v]) => v !== null)) }));
       })
       .catch(() => {});
     return () => {
       cancelled = true;
     };
   }, [missing, alerts]);
-  return labels;
+  return calls;
+}
+
+/** The caller's number as the gateway masks it; replays and mic calls have none. */
+function callerText(c: CallListItem): string {
+  if (c.mode === "replay") return "Replay";
+  if (c.mode === "browser") return "Browser mic";
+  return c.callerNumberMasked ?? "Number withheld";
 }
 
 function fact(a: AlertSummary, kind: string): string | null {
@@ -95,13 +104,13 @@ function fact(a: AlertSummary, kind: string): string | null {
 
 function AlertCard({
   alert,
-  label,
+  call,
   now,
   config,
   onAlert,
 }: {
   alert: AlertSummary;
-  label: string | null;
+  call: CallListItem | null;
   now: Date;
   config: WebConfig;
   onAlert: (a: AlertSummary) => void;
@@ -110,7 +119,7 @@ function AlertCard({
   const age = fact(alert, "age");
   const sex = fact(alert, "sex");
   const thinner = s.facts.find((f) => f.kind === "blood_thinner") ?? null;
-  const kinds = new Set(s.signs.map((sign) => sign.kind));
+  const label = call?.label ?? null;
   const confirmed = alert.emsConfirmedAt !== null;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -131,82 +140,92 @@ function AlertCard({
     <article
       data-testid="alert-card"
       data-alert-id={alert.id}
-      className={`flex flex-col gap-3 rounded-2xl border border-l-4 border-lw-border bg-lw-surface p-4 ${LEVEL_ACCENT[s.level]}`}
+      className={`grid grid-cols-1 items-start gap-x-6 gap-y-3 rounded-2xl border border-l-4 border-lw-border bg-lw-surface px-5 py-4 lg:grid-cols-[15rem_17rem_minmax(0,1fr)_15rem] ${LEVEL_ACCENT[s.level]}`}
     >
-      <div className="flex flex-wrap items-center gap-2">
-        <LevelPill level={s.level} tone="light" size="sm" />
+      {/* Who and when */}
+      <div className="flex flex-col gap-1.5">
+        <div className="flex flex-wrap items-center gap-2">
+          <LevelPill level={s.level} tone="light" size="sm" />
+          {label && (
+            <span data-testid="call-label" className="rounded bg-lw-subtle px-2 py-0.5 text-sm font-bold text-lw-ink-2 ring-1 ring-lw-border">
+              {label}
+            </span>
+          )}
+        </div>
         <span className="text-base font-semibold text-lw-ink">
           {[age ? `${age} y` : null, sex].filter(Boolean).join(" · ") || "Age/sex not stated"}
         </span>
-        {label && (
-          <span data-testid="call-label" className="rounded bg-lw-subtle px-2 py-0.5 text-sm font-bold text-lw-ink-2 ring-1 ring-lw-border">
-            {label}
-          </span>
+        {call && (
+          <p data-testid="call-meta" className="text-sm text-lw-ink-2">
+            Call <span className="font-mono tabular-nums text-lw-ink">{clockTime(call.startedAt, call.timezone)}</span>
+            {" · "}
+            <span className="font-mono tabular-nums text-lw-ink">{callerText(call)}</span>
+          </p>
         )}
-      </div>
-      <div className="flex gap-1" aria-label="BE-FAST">
-        {SIGN_ORDER.map((k) => (
-          <Chip key={k} size="xs" tone="light" letter={SIGN_LETTER[k]} label={SIGN_LABEL[k]} state={kinds.has(k) ? "on" : "off"} />
-        ))}
-        <Chip size="xs" tone="light" letter="T" label="Time last known well" state={!s.lkw ? "off" : isLkwEstablished(s.lkw) ? "on" : "half"} />
       </div>
 
       <WindowPanel alert={alert} now={now} timeZone={config.callTimezone} />
 
-      <dl className="grid grid-cols-[6.5rem_1fr] gap-x-3 text-sm">
-        <dt className="text-lw-ink-2">{bloodThinnerLabel(thinner?.value ?? null)}</dt>
-        <dd>
-          {thinner ? (
-            <>
-              <span className="font-semibold text-lw-ink">{thinner.value}</span>{" "}
-              <span className="text-xs text-lw-ink-2">
-                “{thinner.ref.quote}” {mmss(thinner.ref.tMs)}
-              </span>
-            </>
-          ) : (
-            <span className="text-lw-ink-3">Not mentioned</span>
-          )}
-        </dd>
-      </dl>
-
-      <ul className="space-y-1.5" data-testid="board-signs">
-        {groupSigns(s.signs).map((g) => (
-          <li key={g.kind} data-kind={g.kind} className="flex items-baseline gap-3 text-sm">
-            <span className="w-[6.5rem] shrink-0 font-semibold text-lw-accent-text">{SIGN_LABEL[g.kind]}</span>
-            <span className="flex flex-col gap-0.5">
-              {g.refs.map((ref) => (
-                <span key={ref.utteranceId + ref.quote}>
-                  <span className={QUOTE}>“{ref.quote}”</span>{" "}
-                  <span className="font-mono text-xs text-lw-ink-3">{mmss(ref.tMs)}</span>
+      {/* What was heard */}
+      <div className="flex min-w-0 flex-col gap-1.5">
+        <dl className="grid grid-cols-[6.5rem_1fr] gap-x-3 text-sm">
+          <dt className="text-lw-ink-2">{bloodThinnerLabel(thinner?.value ?? null)}</dt>
+          <dd>
+            {thinner ? (
+              <>
+                <span className="font-semibold text-lw-ink">{thinner.value}</span>{" "}
+                <span className="text-xs text-lw-ink-2">
+                  “{thinner.ref.quote}” {mmss(thinner.ref.tMs)}
                 </span>
-              ))}
-            </span>
-          </li>
-        ))}
-      </ul>
+              </>
+            ) : (
+              <span className="text-lw-ink-3">Not mentioned</span>
+            )}
+          </dd>
+        </dl>
 
-      <BriefingTracker alert={alert} config={config} />
-
-      <div className="mt-auto flex flex-wrap items-center justify-between gap-2">
-        <span
-          data-testid="ems-label"
-          className={`rounded-full px-2.5 py-0.5 text-sm font-bold ${
-            confirmed ? "bg-emerald-600 text-white" : "bg-amber-50 text-amber-900 ring-1 ring-amber-300"
-          }`}
-        >
-          {confirmed ? "Paramedic-confirmed" : "Dispatcher pre-alert"}
-        </span>
-        <button
-          type="button"
-          data-testid="ems-toggle"
-          disabled={busy}
-          onClick={toggle}
-          className="rounded-lg px-2.5 py-1 text-xs font-semibold text-lw-ink-2 ring-1 ring-lw-border-strong hover:bg-lw-subtle disabled:opacity-50"
-        >
-          {confirmed ? "Undo paramedic confirmation" : "Mark paramedic-confirmed"}
-        </button>
+        <ul className="space-y-1.5" data-testid="board-signs">
+          {groupSigns(s.signs).map((g) => (
+            <li key={g.kind} data-kind={g.kind} className="flex items-baseline gap-3 text-sm">
+              <span className="w-[6.5rem] shrink-0 font-semibold text-lw-accent-text">{SIGN_LABEL[g.kind]}</span>
+              <span className="flex flex-col gap-0.5">
+                {g.refs.map((ref) => (
+                  <span key={ref.utteranceId + ref.quote}>
+                    <span className={QUOTE}>“{ref.quote}”</span>{" "}
+                    <span className="font-mono text-xs text-lw-ink-3">{mmss(ref.tMs)}</span>
+                  </span>
+                ))}
+              </span>
+            </li>
+          ))}
+        </ul>
       </div>
-      {error && <p className="text-sm text-red-700">{error}</p>}
+
+      {/* Where the pre-alert stands */}
+      <div className="flex flex-col gap-2.5">
+        <BriefingTracker alert={alert} config={config} />
+
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span
+            data-testid="ems-label"
+            className={`rounded-full px-2.5 py-0.5 text-sm font-bold ${
+              confirmed ? "bg-emerald-600 text-white" : "bg-amber-50 text-amber-900 ring-1 ring-amber-300"
+            }`}
+          >
+            {confirmed ? "Paramedic-confirmed" : "Dispatcher pre-alert"}
+          </span>
+          <button
+            type="button"
+            data-testid="ems-toggle"
+            disabled={busy}
+            onClick={toggle}
+            className="rounded-lg px-2.5 py-1 text-xs font-semibold text-lw-ink-2 ring-1 ring-lw-border-strong hover:bg-lw-subtle disabled:opacity-50"
+          >
+            {confirmed ? "Undo paramedic confirmation" : "Mark paramedic-confirmed"}
+          </button>
+        </div>
+        {error && <p className="text-sm text-red-700">{error}</p>}
+      </div>
     </article>
   );
 }

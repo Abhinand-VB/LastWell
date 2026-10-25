@@ -74,7 +74,7 @@ export function Chip({
   letter: string;
   label: string;
   state: ChipState;
-  size?: "lg" | "sm" | "xs";
+  size?: "lg" | "sm";
   tone?: Tone;
 }) {
   const cls =
@@ -95,11 +95,7 @@ export function Chip({
       data-state={state}
       title={`${label}${state === "on" ? ": heard" : state === "half" ? ": phrase heard, time not pinned down" : ": not heard"}`}
       className={`flex items-center justify-center font-bold ring-1 ${
-        size === "lg"
-          ? "h-[3.75rem] w-[3.75rem] rounded-2xl text-2xl"
-          : size === "sm"
-            ? "h-10 w-10 rounded-lg text-lg"
-            : "h-7 w-7 rounded-md text-sm"
+        size === "lg" ? "h-[3.75rem] w-[3.75rem] rounded-2xl text-2xl" : "h-10 w-10 rounded-lg text-lg"
       } ${cls}`}
     >
       {letter}

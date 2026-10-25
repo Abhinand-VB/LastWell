@@ -146,6 +146,15 @@ export function toE164(input: string): string | null {
   return null;
 }
 
+/** Wall-clock time in the call's own timezone, not the viewing laptop's. */
+export function clockTime(iso: string, timeZone: string): string {
+  try {
+    return new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone });
+  } catch {
+    return new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
+  }
+}
+
 /** "+19162338165" → "+1 (916) 233-8165"; other E.164 numbers come back unchanged. */
 export function formatPhone(e164: string): string {
   const m = /^\+1(\d{3})(\d{3})(\d{4})$/.exec(e164);

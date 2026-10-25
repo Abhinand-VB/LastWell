@@ -13,7 +13,7 @@ import { AppNav } from "@/components/AppNav";
 import { MicIcon, PhoneIcon, PlayIcon } from "@/components/icons";
 import { LevelText } from "@/components/console/StrokeCard";
 import { preAlertCell, type CellTone } from "@/lib/alerts";
-import { mmss } from "@/lib/format";
+import { clockTime, mmss } from "@/lib/format";
 
 const REPLAYS = [
   { id: "A01", kind: "Classic", title: "Father, mixed-up words, weak right hand" },
@@ -31,14 +31,6 @@ const TONE: Record<CellTone, string> = {
   none: "text-lw-ink-3",
 };
 
-/** Wall-clock time in the call's own timezone, not the viewing laptop's. */
-function timeOf(iso: string, timeZone: string): string {
-  try {
-    return new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone });
-  } catch {
-    return new Date(iso).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit" });
-  }
-}
 
 export function HomeView() {
   const router = useRouter();
@@ -118,7 +110,7 @@ export function HomeView() {
                       data-testid="call-row"
                       className={`${COLS} py-4 hover:bg-lw-subtle ${live ? "bg-lw-accent-soft" : ""}`}
                     >
-                      <span className="font-mono text-lg text-lw-ink-2 tabular-nums">{timeOf(c.startedAt, c.timezone)}</span>
+                      <span className="font-mono text-lg text-lw-ink-2 tabular-nums">{clockTime(c.startedAt, c.timezone)}</span>
                       <span className="flex min-w-0 items-center gap-3 text-xl text-lw-ink">
                         <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-lw-subtle text-lw-ink-2">
                           {c.mode === "phone" ? <PhoneIcon /> : c.mode === "browser" ? <MicIcon /> : <PlayIcon />}
