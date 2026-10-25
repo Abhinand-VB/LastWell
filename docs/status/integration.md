@@ -2,23 +2,18 @@
 
 Only the integration session edits this file.
 
-## Remaining work (snapshot 2026-10-24 18:55 PT; refreshed every 20-minute loop)
+## Remaining work (snapshot 2026-10-24 19:15 PT; refreshed every 20-minute loop)
 
 Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live eval on the 20 scripts, numbers on the slide → (c) browser-mic fallback + play-briefing-locally on the live gateway → (d) W-11 polish for the judging table. Q&A (D-32: R-08, V-08 live) only after all of that is green. No real phone calls 9 PM–8 AM (FakeTelephony overnight).
 
 | Task | What is left | Pri | Owner | Blocked? |
 | --- | --- | --- | --- | --- |
-| R-03 | **reasoning idle since 16:53** · land D-40 fast-pass sex-evidence wording (docs/04 §2 + prompt, `fast-2`, §6 protocol) | P0 | reasoning | no |
-| — (D-43 contract) | `ConfigResponse.alertDelivery`, docs/03 §6 audio/played routes | P1 | reasoning | no |
-| E-03 | run 2 (full live eval, 20 scripts) after D-40 lands; table → slide/README | P1 | reasoning → integration copies | waits on R-03 D-40 |
+| R-03 | land D-40 fast-pass sex-evidence wording in the next fast-pass version (two `fast-2` attempts regressed row 2; prompt stays fast-1 for that line, fast-3 carries D-44) | P0 | reasoning | no |
 | V-06 / V-07 | live evidence from the log (alert.created ms, ring ≤ 20 s, speech ≤ 1.5 s, `briefed`) | P0 | voice | no (ring observed by human) |
 | V-01, V-03, V-04, V-05 | live inbound call (Gates 0–2) | P0 | voice + humans | **yes: inbound test call tomorrow morning (no calls 9 PM–8 AM)** |
 | V-02 | live Ink 2 spike | P0 | voice | **yes: Card A recording at apps/eval/audio/A01.wav (human)** |
 | V-09 | browser mic live check (gateway side in, 998f166) | P1 | voice | needs a person at the laptop |
 | V-10 | live Ink kill/reconnect check | P1 | voice | no |
-| V-12 | landed 1e33826 (offline + live without a call); ledger: done | P1 | voice | — |
-| W-12 | "Play briefing" button (V-12 routes are live now) | P1 | screens | no — **screens idle since 16:08** |
-| W-08 | mic page against the live gateway | P1 | screens | no |
 | W-11 | polish for the judging table; presenter approval | P1 | screens + presenter | approval is human |
 | C-04 | print deck, slide, two timed pitch runs | P1 | humans | human |
 | X-05 | final PR + `demo-ready` tag after the live gates | P1 | integration | waits on M-01…M-04 |
@@ -41,6 +36,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - `pnpm e2e` → "e2e: 23 passed, 0 failed, 0 pending in 27 s"; `E2E_STRICT=1 pnpm e2e` → "23 passed, 0 failed, 0 pending (strict)". Checks listed in docs/TASKS.md X-02.
 
 ### X-03 Playwright smoke — done
+- 2026-10-24 19:20 PT, with the W-12 step (dev:fake + ALERT_DELIVERY=local): `E2E_STRICT=1 pnpm e2e:ui` → "5 passed (41.4s)" incl. "console: Send pre-alert then Play briefing reaches completed".
 - `E2E_STRICT=1 pnpm e2e:ui` → "4 passed (27.3s)": home lists calls; console renders the A01 replay (transcript, Likely, quoted chips); board shows the approved A01 alert; empty console shows "No stroke signs heard yet."; "no orphans" after teardown. Screenshots: docs/status/screens/{home,console-A01,board-A01}.png.
 
 ### X-04 Repo guardrails — done 2026-10-24
@@ -89,6 +85,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - `pnpm dev:fake` replays A01 through `POST /api/calls/replay`; it logs a 404 until V-11 lands, and the gateway runs without fakes until X-01b lands (it ignores `LASTWELL_FAKES` today).
 
 ## Periodic version1 checks (newest first)
+- 2026-10-24 19:14 PT · version1 3389497 (D-44 prompts, E-03 run 2, D-45 contract, W-12, W-08, W-11 labels, fake phrase table) · verify exit 0 · e2e 23/0/0 (strict). Idle check: all three lanes active (voice 18:47, reasoning 19:12, screens 19:10).
 - 2026-10-24 18:52 PT · version1 7f904d6 (V-12, voice hardening) · verify exit 0 · e2e 23/0/0 (strict). Idle: reasoning (16:53), screens (16:08) still silent → stay at the top of BLOCKERS; voice active (18:47).
 - 2026-10-24 18:31 PT · version1 169567f (main synced, 6c767d5) · verify exit 0 · e2e 23/0/0 (strict). Idle check 18:34: reasoning last 16:53, screens last 16:08 (> 45 min) → BLOCKERS; voice 18:06 ok.
 - 2026-10-24 17:35 PT · version1 cd32ac8 (no new commits) · verify exit 0 · e2e 23/0/0 (strict).
@@ -100,6 +97,8 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - 2026-10-24 15:58 PT · df3e7a7 · verify exit 0 · e2e 2 pending.
 
 ## Handled requests from other lanes
+- [x] from screens (W-12): X-03 now runs dev:fake with `ALERT_DELIVERY=local` and clicks send-button → confirm-checkbox → modal-send → play-briefing until `alert-status[data-status=completed]` (A02 replay); the phone path stays covered by `pnpm e2e`.
+- [x] from reasoning: E-03 run 2 (slide numbers) → README Results + docs/08 §3; all 16 card scripts still match truth (final and peak) in run 2.
 - [x] from voice (README check): (1) the "pending carrier verification" limit → "fallback without the phone line"; (2) Ink `call`/`qa` profiles, reconnect-once-then-degrade banner, local-delivery WAV from the same Sonic bytes; (3) keyterms on by default; (4) the unmeasured "1.5 s" claim dropped (re-add from `alert.briefing_sent` `ms` after the first real briefing call); (5) Q&A ships off (D-32).
 - [x] from reasoning: re-scored E-03 run 1 (D-41a) → only level agreement moved (18/20 → 19/20, not a slide metric); README and docs/08 numbers unchanged, source lines say "re-scored". Deck: A05's back now labels aspirin "Antiplatelet" (D-41c).
 - [x] from voice: demo gateway runs with `pnpm --filter @lastwell/gateway start`, never `dev` → docs/08 §2 pre-flight and README setup updated.

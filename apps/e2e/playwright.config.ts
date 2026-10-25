@@ -31,6 +31,8 @@ export default defineConfig({
       // The test drives its own replays; keep the background one out of the way.
       REPLAY_EVERY_MS: "3600000",
       INTERNAL_API_KEY: "dev-fake-internal-key",
+      // W-12 / D-43: the browser plays the briefing; the phone path is covered by `pnpm e2e` (X-02).
+      ALERT_DELIVERY: "local",
     },
   },
 });
