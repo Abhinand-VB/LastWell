@@ -43,6 +43,9 @@ With four people, the medical professional also runs the board and the fallback 
 
 ## 2. Pre-flight checklist (run it before every rehearsal and 20 minutes before judging)
 
+**Code on the gateway Mac comes from `main` (D-48).** Integration merges a green `version1` into `main` at every 20-minute loop. To pick up the latest: `git checkout main && git pull`, then `pnpm install` and restart the gateway with `pnpm --filter @lastwell/gateway start`. Do this only between rehearsals, never during a demo, and check `curl -s localhost:8787/healthz` afterwards.
+
+
 Infrastructure
 - [ ] Gateway laptop on the hotspot (not venue Wi-Fi) — Cal Hacks venues have had unreliable Wi-Fi; a phone hotspot carried every test on Friday night, so it carries the demo.
 - [ ] `ngrok http 8787 --domain $NGROK_DOMAIN` running; `curl -s $PUBLIC_BASE_URL/healthz` → `{"ok":true,…,"cartesia":"ok"}`.
