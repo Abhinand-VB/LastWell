@@ -8,6 +8,8 @@ import type { AlertService } from "../alerts/approve.js";
 import type { SttSession, SttSessionFactory } from "../stt/sessions.js";
 import { briefingMessages, type TwilioOutMessage } from "../tts/audioChunks.js";
 import type { TtsStream, TtsStreamFactory } from "../tts/sonicWs.js";
+import { QA_FALLBACK } from "@lastwell/core";
+import { classifyQa, QA_CLOSING, QA_NOT_MENTIONED, QA_SYSTEM, QA_UNCLEAR } from "../alerts/qaIntent.js";
 
 export interface AlertStreamDeps {
   alerts: AlertService;
@@ -33,6 +35,8 @@ export class AlertStreamSession {
   private currentContext: string | null = null;
   private lastInboundTs = 0;
   private idle: NodeJS.Timeout | null = null;
+  private notMentioned = 0;
+  private closing = false;
 
   constructor(
     private readonly deps: AlertStreamDeps,
@@ -77,6 +81,8 @@ export class AlertStreamSession {
         if (msg.mark.name === "briefing") {
           void this.deps.alerts.onBriefingPlayed(this.alert);
           if (this.qaOn) this.openQa(this.alert);
+        } else if (msg.mark.name === `closing-${this.answerSeq}`) {
+          void this.deps.alerts.hangupAlert(this.alert);
         } else if (msg.mark.name === `answer-${this.answerSeq}` && this.phase === "answering") {
           this.phase = "qa";
           this.armIdle();
@@ -135,26 +141,64 @@ export class AlertStreamSession {
   }
 
   private async onQuestion(alert: AlertRecord, question: string): Promise<void> {
-    if (this.ended || this.streamSid === null) return;
+    if (this.ended || this.streamSid === null || this.closing) return;
+    // D-49: code sorts the utterance first; only real questions reach the Q&A model.
+    const intent = classifyQa(question);
+    this.deps.log.info({ event: "qa.intent", alertId: alert.id, intent }, "qa intent");
+    if (intent === "ack") {
+      if (this.phase === "qa") this.armIdle(); // say nothing, keep listening
+      return;
+    }
     if (this.phase === "answering") this.bargeIn();
     const turnEnd = Date.now();
     const seq = ++this.answerSeq;
     this.phase = "answering";
     if (this.idle) clearTimeout(this.idle);
-    const r = await this.deps.alerts.answerQuestion(alert, question);
+    if (intent !== "question") {
+      const line = intent === "closing" ? QA_CLOSING : intent === "system" ? QA_SYSTEM : QA_UNCLEAR;
+      if (intent === "closing") this.closing = true;
+      const spoken = await this.speak(alert, seq, line, turnEnd, null);
+      if (intent === "closing") {
+        if (spoken !== false) {
+          // Hang up when Twilio echoes the closing mark; this timer covers a lost mark.
+          setTimeout(() => void this.deps.alerts.hangupAlert(alert), 15_000).unref?.();
+        } else {
+          void this.deps.alerts.hangupAlert(alert);
+        }
+      }
+      if (spoken !== false && seq === this.answerSeq && this.phase === "answering") {
+        this.send({ event: "mark", streamSid: this.streamSid, mark: { name: `${intent === "closing" ? "closing" : "answer"}-${seq}` } });
+      }
+      return;
+    }
+    const raw = await this.deps.alerts.answerQuestion(alert, question);
     if (seq !== this.answerSeq || this.ended) return; // superseded by a newer question
-    const streamSid = this.streamSid;
+    // "Not mentioned" rotates among fixed phrasings (D-49); it never adds a fact.
+    const r = raw.answer === QA_FALLBACK ? { ...raw, answer: QA_NOT_MENTIONED[this.notMentioned++ % QA_NOT_MENTIONED.length]! } : raw;
+    const first = await this.speak(alert, seq, r.answer, turnEnd, r);
+    if (first === false) return;
+    this.deps.alerts.recordQaTurn(alert, seq, question, r, first);
+    if (seq === this.answerSeq && this.phase === "answering") this.send({ event: "mark", streamSid: this.streamSid, mark: { name: `answer-${seq}` } });
+    else if (seq === this.answerSeq) this.armIdle();
+  }
+
+  /**
+   * Speak one line on context a-{seq}. Returns the ms to the first audio (null if nothing was sent
+   * because it was barged over), or false when Sonic failed (docs/05 §9: speak nothing, fresh socket).
+   */
+  private async speak(alert: AlertRecord, seq: number, text: string, turnEnd: number, r: { modelMs: number; known: boolean } | null): Promise<number | null | false> {
+    const streamSid = this.streamSid!;
     const ctx = `a-${seq}`;
     this.currentContext = ctx;
     let first: number | null = null;
     try {
       // docs/05 §9: if the answer cannot start within 6 s, speak nothing.
       await Promise.race([
-        this.tts!.speak(r.answer, ctx, (b64) => {
+        this.tts!.speak(text, ctx, (b64) => {
           if (seq !== this.answerSeq || this.phase !== "answering") return;
           if (first === null) {
             first = Date.now() - turnEnd;
-            this.deps.log.info({ event: "qa.answer", alertId: alert.id, seq, ms: first, modelMs: r.modelMs, known: r.known }, "answer started");
+            this.deps.log.info({ event: "qa.answer", alertId: alert.id, seq, ms: first, ...(r ? { modelMs: r.modelMs, known: r.known } : { fixed: true }) }, "answer started");
           }
           this.send({ event: "media", streamSid, media: { payload: b64 } });
         }),
@@ -169,11 +213,9 @@ export class AlertStreamSession {
         this.phase = "qa";
         this.armIdle();
       }
-      return;
+      return false;
     }
-    this.deps.alerts.recordQaTurn(alert, seq, question, r, first);
-    if (seq === this.answerSeq && this.phase === "answering") this.send({ event: "mark", streamSid, mark: { name: `answer-${seq}` } });
-    else if (seq === this.answerSeq) this.armIdle();
+    return first;
   }
 
   private playBriefing(alert: AlertRecord, streamSid: string): void {
