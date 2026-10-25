@@ -107,14 +107,16 @@ export class AlertService {
     const t0 = Date.now();
     const call = this.deps.calls.registry.get(callId);
     if (!this.allowed(targetPhone)) {
-      if (call) this.action(callId, "approve", actor, null, "refused: number not on ALERT_ALLOWED_NUMBERS, no call placed", targetPhone, input);
+      if (call) this.action(callId, "approve", actor, null, "refused: number not on ALERT_ALLOWED_NUMBERS, no call placed", targetPhone, { note: input.note ?? null });
       return this.notAllowed(targetPhone);
     }
     if (!call || !call.runner) return fail(404, "unknown_call", `unknown call ${callId}`);
     const state = call.runner.state;
     const note = input.note ? input.note : null;
     const override = belowPossible(state.level);
-    if (override && input.override !== true) return fail(409, "no_signs", "No stroke signs heard yet: nothing to pre-alert (send override: true to pre-alert on the dispatcher's judgment)");
+    if (override && input.override !== true) {
+      return fail(409, "override_required", "No stroke signs heard yet: send override: true to pre-alert on the dispatcher's judgment (D-53)");
+    }
     if (this.deps.alerts.forCall(callId).some((a) => ACTIVE_STATUSES.includes(a.status))) {
       return fail(409, "alert_active", "an alert for this call is already in progress");
     }

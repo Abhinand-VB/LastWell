@@ -1,8 +1,9 @@
-// Dispatcher note and override on approve. The note (≤ 200 chars) is spoken verbatim after the
-// briefing's facts as "The dispatcher adds: …" (no model rewriting). Approving below `possible` needs
-// an explicit `override: true` (without it the 409 `no_signs` stays), and the briefing then opens with
-// OVERRIDE_LINE instead of the usual opening. On the Q&A, the note is one more dispatcher utterance
-// the model may quote; an answer whose evidence is only the note is attributed to the dispatcher.
+// D-53 dispatcher override and briefing notes. Approve works at every level, but below `possible` only
+// with an explicit `override: true` (409 `override_required` otherwise, docs/03 §6); the briefing's first
+// sentence is then OVERRIDE_LINE and the audit records an override. `notes` (≤ 200 chars,
+// trimmed) is read verbatim after the close as "The dispatcher adds: {notes}" (no model). On the Q&A
+// the note is one more dispatcher utterance the model may quote; anything found only in the note is
+// answered as "The dispatcher said …", never as the caller.
 import { randomUUID } from "node:crypto";
 import { z } from "zod/v4";
 import { validateQuote, type Level, type QaOutput, type QuoteRef, type Utterance } from "@lastwell/core";
@@ -10,31 +11,24 @@ import type { QaFinal } from "./qaAnswer.js";
 
 export const NOTE_MAX = 200;
 
-export const ApproveExtras = z.object({
-  note: z
-    .string()
-    .transform((s) => s.trim())
-    .refine((s) => s.length <= NOTE_MAX, `note: at most ${NOTE_MAX} characters`)
-    .optional(),
-  override: z.boolean().optional(),
-});
+const Notes = z
+  .string()
+  .transform((x) => x.trim())
+  .refine((x) => x.length <= NOTE_MAX, `at most ${NOTE_MAX} characters`)
+  .optional();
+/** `notes` per docs/03 §6 (D-53); `note` is accepted as an alias. */
+export const ApproveExtras = z.object({ notes: Notes, note: Notes, override: z.boolean().optional() }).transform((x) => ({ note: x.notes || x.note || null, override: x.override === true }));
 
 /** The composer's fixed first sentence (packages/core/src/briefing/compose.ts). */
 const OPENING = "Stroke pre-alert from nine one one, approved by the dispatcher.";
-export const OVERRIDE_LINE = "Dispatcher override: LastWell has not flagged stroke signs on this call; the dispatcher is sending this pre-alert on their own judgment.";
-const CLOSE = "Not yet confirmed by paramedics.";
+export const OVERRIDE_LINE = "Dispatcher-initiated pre-alert. LastWell has not detected stroke signs on this call.";
 
 export const belowPossible = (level: Level): boolean => level === "none";
 
-/** The composed briefing with the override opening (below `possible`) and the note before the close. */
+/** docs/05 §7: sentence 1 swapped below `possible`; sentence 8 (the note, verbatim) after the close. */
 export function withDispatcherInput(text: string, level: Level, note: string | null): string {
-  let out = belowPossible(level) ? (text.startsWith(OPENING) ? `${OVERRIDE_LINE}${text.slice(OPENING.length)}` : `${OVERRIDE_LINE} ${text}`) : text;
-  if (note) {
-    const adds = `The dispatcher adds: ${note}${/[.!?]$/.test(note) ? "" : "."}`;
-    const i = out.lastIndexOf(CLOSE);
-    out = i >= 0 ? `${out.slice(0, i)}${adds} ${out.slice(i)}` : `${out} ${adds}`;
-  }
-  return out;
+  const out = belowPossible(level) ? (text.startsWith(OPENING) ? `${OVERRIDE_LINE}${text.slice(OPENING.length)}` : `${OVERRIDE_LINE} ${text}`) : text;
+  return note ? `${out} The dispatcher adds: ${note}` : out;
 }
 
 /** The note as a dispatcher utterance after the call's last one (Q&A evidence only; never in the call transcript). */
@@ -60,7 +54,7 @@ export function noteRefs(out: QaOutput | null, note: Utterance | null): QuoteRef
 /** Answers resting only on the note say so (verbatim note quotes); mixed evidence gets a short attribution. */
 export function attributeNote(f: QaFinal, fromNote: readonly QuoteRef[]): QaFinal {
   if (fromNote.length === 0) return f;
-  const said = `Not from the caller: the dispatcher's note says '${fromNote.map((r) => r.quote).join("' and '")}'.`;
+  const said = `The dispatcher said '${fromNote.map((r) => r.quote).join("' and '")}'.`;
   if (!f.known) return { answer: said, known: true, evidence: [...fromNote], evidenceDropped: false };
   return { ...f, answer: `${f.answer} Part of this is from the dispatcher's note, not the caller.`, evidence: [...f.evidence, ...fromNote] };
 }
