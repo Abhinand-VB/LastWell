@@ -2,7 +2,7 @@
 
 Only the integration session edits this file.
 
-## Remaining work (snapshot 2026-10-24 19:38 PT; refreshed every 20-minute loop)
+## Remaining work (snapshot 2026-10-24 20:00 PT; refreshed every 20-minute loop)
 
 Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live eval on the 20 scripts, numbers on the slide → (c) browser-mic fallback + play-briefing-locally on the live gateway → (d) W-11 polish for the judging table. Q&A (D-32: R-08, V-08 live) only after all of that is green. No real phone calls 9 PM–8 AM (FakeTelephony overnight).
 
@@ -14,7 +14,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 | V-02 | live Ink 2 spike | P0 | voice | **yes: Card A recording at apps/eval/audio/A01.wav (human)** |
 | V-09 | browser mic live check (gateway side in, 998f166) | P1 | voice | needs a person at the laptop |
 | V-10 | live Ink kill/reconnect check | P1 | voice | no |
-| W-11 | polish for the judging table; presenter approval | P1 | screens + presenter | approval is human |
+| W-11 | presenter approval of the look (screens has nothing else open) | P1 | presenter | human |
 | C-04 | print deck, slide, two timed pitch runs | P1 | humans | human |
 | X-05 | final PR + `demo-ready` tag after the live gates | P1 | integration | waits on M-01…M-04 |
 | S-05 | Cartesia credits check + voice pick | — | humans | human |
@@ -85,6 +85,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - `pnpm dev:fake` replays A01 through `POST /api/calls/replay`; it logs a 404 until V-11 lands, and the gateway runs without fakes until X-01b lands (it ignores `LASTWELL_FAKES` today).
 
 ## Periodic version1 checks (newest first)
+- 2026-10-24 20:00 PT · version1 e6d3aff (no new commits) · verify exit 0 · e2e 23/0/0 (strict). Idle: voice 73 min, reasoning 48 min, screens 50 min → all three in BLOCKERS (screens likely just finished).
 - 2026-10-24 19:38 PT · version1 aabbe6f (no new commits) · verify exit 0 · e2e 23/0/0 (strict). Idle: **voice 51 min (18:47) → BLOCKERS**; reasoning 19:12, screens 19:10 ok.
 - 2026-10-24 19:14 PT · version1 3389497 (D-44 prompts, E-03 run 2, D-45 contract, W-12, W-08, W-11 labels, fake phrase table) · verify exit 0 · e2e 23/0/0 (strict). Idle check: all three lanes active (voice 18:47, reasoning 19:12, screens 19:10).
 - 2026-10-24 18:52 PT · version1 7f904d6 (V-12, voice hardening) · verify exit 0 · e2e 23/0/0 (strict). Idle: reasoning (16:53), screens (16:08) still silent → stay at the top of BLOCKERS; voice active (18:47).
