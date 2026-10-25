@@ -3,13 +3,13 @@
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useEffect, useState, type ReactNode } from "react";
-import { isLkwEstablished, type AlertSummary, type Level } from "@lastwell/core";
+import type { AlertSummary, CallListItem, Level } from "@lastwell/core";
 import { useBoard } from "@/hooks/useBoard";
 import { useConfig } from "@/hooks/useConfig";
 import { useNow } from "@/hooks/useNow";
 import type { ConnectionStatus } from "@/hooks/useCall";
 import { AppNav, LinkStatus } from "@/components/AppNav";
-import { Chip, LevelPill } from "@/components/console/StrokeCard";
+import { LevelPill } from "@/components/console/StrokeCard";
 import { gateway } from "@/lib/gateway";
 import type { WebConfig } from "@/lib/config";
 import { sendErrorText, statusLabel, statusSteps, stepIndex } from "@/lib/alerts";
@@ -17,8 +17,7 @@ import { BOARD_LIVE } from "@/lib/boardLive";
 import { bloodThinnerLabel } from "@/lib/consoleText";
 import {
   SIGN_LABEL,
-  SIGN_LETTER,
-  SIGN_ORDER,
+  clockTime,
   groupSigns,
   mmss,
   windowBar,
@@ -46,11 +45,10 @@ export function BoardView() {
   return BOARD_LIVE === "convex" ? <ConvexBoardView /> : <WsBoardView />;
 }
 
-/** Default: gateway WebSocket + polling (useBoard), labels from GET /api/calls. */
+/** Default: gateway WebSocket + polling (useBoard); call time, number and label from GET /api/calls. */
 function WsBoardView() {
   const { alerts, connection, setAlert } = useBoard();
-  const labels = useCallLabels(alerts);
-  return <BoardLayout alerts={alerts} labels={labels} connection={connection} onAlert={setAlert} />;
+  return <BoardLayout alerts={alerts} connection={connection} onAlert={setAlert} />;
 }
 
 export function BoardLayout({
@@ -62,7 +60,8 @@ export function BoardLayout({
   evidenceHref,
 }: {
   alerts: AlertSummary[];
-  labels: Record<string, string>;
+  /** Proposed D-57, Convex mode: labels from the Convex query; otherwise the call list's label is used. */
+  labels?: Record<string, string>;
   connection: ConnectionStatus;
   onAlert: (a: AlertSummary) => void;
   /** Proposed D-57, Convex mode only: extra items in the nav bar ("live: Convex", Export history). */
@@ -73,6 +72,7 @@ export function BoardLayout({
   const setAlert = onAlert;
   const { config } = useConfig();
   const now = useNow(15_000);
+  const calls = useCalls(alerts);
   return (
     <main className="min-h-screen bg-lw-page text-lw-ink [color-scheme:light]">
       <AppNav>
@@ -82,15 +82,24 @@ export function BoardLayout({
           {alerts.length === 1 ? "1 pre-alert" : `${alerts.length} pre-alerts`}
         </span>
       </AppNav>
-      <div className="px-7 py-6">
+      <div className="px-7 py-5">
         {alerts.length === 0 ? (
           <p data-testid="board-empty" className="mt-16 text-center text-2xl text-lw-ink-3">
             No pre-alerts yet. They appear here the moment a dispatcher sends one.
           </p>
         ) : (
-          <div className={`grid grid-cols-1 gap-6 ${alerts.length === 1 ? "max-w-4xl" : "xl:grid-cols-2 2xl:grid-cols-3"}`}>
+          <div className="flex flex-col gap-3">
             {alerts.map((a) => (
-              <AlertCard key={a.id} alert={a} label={labels[a.callId] || null} now={now} config={config} onAlert={setAlert} evidenceHref={evidenceHref?.(a)} />
+              <AlertCard
+                key={a.id}
+                alert={a}
+                call={calls[a.callId] ?? null}
+                label={labels?.[a.callId] || calls[a.callId]?.label || null}
+                now={now}
+                config={config}
+                onAlert={setAlert}
+                evidenceHref={evidenceHref?.(a)}
+              />
             ))}
           </div>
         )}
@@ -99,10 +108,13 @@ export function BoardLayout({
   );
 }
 
-/** Call labels (TEST, replay script id) come from GET /api/calls: AlertSummary carries none. */
-function useCallLabels(alerts: AlertSummary[]): Record<string, string> {
-  const [labels, setLabels] = useState<Record<string, string>>({});
-  const missing = alerts.some((a) => !(a.callId in labels));
+/**
+ * Call time, caller number and label (TEST, replay script id) come from GET /api/calls: AlertSummary
+ * carries none. A call the list no longer has maps to null (the tile then shows no call line).
+ */
+function useCalls(alerts: AlertSummary[]): Record<string, CallListItem | null> {
+  const [calls, setCalls] = useState<Record<string, CallListItem | null>>({});
+  const missing = alerts.some((a) => !(a.callId in calls));
   useEffect(() => {
     if (!missing) return;
     let cancelled = false;
@@ -110,17 +122,24 @@ function useCallLabels(alerts: AlertSummary[]): Record<string, string> {
       .listCalls()
       .then((res) => {
         if (cancelled) return;
-        const next: Record<string, string> = {};
-        for (const a of alerts) next[a.callId] = "";
-        for (const c of res.calls) if (c.label) next[c.id] = c.label;
-        setLabels((prev) => ({ ...next, ...Object.fromEntries(Object.entries(prev).filter(([, v]) => v)) }));
+        const next: Record<string, CallListItem | null> = {};
+        for (const a of alerts) next[a.callId] = null;
+        for (const c of res.calls) next[c.id] = c;
+        setCalls((prev) => ({ ...next, ...Object.fromEntries(Object.entries(prev).filter(([, v]) => v !== null)) }));
       })
       .catch(() => {});
     return () => {
       cancelled = true;
     };
   }, [missing, alerts]);
-  return labels;
+  return calls;
+}
+
+/** The caller's number as the gateway masks it; replays and mic calls have none. */
+function callerText(c: CallListItem): string {
+  if (c.mode === "replay") return "Replay";
+  if (c.mode === "browser") return "Browser mic";
+  return c.callerNumberMasked ?? "Number withheld";
 }
 
 function fact(a: AlertSummary, kind: string): string | null {
@@ -129,6 +148,7 @@ function fact(a: AlertSummary, kind: string): string | null {
 
 function AlertCard({
   alert,
+  call,
   label,
   now,
   config,
@@ -136,6 +156,7 @@ function AlertCard({
   evidenceHref,
 }: {
   alert: AlertSummary;
+  call: CallListItem | null;
   label: string | null;
   now: Date;
   config: WebConfig;
@@ -146,7 +167,6 @@ function AlertCard({
   const age = fact(alert, "age");
   const sex = fact(alert, "sex");
   const thinner = s.facts.find((f) => f.kind === "blood_thinner") ?? null;
-  const kinds = new Set(s.signs.map((sign) => sign.kind));
   const confirmed = alert.emsConfirmedAt !== null;
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -167,87 +187,97 @@ function AlertCard({
     <article
       data-testid="alert-card"
       data-alert-id={alert.id}
-      className={`flex flex-col gap-5 rounded-3xl border border-l-8 border-lw-border bg-lw-surface p-7 ${LEVEL_ACCENT[s.level]}`}
+      className={`grid grid-cols-1 items-start gap-x-6 gap-y-3 rounded-2xl border border-l-4 border-lw-border bg-lw-surface px-5 py-4 lg:grid-cols-[15rem_17rem_minmax(0,1fr)_15rem] ${LEVEL_ACCENT[s.level]}`}
     >
-      <div className="flex flex-wrap items-center gap-3">
-        <LevelPill level={s.level} tone="light" />
-        <span className="text-2xl font-semibold text-lw-ink">
+      {/* Who and when */}
+      <div className="flex flex-col gap-1.5">
+        <div className="flex flex-wrap items-center gap-2">
+          <LevelPill level={s.level} tone="light" size="sm" />
+          {label && (
+            <span data-testid="call-label" className="rounded bg-lw-subtle px-2 py-0.5 text-sm font-bold text-lw-ink-2 ring-1 ring-lw-border">
+              {label}
+            </span>
+          )}
+        </div>
+        <span className="text-base font-semibold text-lw-ink">
           {[age ? `${age} y` : null, sex].filter(Boolean).join(" · ") || "Age/sex not stated"}
         </span>
-        {label && (
-          <span data-testid="call-label" className="rounded bg-lw-subtle px-2 py-0.5 text-sm font-bold text-lw-ink-2 ring-1 ring-lw-border">
-            {label}
-          </span>
+        {call && (
+          <p data-testid="call-meta" className="text-sm text-lw-ink-2">
+            Call <span className="font-mono tabular-nums text-lw-ink">{clockTime(call.startedAt, call.timezone)}</span>
+            {" · "}
+            <span className="font-mono tabular-nums text-lw-ink">{callerText(call)}</span>
+          </p>
         )}
-      </div>
-      <div className="flex gap-1.5" aria-label="BE-FAST">
-        {SIGN_ORDER.map((k) => (
-          <Chip key={k} size="sm" tone="light" letter={SIGN_LETTER[k]} label={SIGN_LABEL[k]} state={kinds.has(k) ? "on" : "off"} />
-        ))}
-        <Chip size="sm" tone="light" letter="T" label="Time last known well" state={!s.lkw ? "off" : isLkwEstablished(s.lkw) ? "on" : "half"} />
       </div>
 
       <WindowPanel alert={alert} now={now} timeZone={config.callTimezone} />
 
-      <dl className="grid grid-cols-[9rem_1fr] gap-x-4 text-xl">
-        <dt className="text-lw-ink-2">{bloodThinnerLabel(thinner?.value ?? null)}</dt>
-        <dd>
-          {thinner ? (
-            <>
-              <span className="font-semibold text-lw-ink">{thinner.value}</span>{" "}
-              <span className="text-base text-lw-ink-2">
-                “{thinner.ref.quote}” {mmss(thinner.ref.tMs)}
-              </span>
-            </>
-          ) : (
-            <span className="text-lw-ink-3">Not mentioned</span>
-          )}
-        </dd>
-      </dl>
-
-      <ul className="space-y-3" data-testid="board-signs">
-        {groupSigns(s.signs).map((g) => (
-          <li key={g.kind} data-kind={g.kind} className="flex items-baseline gap-3 text-xl">
-            <span className="w-24 shrink-0 font-semibold text-lw-accent-text">{SIGN_LABEL[g.kind]}</span>
-            <span className="flex flex-col gap-1">
-              {g.refs.map((ref) => (
-                <span key={ref.utteranceId + ref.quote}>
-                  <span className={QUOTE}>“{ref.quote}”</span>{" "}
-                  <span className="font-mono text-sm text-lw-ink-3">{mmss(ref.tMs)}</span>
+      {/* What was heard */}
+      <div className="flex min-w-0 flex-col gap-1.5">
+        <dl className="grid grid-cols-[6.5rem_1fr] gap-x-3 text-sm">
+          <dt className="text-lw-ink-2">{bloodThinnerLabel(thinner?.value ?? null)}</dt>
+          <dd>
+            {thinner ? (
+              <>
+                <span className="font-semibold text-lw-ink">{thinner.value}</span>{" "}
+                <span className="text-xs text-lw-ink-2">
+                  “{thinner.ref.quote}” {mmss(thinner.ref.tMs)}
                 </span>
-              ))}
-            </span>
-          </li>
-        ))}
-      </ul>
+              </>
+            ) : (
+              <span className="text-lw-ink-3">Not mentioned</span>
+            )}
+          </dd>
+        </dl>
 
-      <BriefingTracker alert={alert} config={config} />
-
-      <div className="mt-auto flex flex-wrap items-center justify-between gap-3">
-        <span
-          data-testid="ems-label"
-          className={`rounded-full px-4 py-1.5 text-lg font-bold ${
-            confirmed ? "bg-emerald-600 text-white" : "bg-amber-50 text-amber-900 ring-1 ring-amber-300"
-          }`}
-        >
-          {confirmed ? "Paramedic-confirmed" : "Dispatcher pre-alert"}
-        </span>
-        <button
-          type="button"
-          data-testid="ems-toggle"
-          disabled={busy}
-          onClick={toggle}
-          className="rounded-xl px-4 py-2 text-base font-semibold text-lw-ink-2 ring-1 ring-lw-border-strong hover:bg-lw-subtle disabled:opacity-50"
-        >
-          {confirmed ? "Undo paramedic confirmation" : "Mark paramedic-confirmed"}
-        </button>
+        <ul className="space-y-1.5" data-testid="board-signs">
+          {groupSigns(s.signs).map((g) => (
+            <li key={g.kind} data-kind={g.kind} className="flex items-baseline gap-3 text-sm">
+              <span className="w-[6.5rem] shrink-0 font-semibold text-lw-accent-text">{SIGN_LABEL[g.kind]}</span>
+              <span className="flex flex-col gap-0.5">
+                {g.refs.map((ref) => (
+                  <span key={ref.utteranceId + ref.quote}>
+                    <span className={QUOTE}>“{ref.quote}”</span>{" "}
+                    <span className="font-mono text-xs text-lw-ink-3">{mmss(ref.tMs)}</span>
+                  </span>
+                ))}
+              </span>
+            </li>
+          ))}
+        </ul>
       </div>
-      {error && <p className="text-sm text-red-700">{error}</p>}
-      {evidenceHref && (
-        <Link data-testid="evidence-link" href={evidenceHref} className="self-start text-base font-semibold text-lw-accent-text underline underline-offset-4">
-          Live evidence →
-        </Link>
-      )}
+
+      {/* Where the pre-alert stands */}
+      <div className="flex flex-col gap-2.5">
+        <BriefingTracker alert={alert} config={config} />
+
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span
+            data-testid="ems-label"
+            className={`rounded-full px-2.5 py-0.5 text-sm font-bold ${
+              confirmed ? "bg-emerald-600 text-white" : "bg-amber-50 text-amber-900 ring-1 ring-amber-300"
+            }`}
+          >
+            {confirmed ? "Paramedic-confirmed" : "Dispatcher pre-alert"}
+          </span>
+          <button
+            type="button"
+            data-testid="ems-toggle"
+            disabled={busy}
+            onClick={toggle}
+            className="rounded-lg px-2.5 py-1 text-xs font-semibold text-lw-ink-2 ring-1 ring-lw-border-strong hover:bg-lw-subtle disabled:opacity-50"
+          >
+            {confirmed ? "Undo paramedic confirmation" : "Mark paramedic-confirmed"}
+          </button>
+        </div>
+        {error && <p className="text-sm text-red-700">{error}</p>}
+        {evidenceHref && (
+          <Link data-testid="evidence-link" href={evidenceHref} className="self-start text-sm font-semibold text-lw-accent-text underline underline-offset-4">
+            Live evidence →
+          </Link>
+        )}
+      </div>
     </article>
   );
 }
@@ -258,17 +288,17 @@ function WindowPanel({ alert, now, timeZone }: { alert: AlertSummary; now: Date;
   const countdown = windowCountdown(lkw?.lkwAt ?? null, now);
   const bar = windowBar(countdown);
   return (
-    <div data-testid="countdown" data-kind={countdown.kind} title={lkw?.display ?? "LKW unknown"} className="rounded-2xl bg-lw-subtle p-5">
+    <div data-testid="countdown" data-kind={countdown.kind} title={lkw?.display ?? "LKW unknown"} className="rounded-xl bg-lw-subtle p-3">
       <div className="flex flex-wrap items-baseline justify-between gap-2">
         {countdown.kind === "left" && (
-          <p className={`text-5xl font-bold ${URGENCY_TEXT[bar.urgency]}`}>
-            {countdown.text} <span className="text-2xl font-medium text-lw-ink-2">left</span>
+          <p className={`text-2xl font-bold ${URGENCY_TEXT[bar.urgency]}`}>
+            {countdown.text} <span className="text-sm font-medium text-lw-ink-2">left</span>
           </p>
         )}
-        {countdown.kind === "passed" && <p className="text-3xl font-bold text-lw-ink-3">Window passed</p>}
-        {countdown.kind === "unknown" && <p className="text-3xl font-bold text-amber-700">LKW unknown</p>}
+        {countdown.kind === "passed" && <p className="text-lg font-bold text-lw-ink-3">Window passed</p>}
+        {countdown.kind === "unknown" && <p className="text-lg font-bold text-amber-700">LKW unknown</p>}
         {lkw?.lkwAt && (
-          <p className="text-lg text-lw-ink-2">
+          <p className="text-xs text-lw-ink-2">
             {countdown.kind === "passed" ? "closed" : "closes"} {windowEndText(lkw.lkwAt, timeZone)}
           </p>
         )}
@@ -281,20 +311,20 @@ function WindowPanel({ alert, now, timeZone }: { alert: AlertSummary; now: Date;
           aria-valuemin={0}
           aria-valuemax={100}
           aria-valuenow={Math.round(bar.remaining * 100)}
-          className="mt-4 h-3 overflow-hidden rounded-full bg-lw-border"
+          className="mt-2 h-1.5 overflow-hidden rounded-full bg-lw-border"
         >
           <div className={`h-full rounded-full ${URGENCY_BAR[bar.urgency]}`} style={{ width: `${bar.remaining * 100}%` }} />
         </div>
       )}
-      <p className="mt-3 text-lg text-lw-ink-2">
+      <p className="mt-2 text-sm text-lw-ink-2">
         LKW{lkw?.lkwAt ? ` ${lkw.display.split(" (")[0]}` : " unknown"}
         {lkw && (
-          <span className="ml-2 text-base text-lw-ink-3">
+          <span className="ml-2 text-xs text-lw-ink-3">
             “{lkw.ref.quote}” {mmss(lkw.ref.tMs)}
           </span>
         )}
       </p>
-      <p className="mt-1 text-base text-lw-ink-3">{TREATMENT_FOOTNOTE}</p>
+      <p className="mt-0.5 text-xs text-lw-ink-3">{TREATMENT_FOOTNOTE}</p>
     </div>
   );
 }
@@ -308,21 +338,21 @@ function BriefingTracker({ alert, config }: { alert: AlertSummary; config: WebCo
   return (
     <section data-testid="call-progress" data-status={alert.status}>
       <div className="flex items-baseline justify-between gap-3">
-        <h3 className="text-sm font-semibold uppercase tracking-widest text-lw-ink-3">
+        <h3 className="text-xs font-semibold uppercase tracking-widest text-lw-ink-3">
           {delivery === "local" ? "Briefing" : "Briefing call"}
         </h3>
-        <span className={`text-base font-semibold ${failed ? "text-red-700" : "text-lw-ink"}`}>{statusLabel(alert.status, delivery)}</span>
+        <span className={`text-xs font-semibold ${failed ? "text-red-700" : "text-lw-ink"}`}>{statusLabel(alert.status, delivery)}</span>
       </div>
       {failed ? (
-        <p className="mt-2 rounded-lg bg-red-50 px-3 py-2 text-base text-red-800 ring-1 ring-red-300">
+        <p className="mt-1.5 rounded-lg bg-red-50 px-2.5 py-1.5 text-sm text-red-800 ring-1 ring-red-300">
           {alert.lastError ?? "The briefing call failed."}
         </p>
       ) : (
-        <ol className="mt-2 flex gap-1.5">
+        <ol className="mt-1.5 flex gap-1">
           {steps.map((step, i) => (
             <li key={step} className="flex-1">
-              <div className={`h-2 rounded-full ${i <= at ? "bg-lw-accent" : "bg-lw-border"}`} />
-              <div className={`mt-1 text-center text-xs ${i === at ? "font-semibold text-lw-accent-text" : i < at ? "text-lw-accent-text" : "text-lw-ink-3"}`}>
+              <div className={`h-1.5 rounded-full ${i <= at ? "bg-lw-accent" : "bg-lw-border"}`} />
+              <div className={`mt-0.5 text-center text-[11px] ${i === at ? "font-semibold text-lw-accent-text" : i < at ? "text-lw-accent-text" : "text-lw-ink-3"}`}>
                 {statusLabel(step, delivery)}
               </div>
             </li>

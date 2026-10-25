@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { BoardIcon, PhoneIcon } from "./icons";
+import { Logo } from "./Logo";
 
 const TABS = [
   { href: "/", label: "Calls", Icon: PhoneIcon, active: (p: string) => p === "/" || p.startsWith("/console") },
@@ -14,8 +15,8 @@ export function AppNav({ children }: { children?: React.ReactNode }) {
   return (
     <header className="flex flex-wrap items-center justify-between gap-4 border-b border-lw-border bg-lw-surface px-7 py-3">
       <div className="flex items-center gap-8">
-        <Link href="/" className="text-2xl font-bold tracking-tight text-lw-ink">
-          LastWell
+        <Link href="/" aria-label="LastWell home">
+          <Logo />
         </Link>
         <nav className="flex gap-1.5" aria-label="Pages">
           {TABS.map(({ href, label, Icon, active }) => {
