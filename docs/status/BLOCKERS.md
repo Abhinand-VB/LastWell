@@ -10,7 +10,7 @@ Integration copies open blockers from the four lane files here at each merge, ne
 
 ## Open (newest first)
 
-- [ ] **voice + screens · D-53 assigned at ~01:20 PT** · V-13/W-13 (dispatcher override + notes); deadline 1:45 AM PT, otherwise held until the morning. Integration checks at the next loop whether either lane picked it up.
+- [ ] **voice · D-53 wording** · V-13 landed (0fed720) but its opening sentence and field name differ from D-53; asked voice to use Liang's exact wording and `notes`. W-13 (screens UI) held until the morning.
 
 - [ ] **humans · LKW parser gap found by the blind set (decision needed)** · The parser has no "N past H" form: "fine at ten past three" → **10:00 AM** shown as a confident time (truth 3:10 PM, script A11); "twenty past twelve" → "yesterday 8:00 PM? · confirm day" (B11). "quarter past" and "half past" work (docs/06 §3 R7). A live caller can say this. The E-05 protocol says no rule change based on the blind set, so: (a) **fix it** (reasoning adds "N past H" / "N to H" to docs/06 §3 R7 with new docs/06 §7 rows and tests; the blind run 1 numbers stay as reported, and the blind set is no longer blind for LKW), or (b) **leave it** and keep the slide line as is. Note: this is a post-freeze bug fix with a test if done after 2 AM.
 
@@ -40,7 +40,7 @@ Integration copies open blockers from the four lane files here at each merge, ne
 
 - [x] voice · V-02 · **Closed by Liang (D-52):** superseded by the audio robustness run and the live call. ~~Record a ~20 s 16 kHz mono WAV of someone reading Card A's caller lines → `apps/eval/audio/A01.wav` (gitignored; `ffmpeg -i in.m4a -ar 16000 -ac 1 -sample_fmt s16 A01.wav`) for the live Ink 2 spike; also needs the Cartesia key.~~
 - [x] reasoning · R-06 · **Approved by BM (D-42)**, `reasoner-2` landed eb5e836: B01 now asks for the face check. ~~Reasoner prompt: on B01 it asks for an exact LKW clock time or a speech check instead of the face/arm check. Proposed docs/04 §3 wording (`reasoner-2`) in docs/status/reasoning.md. → approve/reject by editing docs/04.~~
-- [ ] screens · W-11 · Liang sends screens a polish list; approved once it lands. ~~Presenter: approve the console/board look from 2 m (screenshots in apps/web/screenshots/).~~
+- [x] screens · W-11 · Polish landed (10c46e5, D-54…D-56) → approved per Liang. ~~Liang sends screens a polish list; approved once it lands. ~~Presenter: approve the console/board look from 2 m (screenshots in apps/web/screenshots/).~~~~
 - [x] reasoning · R-03 · **Approved (D-40)**: sex evidence is quoted as a phrase with context, never a bare pronoun; reasoning lands docs/04 §2 + the prompt together. ~~The fast-pass prompt makes the model quote "he" as sex evidence, which the validator drops (< 3 chars). Proposed docs/04 wording change (bump to `fast-2`) is in docs/status/reasoning.md. → approve or reject by editing docs/04 §2.~~
 
 - [ ] integration · C-04 · Print `docs/cards/cards.html` duplex (flip on long edge), seal each back; marker for the LKW blanks (D-20); slide + two timed pitch dry runs. Regenerate with `pnpm cards` if a script changes.

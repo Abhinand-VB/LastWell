@@ -2,7 +2,7 @@
 
 Only the integration session edits this file.
 
-## Remaining work (snapshot 2026-10-25 01:22 PT; refreshed every 20-minute loop)
+## Remaining work (snapshot 2026-10-25 01:37 PT; refreshed every 20-minute loop)
 
 Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live eval on the 20 scripts, numbers on the slide → (c) browser-mic fallback + play-briefing-locally on the live gateway → (d) W-11 polish for the judging table. Q&A (D-32: R-08, V-08 live) only after all of that is green. No real phone calls 9 PM–8 AM (FakeTelephony overnight).
 
@@ -12,7 +12,8 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 | V-09 | browser mic live check (gateway side in, 998f166) | P1 | voice | needs a person at the laptop |
 | V-10 | live Ink kill/reconnect check | P1 | voice | no |
 | W-11 | polish list from Liang → screens; approved once it lands | P1 | screens | waits on the list |
-| V-13 / W-13 | D-53 dispatcher override + notes | P1 | voice (after LKW post-mortem), screens | land by 1:45 AM or hold until morning |
+| V-13 | landed 0fed720; fix wording + field name to D-53 | P1 | voice | no (by 1:45 AM or morning) |
+| W-13 | notes field + Send at every level | P1 | screens | held until the morning (D-53 deadline) |
 | C-04 | print deck, slide, two timed pitch runs | P1 | humans | human |
 | LKW "N past H" | parser misses "ten past three" (blind set A11) — fix or leave is a human decision (BLOCKERS) | P1 | humans → reasoning | waits on the decision |
 | X-05 | final PR + `demo-ready` tag after the live gates | P1 | integration | waits on M-01…M-04 |
@@ -82,6 +83,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - `pnpm dev:fake` replays A01 through `POST /api/calls/replay`; it logs a 404 until V-11 lands, and the gateway runs without fakes until X-01b lands (it ignores `LASTWELL_FAKES` today).
 
 ## Periodic version1 checks (newest first)
+- 2026-10-25 01:35 PT · version1 10c46e5 (voice V-13 note/override, screens W-11 light theme D-54…D-56) · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50).
 - 2026-10-25 01:13 PT · version1 967dfd3 · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50). All lanes quiet (voice 57 min, nothing open for it until the 8 AM tests; reasoning and screens have nothing open). Waiting: parser-gap decision; freeze 2 AM.
 - 2026-10-25 00:51 PT · version1 6311fb2 · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50). Voice 35 min, reasoning 4 h 29, screens 5 h 41. Waiting: the parser-gap decision; freeze at 2 AM.
 - 2026-10-25 00:28 PT · version1 aa4fd12 (E-05 blind run) · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50). scripts-heldout unchanged since 5541b71.
@@ -112,6 +114,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - 2026-10-24 15:58 PT · df3e7a7 · verify exit 0 · e2e 2 pending.
 
 ## Handled requests from other lanes
+- [x] from voice: record the note + override decision → it is D-53 (wording and field name per Liang; mismatches posted back); `override` flag documented in docs/03 §6.
 - [x] from voice: E-05 heldout-run1.md → slide (docs/08) and README, unchanged numbers incl. LKW 3/6; LKW misses read against the scripts by integration (2 are a parser gap, 1 is by design) → BLOCKERS decision.
 - [x] from a human: "Path to production" in README (three stages, measures, exit criteria as examples to agree with partners, audit endpoint, dispatcher approval, synthetic-voice robustness as a first check only, open questions) + short version in the Devpost draft (RELEASE.md). No numbers beyond the docs/07 eval results and the Copenhagen figures; the Bergen study is named without figures.
 - [x] from a human (EMT interview): Devpost Inspiration + What we learned (RELEASE.md), docs/interview.md, chameleon-first demo (docs/08 §0, §3), stroke pile B01, B06, A01, A02 (≥ 2 chameleons, generator enforces it), judge Q&A (docs/08 §10), README limit on unverified A05/B08 labels. **Correction to the request:** the keyword baseline caught 1/5 chameleons (B08, "slurred"), not 0/5; LastWell 5/5 (E-03 run 2). B08 and A05 kept out of the stroke pile (unverified labels).
@@ -129,6 +132,8 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - [x] from reasoning: E-03 run 1 numbers carried into README "Results" and docs/08 §3 "Slide numbers", with the footnote.
 
 ## Requests to other lanes
+- [ ] to voice: **D-53 is in docs/09 (d18ece0, recorded 01:20 PT, landed just before your 0fed720)**; two mismatches to fix (bug-fix sized; before 1:45 AM if you can, else first thing in the morning): (1) `OVERRIDE_LINE` must be exactly **"Dispatcher-initiated pre-alert. LastWell has not detected stroke signs on this call."** (Liang's wording); (2) the request field is **`notes`** (docs/03 §6, Liang's wording), not `note`. Your `override: true` requirement below `possible` is kept and now documented in docs/03 §6 (409 `override_required` without it) — tell me if your error code differs. Audit fields as you built them. (D-53)
+- [ ] to screens: **W-13 (D-53) is held until the morning** (not started before the 1:45 AM deadline). When you do it: send `notes` (≤ 200, counter) and `override: true` when the level is below `possible` after the dispatcher confirms. (D-53)
 - [ ] to voice: **D-53 (Liang), task V-13, only after your LKW post-mortem lands; land by 1:45 AM PT or hold until the morning.** (1) Approve at every level: drop the 409 at `none`; below `possible` the briefing's first sentence is exactly "Dispatcher-initiated pre-alert. LastWell has not detected stroke signs on this call."; the audit records the send as an override. (2) Optional `notes` (≤ 200 chars, trimmed, 400 above) on `POST /api/calls/:callId/alert`: append "The dispatcher adds: {notes}" verbatim (no model), not counted in the 45–70-word budget and never dropped (docs/05 §7 rule 8); store on the alert and in the audit. (3) Q&A: anything only in the note is attributed to the dispatcher ("the dispatcher said …"), never to the caller. Liang OKs your edit of `packages/core/src/briefing` (composer) and the `AlertApproveBody` contract in core for this; if Q&A attribution changes prompt wording, change docs/04 and `prompts/qa.ts` in the same commit (client.test.ts compares them). docs/03 §6, docs/05 §7 and docs/09 D-53 are already updated. Acceptance in docs/TASKS.md V-13. (D-53)
 - [ ] to screens: **D-53 (Liang), task W-13, land by 1:45 AM PT or hold until the morning:** Send pre-alert enabled at every level, including `none` (tooltip: "LastWell has not detected stroke signs; the briefing will say this is a dispatcher-initiated pre-alert"); one optional notes textarea in the Send modal, ≤ 200 characters with a live counter, sent as `notes`. Coordinate with voice (V-13) for the contract field; keep X-03 green. (D-53)
 - [ ] to reasoning: FYI D-53 adds `notes?` to the alert-approve body and an override opener to the composer; Liang OK'd voice editing `packages/core/src/briefing` and that contract for it. Nothing for you to do unless voice asks. (D-53)
