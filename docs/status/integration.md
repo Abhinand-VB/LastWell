@@ -2,7 +2,7 @@
 
 Only the integration session edits this file.
 
-## Remaining work (snapshot 2026-10-25 04:57 PT; refreshed every 20-minute loop)
+## Remaining work (snapshot 2026-10-25 05:19 PT; refreshed every 20-minute loop)
 
 Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live eval on the 20 scripts, numbers on the slide → (c) browser-mic fallback + play-briefing-locally on the live gateway → (d) W-11 polish for the judging table. Q&A (D-32: R-08, V-08 live) only after all of that is green. No real phone calls 9 PM–8 AM (FakeTelephony overnight).
 
@@ -82,6 +82,7 @@ Tonight's order (human, 18:35 PT): (a) open P0/P1 tasks → (b) E-03 full live e
 - `pnpm dev:fake` replays A01 through `POST /api/calls/replay`; it logs a 404 until V-11 lands, and the gateway runs without fakes until X-01b lands (it ignores `LASTWELL_FAKES` today).
 
 ## Periodic version1 checks (newest first)
+- 2026-10-25 05:19 PT · version1 ade82c2 (no lane commits since freeze) · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50). Morning order written at the top of BLOCKERS.
 - 2026-10-25 04:57 PT · version1 03e120d (no lane commits since freeze) · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50).
 - 2026-10-25 04:35 PT · version1 f895cfc (no lane commits since freeze) · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50).
 - 2026-10-25 04:12 PT · version1 582794a (no lane commits since freeze) · verify exit 0 · e2e 23/0/0 (strict) · GREEN; main untouched (D-50).
